@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -64,7 +64,7 @@ model Scene {
   id              String   @id @default(uuid())
   chapterId       String
   chapter         Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  title           String   @db.VarChar(200)
+  title           String
   status          SceneStatus @default(DRAFT)
   povCharacterId  String?
   povCharacter    CodexEntry? @relation("povCharacter", fields: [povCharacterId], references: [id], onDelete: SetNull)

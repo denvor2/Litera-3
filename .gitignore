@@ -23,6 +23,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Database files
+*.db
+*.db-journal
+
 # IDE
 .vscode/
 .idea/
