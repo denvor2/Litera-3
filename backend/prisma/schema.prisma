@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  projects  Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  title     String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  books     Book[]
+  codexEntries CodexEntry[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Book {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  chapters  Chapter[]
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("books")
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  title     String
+  scenes    Scene[]
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chapters")
+}
+
+model Scene {
+  id              String   @id @default(uuid())
+  chapterId       String
+  chapter         Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title           String   @db.VarChar(200)
+  status          SceneStatus @default(DRAFT)
+  povCharacterId  String?
+  povCharacter    CodexEntry? @relation("povCharacter", fields: [povCharacterId], references: [id], onDelete: SetNull)
+  wordCount       Int      @default(0)
+  body            Json     @default("{\"type\":\"doc\",\"content\":[]}")
+  notes           String   @default("")
+  order           Int
+  entityLinks     SceneEntityLink[]
+  versions        Version[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("scenes")
+}
+
+model CodexEntry {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type      String   // 'character' | 'location'
+  name      String
+  attributes Json    @default("{}")
+  povScenes Scene[]  @relation("povCharacter")
+  sceneLinks SceneEntityLink[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("codex_entries")
+}
+
+model SceneEntityLink {
+  sceneId       String
+  scene         Scene      @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  codexEntryId  String
+  codexEntry    CodexEntry @relation(fields: [codexEntryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+
+  @@id([sceneId, codexEntryId])
+  @@map("scene_entity_links")
+}
+
+model Version {
+  id        String   @id @default(uuid())
+  entityType String  // Only 'scene' in Phase 0
+  entityId  String
+  sceneId   String
+  scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  snapshot  Json
+  createdAt DateTime @default(now())
+
+  @@map("versions")
+}
+
+enum SceneStatus {
+  DRAFT    @map("draft")
+  EDITING  @map("editing")
+  DONE     @map("done")
+}
