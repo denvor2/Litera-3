@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Project, Book, Chapter, Scene } from '../types'
 import { SceneEditor } from './SceneEditor'
 import { Sidebar } from './Sidebar'
@@ -13,53 +13,74 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
   const [writeMode, setWriteMode] = useState(false)
   const [books, setBooks] = useState<Book[]>(project.books)
 
+  // Auto-select first scene if available
+  useEffect(() => {
+    if (books.length > 0 && books[0].chapters && books[0].chapters.length > 0) {
+      const firstScene = books[0].chapters[0].scenes?.[0]
+      if (firstScene && !selectedScene) {
+        setSelectedScene(firstScene)
+      }
+    }
+  }, [books, selectedScene])
+
   const handleSceneSelect = (scene: Scene) => {
     setSelectedScene(scene)
   }
 
-  const handleSceneSave = (updatedScene: Scene) => {
-    setSelectedScene(updatedScene)
-    // Update in books tree
-    setBooks(
-      books.map(book => ({
-        ...book,
-        chapters: book.chapters.map(chapter => ({
-          ...chapter,
-          scenes: chapter.scenes.map(scene =>
-            scene.id === updatedScene.id ? updatedScene : scene
-          ),
-        })),
-      }))
-    )
+  const handleSceneSave = async (updatedScene: Scene) => {
+    try {
+      // Save to API
+      await fetch(`/api/scenes/${updatedScene.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedScene),
+      })
+
+      setSelectedScene(updatedScene)
+      // Update in books tree
+      setBooks(
+        books.map(book => ({
+          ...book,
+          chapters: book.chapters.map(chapter => ({
+            ...chapter,
+            scenes: chapter.scenes.map(scene =>
+              scene.id === updatedScene.id ? updatedScene : scene
+            ),
+          })),
+        }))
+      )
+    } catch (error) {
+      console.error('Failed to save scene:', error)
+    }
   }
 
   const handleCreateScene = async (chapterId: string) => {
-    // API call to create scene
-    const newScene: Scene = {
-      id: crypto.randomUUID(),
-      chapterId,
-      title: 'Новая сцена',
-      status: 'draft',
-      povCharacterId: null,
-      wordCount: 0,
-      body: { type: 'doc', content: [] },
-      notes: '',
-      order: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    try {
+      const response = await fetch('/api/scenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chapterId,
+          title: 'Новая сцена',
+          status: 'DRAFT',
+        }),
+      })
+      const newScene: Scene = await response.json()
 
-    setSelectedScene(newScene)
-    setBooks(
-      books.map(book => ({
-        ...book,
-        chapters: book.chapters.map(chapter =>
-          chapter.id === chapterId
-            ? { ...chapter, scenes: [...chapter.scenes, newScene] }
-            : chapter
-        ),
-      }))
-    )
+      setSelectedScene(newScene)
+      setBooks(
+        books.map(book => ({
+          ...book,
+          chapters: book.chapters.map(chapter =>
+            chapter.id === chapterId
+              ? { ...chapter, scenes: [...chapter.scenes, newScene] }
+              : chapter
+          ),
+        }))
+      )
+    } catch (error) {
+      console.error('Failed to create scene:', error)
+    }
   }
 
   return (

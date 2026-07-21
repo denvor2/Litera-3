@@ -37,7 +37,7 @@ export interface Scene {
   id: string
   chapterId: string
   title: string
-  status: 'draft' | 'editing' | 'done'
+  status: 'DRAFT' | 'EDITING' | 'DONE'
   povCharacterId: string | null
   wordCount: number
   body: unknown // TipTap JSON
@@ -57,4 +57,4 @@ export interface CodexEntry {
   updatedAt: string
 }
 
-export type SceneStatus = 'draft' | 'editing' | 'done'
+export type SceneStatus = 'DRAFT' | 'EDITING' | 'DONE'

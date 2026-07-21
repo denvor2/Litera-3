@@ -57,17 +57,22 @@ export function SceneEditor({
   }, [autoSaveTimer])
 
   const handleStatusChange = useCallback(
-    (newStatus: Scene['status']) => {
+    async (newStatus: Scene['status']) => {
       if (autoSaveTimer) clearTimeout(autoSaveTimer)
       setSaveStatus('saving')
 
-      const updatedScene = {
-        ...scene,
-        status: newStatus,
-        updatedAt: new Date().toISOString(),
+      try {
+        const updatedScene = {
+          ...scene,
+          status: newStatus,
+          updatedAt: new Date().toISOString(),
+        }
+        await onSave(updatedScene)
+        setSaveStatus('saved')
+      } catch (error) {
+        console.error('Failed to change status:', error)
+        setSaveStatus('error')
       }
-      onSave(updatedScene)
-      setSaveStatus('saved')
     },
     [scene, onSave, autoSaveTimer]
   )
@@ -75,9 +80,9 @@ export function SceneEditor({
   if (!editor) return null
 
   const statusLabels = {
-    draft: 'Черновик',
-    editing: 'Редактирование',
-    done: 'Готово',
+    DRAFT: 'Черновик',
+    EDITING: 'Редактирование',
+    DONE: 'Готово',
   }
 
   const saveStatusIcon = {
@@ -107,9 +112,9 @@ export function SceneEditor({
               value={scene.status}
               onChange={e => handleStatusChange(e.target.value as Scene['status'])}
             >
-              <option value="draft">Черновик</option>
-              <option value="editing">Редактирование</option>
-              <option value="done">Готово</option>
+              <option value="DRAFT">Черновик</option>
+              <option value="EDITING">Редактирование</option>
+              <option value="DONE">Готово</option>
             </select>
           </div>
 

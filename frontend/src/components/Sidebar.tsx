@@ -63,7 +63,7 @@ export function Sidebar({
                           }`}
                           onClick={() => onSceneSelect(scene)}
                         >
-                          <span className="scene-status">{scene.status[0]}</span>
+                          <span className="scene-status">{scene.status.slice(0, 1)}</span>
                           <span className="scene-title">{scene.title}</span>
                           <span className="scene-word-count">
                             {scene.wordCount}
