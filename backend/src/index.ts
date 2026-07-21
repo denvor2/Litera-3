@@ -264,6 +264,184 @@ fastify.patch('/api/scenes/order', async (request, reply) => {
   }
 })
 
+// Codex entries routes
+fastify.get('/api/codex/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+  const entries = await prisma.codexEntry.findMany({
+    where: { projectId },
+  })
+  return entries
+})
+
+fastify.get('/api/codex/:projectId/characters', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+  const entries = await prisma.codexEntry.findMany({
+    where: { projectId, type: 'character' },
+  })
+  return entries
+})
+
+fastify.get('/api/codex/:projectId/locations', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+  const entries = await prisma.codexEntry.findMany({
+    where: { projectId, type: 'location' },
+  })
+  return entries
+})
+
+fastify.post('/api/codex', async (request, reply) => {
+  const { projectId, type, name, attributes } = request.body as {
+    projectId: string
+    type: string
+    name: string
+    attributes?: unknown
+  }
+
+  try {
+    const entry = await prisma.codexEntry.create({
+      data: {
+        projectId,
+        type,
+        name,
+        attributes: attributes || {},
+      },
+    })
+    return entry
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to create codex entry' })
+  }
+})
+
+fastify.put('/api/codex/:entryId', async (request, reply) => {
+  const { entryId } = request.params as { entryId: string }
+  const { name, attributes } = request.body as { name?: string; attributes?: unknown }
+
+  try {
+    const entry = await prisma.codexEntry.update({
+      where: { id: entryId },
+      data: {
+        ...(name && { name }),
+        ...(attributes && { attributes }),
+      },
+    })
+    return entry
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update codex entry' })
+  }
+})
+
+fastify.delete('/api/codex/:entryId', async (request, reply) => {
+  const { entryId } = request.params as { entryId: string }
+
+  try {
+    await prisma.codexEntry.delete({
+      where: { id: entryId },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete codex entry' })
+  }
+})
+
+// Scene entity links
+fastify.post('/api/scene-entity-links', async (request, reply) => {
+  const { sceneId, codexEntryId } = request.body as { sceneId: string; codexEntryId: string }
+
+  try {
+    const link = await prisma.sceneEntityLink.create({
+      data: {
+        sceneId,
+        codexEntryId,
+      },
+      include: {
+        codexEntry: true,
+      },
+    })
+    return link
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to create scene entity link' })
+  }
+})
+
+fastify.delete('/api/scene-entity-links/:sceneId/:codexEntryId', async (request, reply) => {
+  const { sceneId, codexEntryId } = request.params as { sceneId: string; codexEntryId: string }
+
+  try {
+    await prisma.sceneEntityLink.delete({
+      where: {
+        sceneId_codexEntryId: {
+          sceneId,
+          codexEntryId,
+        },
+      },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete scene entity link' })
+  }
+})
+
+// Versions routes
+fastify.get('/api/scenes/:sceneId/versions', async (request, reply) => {
+  const { sceneId } = request.params as { sceneId: string }
+  const versions = await prisma.version.findMany({
+    where: { sceneId },
+    orderBy: { createdAt: 'desc' },
+  })
+  return versions
+})
+
+fastify.post('/api/versions/restore', async (request, reply) => {
+  const { versionId, sceneId } = request.body as { versionId: string; sceneId: string }
+
+  try {
+    // Get the version
+    const version = await prisma.version.findUnique({
+      where: { id: versionId },
+    })
+
+    if (!version) {
+      reply.code(404).send({ error: 'Version not found' })
+      return
+    }
+
+    // Update scene with version snapshot
+    const currentScene = await prisma.scene.findUnique({
+      where: { id: sceneId },
+    })
+
+    // Create a new version for current state before restoring
+    if (currentScene) {
+      await prisma.version.create({
+        data: {
+          entityType: 'scene',
+          entityId: sceneId,
+          sceneId,
+          snapshot: currentScene.body,
+        },
+      })
+    }
+
+    // Restore scene
+    const updatedScene = await prisma.scene.update({
+      where: { id: sceneId },
+      data: {
+        body: version.snapshot,
+      },
+    })
+
+    return updatedScene
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore version' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {
