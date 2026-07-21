@@ -1,6 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import type { Scene } from '../types'
 import { countWords } from '../utils/wordCount'
 import './SceneEditor.css'
@@ -33,7 +33,7 @@ export function SceneEditor({
       setSaveStatus('saving')
 
       // Set new timer for autosave
-      const timer = setTimeout(() => {
+      const timer = setTimeout(async () => {
         const content = editor.getJSON()
         const wordCount = countWords(editor.getText())
         const updatedScene = {
@@ -42,13 +42,29 @@ export function SceneEditor({
           wordCount,
           updatedAt: new Date().toISOString(),
         }
-        onSave(updatedScene)
-        setSaveStatus('saved')
+        try {
+          await onSave(updatedScene)
+          setSaveStatus('saved')
+        } catch (error) {
+          console.error('Autosave failed:', error)
+          setSaveStatus('error')
+        }
       }, AUTOSAVE_DELAY)
 
       setAutoSaveTimer(timer)
     },
   })
+
+  // Handle Esc key to exit write mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && writeMode) {
+        onToggleWriteMode()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [writeMode, onToggleWriteMode])
 
   useEffect(() => {
     return () => {

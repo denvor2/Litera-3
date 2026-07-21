@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { Book, Chapter, Scene } from '../types'
 import './Sidebar.css'
 
@@ -7,6 +7,7 @@ interface SidebarProps {
   selectedSceneId?: string
   onSceneSelect: (scene: Scene) => void
   onCreateScene: (chapterId: string) => void
+  onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
 }
 
 export function Sidebar({
@@ -14,8 +15,10 @@ export function Sidebar({
   selectedSceneId,
   onSceneSelect,
   onCreateScene,
+  onUpdateSceneOrder,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
+  const [draggedScene, setDraggedScene] = useState<Scene | null>(null)
 
   const toggleChapter = (chapterId: string) => {
     const newSet = new Set(expandedChapters)
@@ -26,6 +29,30 @@ export function Sidebar({
     }
     setExpandedChapters(newSet)
   }
+
+  const handleSceneDragStart = useCallback((scene: Scene) => {
+    setDraggedScene(scene)
+  }, [])
+
+  const handleChapterDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }, [])
+
+  const handleChapterDrop = useCallback(
+    (chapterId: string, e: React.DragEvent) => {
+      e.preventDefault()
+      if (draggedScene && draggedScene.chapterId !== chapterId) {
+        onUpdateSceneOrder?.(draggedScene.id, chapterId, 0)
+      }
+      setDraggedScene(null)
+    },
+    [draggedScene, onUpdateSceneOrder]
+  )
+
+  const handleSceneDragEnd = useCallback(() => {
+    setDraggedScene(null)
+  }, [])
 
   return (
     <aside className="sidebar">
@@ -54,14 +81,21 @@ export function Sidebar({
                   </button>
 
                   {expandedChapters.has(chapter.id) && (
-                    <div className="scenes-list">
+                    <div
+                      className="scenes-list"
+                      onDragOver={handleChapterDragOver}
+                      onDrop={(e) => handleChapterDrop(chapter.id, e)}
+                    >
                       {chapter.scenes.map(scene => (
                         <button
                           key={scene.id}
+                          draggable
                           className={`scene-item ${
                             selectedSceneId === scene.id ? 'selected' : ''
-                          }`}
+                          } ${draggedScene?.id === scene.id ? 'dragging' : ''}`}
                           onClick={() => onSceneSelect(scene)}
+                          onDragStart={() => handleSceneDragStart(scene)}
+                          onDragEnd={handleSceneDragEnd}
                         >
                           <span className="scene-status">{scene.status.slice(0, 1)}</span>
                           <span className="scene-title">{scene.title}</span>

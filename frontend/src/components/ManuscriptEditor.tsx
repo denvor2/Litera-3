@@ -83,6 +83,47 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
     }
   }
 
+  const handleUpdateSceneOrder = async (sceneId: string, newChapterId: string, newOrder: number) => {
+    try {
+      await fetch('/api/scenes/order', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updates: [{ id: sceneId, chapterId: newChapterId, order: newOrder }],
+        }),
+      })
+
+      // Update local state
+      let movedScene: Scene | null = null
+      setBooks(
+        books
+          .map(book => ({
+            ...book,
+            chapters: book.chapters.map(chapter => ({
+              ...chapter,
+              scenes: chapter.scenes.filter(scene => {
+                if (scene.id === sceneId) {
+                  movedScene = { ...scene, chapterId: newChapterId, order: newOrder }
+                  return false
+                }
+                return true
+              }),
+            })),
+          }))
+          .map(book => ({
+            ...book,
+            chapters: book.chapters.map(chapter =>
+              chapter.id === newChapterId && movedScene
+                ? { ...chapter, scenes: [...chapter.scenes, movedScene] }
+                : chapter
+            ),
+          }))
+      )
+    } catch (error) {
+      console.error('Failed to update scene order:', error)
+    }
+  }
+
   return (
     <div className="manuscript-editor">
       <Sidebar
@@ -90,6 +131,7 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
         selectedSceneId={selectedScene?.id}
         onSceneSelect={handleSceneSelect}
         onCreateScene={handleCreateScene}
+        onUpdateSceneOrder={handleUpdateSceneOrder}
       />
       <div className="editor-area">
         {selectedScene ? (
