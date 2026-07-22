@@ -241,8 +241,32 @@ export function App() {
               }}
             />
             <div className="right-panel">
-              <div style={{ padding: '14px', color: 'var(--ink-muted)', fontSize: '12px' }}>
-                🤖 AI-помощники (Фаза 2)
+              <div className="right-panel-header">🤖 AI-помощники</div>
+              <div className="right-panel-content">
+                <div className="expert-roles">
+                  <button className="expert-chip">
+                    <span className="chip-name">Соавтор</span>
+                    <button className="chip-settings" title="Настройки">⚙</button>
+                  </button>
+                  <button className="expert-chip">
+                    <span className="chip-name">Редактор</span>
+                    <button className="chip-settings" title="Настройки">⚙</button>
+                  </button>
+                  <button className="expert-chip">
+                    <span className="chip-name">Критик</span>
+                    <button className="chip-settings" title="Настройки">⚙</button>
+                  </button>
+                  <button className="expert-chip">
+                    <span className="chip-name">Читатель</span>
+                    <button className="chip-settings" title="Настройки">⚙</button>
+                  </button>
+                </div>
+                <button className="add-expert" title="Добавить помощника">+ свой</button>
+                <div className="expert-note">
+                  <p style={{ fontSize: '11px', color: 'var(--ink-muted)', margin: '8px 0' }}>
+                    ℹ️ Настройка AI-помощников будет доступна в следующей версии.
+                  </p>
+                </div>
               </div>
             </div>
           </>
