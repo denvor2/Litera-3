@@ -418,7 +418,7 @@
   display: flex;
   align-items: center;
   flex: 1;
-  padding: 6px 6px;
+  padding: 2px 6px;
   background: none;
   border: none;
   border-radius: var(--radius);
@@ -575,11 +575,9 @@
 /* Reset global button styles for sidebar utility buttons */
 .add-link,
 .icon-btn,
-.acc-summary,
 .chapter-toggle,
-.book-select,
-.add-book,
-.trash-restore-link {
+.trash-restore-link,
+.scene-select {
   min-height: auto !important;
   min-width: auto !important;
   border: none !important;
@@ -587,6 +585,25 @@
   padding: 0 !important;
   color: inherit !important;
   justify-content: flex-start !important;
+}
+
+.acc-summary {
+  min-height: auto !important;
+  min-width: auto !important;
+  border: none !important;
+  background-color: transparent !important;
+  color: inherit !important;
+  justify-content: flex-start !important;
+  padding: 10px 14px !important;
+}
+
+.book-select,
+.add-book {
+  min-height: auto !important;
+  min-width: auto !important;
+  border: 0.5px solid var(--border) !important;
+  background-color: var(--surface) !important;
+  color: var(--ink) !important;
 }
 
 .add-link {
