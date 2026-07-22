@@ -138,9 +138,15 @@ export function Sidebar({
         <div className="series-label">СЕРИЯ</div>
         <div className="series-name">{project?.title || 'Проект'}</div>
         <div className="book-switch-row">
-          <div style={{ flex: 1, fontSize: '14px', color: 'var(--ink)' }}>
-            {books.find(b => b.id === currentBookId)?.title || 'Книга'}
-          </div>
+          <select
+            className="book-select"
+            value={currentBookId || ''}
+            onChange={(e) => onBookSelect?.(e.target.value)}
+          >
+            {books.map(book => (
+              <option key={book.id} value={book.id}>{book.title}</option>
+            ))}
+          </select>
           <button className="add-book" title="Добавить книгу" onClick={() => onCreateBook?.()}>+</button>
         </div>
       </div>
@@ -152,11 +158,13 @@ export function Sidebar({
           onClick={() => toggleSection('manuscript')}
         >
           <span className="acc-arrow">{openSection === 'manuscript' ? '▾' : '▸'}</span>
-          📖 РУКОПИСЬ
+          РУКОПИСЬ
         </button>
         {openSection === 'manuscript' && (
         <div className="acc-body">
-          {books.map(book => (
+          {books
+            .filter(book => book.id === currentBookId)
+            .map(book => (
             <div key={book.id} className="book-section">
               <div className="book-row">
                 <span>{book.title}</span>
@@ -243,9 +251,7 @@ export function Sidebar({
                           <button
                             className="add-link"
                             onClick={() => onCreateScene?.(chapter.id)}
-                          >
-                            + сцена
-                          </button>
+                          >+ сцена</button>
                         </div>
                       </div>
                     )}
@@ -255,10 +261,7 @@ export function Sidebar({
                   <button
                     className="add-link"
                     onClick={() => onCreateChapter?.(book.id)}
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                  >
-                    + глава
-                  </button>
+                  >+ глава</button>
                 </div>
               </div>
             </div>
@@ -267,10 +270,7 @@ export function Sidebar({
             <button
               className="add-link"
               onClick={() => onCreateBook?.()}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-            >
-              + книга
-            </button>
+            >+ книга</button>
           </div>
         </div>
         )}
@@ -283,7 +283,7 @@ export function Sidebar({
           onClick={() => toggleSection('codex')}
         >
           <span className="acc-arrow">{openSection === 'codex' ? '▾' : '▸'}</span>
-          📚 КОДЕКС
+          КОДЕКС
         </button>
         {openSection === 'codex' && (
         <div className="acc-body">
@@ -299,10 +299,7 @@ export function Sidebar({
             <button
               className="add-link"
               onClick={() => onCreateCodexEntry?.('character')}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-            >
-              + персонаж
-            </button>
+            >+ персонаж</button>
           </div>
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
           {project?.codexEntries
@@ -316,10 +313,7 @@ export function Sidebar({
             <button
               className="add-link"
               onClick={() => onCreateCodexEntry?.('location')}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-            >
-              + локация
-            </button>
+            >+ локация</button>
           </div>
         </div>
         )}
@@ -332,7 +326,7 @@ export function Sidebar({
           onClick={() => toggleSection('notes')}
         >
           <span className="acc-arrow">{openSection === 'notes' ? '▾' : '▸'}</span>
-          📝 ЗАМЕТКИ
+          ЗАМЕТКИ
         </button>
         {openSection === 'notes' && (
         <div className="acc-body">
@@ -348,7 +342,7 @@ export function Sidebar({
           onClick={() => toggleSection('trash')}
         >
           <span className="acc-arrow">{openSection === 'trash' ? '▾' : '▸'}</span>
-          🗑️ КОРЗИНА
+          КОРЗИНА
         </button>
         {openSection === 'trash' && (
         <div className="acc-body">
