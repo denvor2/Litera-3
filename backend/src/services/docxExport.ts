@@ -59,11 +59,12 @@ function convertTipTapToDocxParagraphs(body: unknown): Paragraph[] {
 
     if (node.type === 'heading') {
       const text = extractTextFromTipTap(node)
-      const level = node.level || 1
+      const level = (node.level as number) || 1
+      const headingLevels = [HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3, HeadingLevel.HEADING_4, HeadingLevel.HEADING_5, HeadingLevel.HEADING_6]
       paragraphs.push(
         new Paragraph({
           text: text,
-          heading: (HeadingLevel as Record<number, unknown>)[`HEADING_${level}`] || HeadingLevel.HEADING_1,
+          heading: headingLevels[level - 1] || HeadingLevel.HEADING_1,
           spacing: { after: 240 },
         })
       )

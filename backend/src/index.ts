@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { PrismaClient } from '@prisma/client'
-import { exportBookToDocx } from './services/docxExport'
+import { exportBookToDocx } from './services/docxExport.js'
 
 const fastify = Fastify({
   logger: true,
@@ -269,21 +269,22 @@ fastify.put('/api/scenes/:sceneId', async (request, reply) => {
           entityType: 'scene',
           entityId: sceneId,
           sceneId,
-          snapshot: currentScene.body,
+          snapshot: currentScene.body as any,
         },
       })
     }
 
+    const updateData: any = {}
+    if (title) updateData.title = title
+    if (status) updateData.status = status
+    if (povCharacterId !== undefined) updateData.povCharacterId = povCharacterId
+    if (body) updateData.body = body as any
+    if (notes !== undefined) updateData.notes = notes
+    if (wordCount !== undefined) updateData.wordCount = wordCount
+
     const updatedScene = await prisma.scene.update({
       where: { id: sceneId },
-      data: {
-        ...(title && { title }),
-        ...(status && { status }),
-        ...(povCharacterId !== undefined && { povCharacterId }),
-        ...(body && { body }),
-        ...(notes !== undefined && { notes }),
-        ...(wordCount !== undefined && { wordCount }),
-      },
+      data: updateData,
     })
 
     return updatedScene
@@ -384,12 +385,13 @@ fastify.put('/api/codex/:entryId', async (request, reply) => {
   const { name, attributes } = request.body as { name?: string; attributes?: unknown }
 
   try {
+    const updateData: any = {}
+    if (name) updateData.name = name
+    if (attributes !== undefined) updateData.attributes = attributes as any
+
     const entry = await prisma.codexEntry.update({
       where: { id: entryId },
-      data: {
-        ...(name && { name }),
-        ...(attributes !== undefined && { attributes }),
-      },
+      data: updateData,
     })
     return entry
   } catch (error) {
@@ -489,7 +491,7 @@ fastify.post('/api/versions/restore', async (request, reply) => {
           entityType: 'scene',
           entityId: sceneId,
           sceneId,
-          snapshot: currentScene.body,
+          snapshot: currentScene.body as any,
         },
       })
     }
@@ -498,7 +500,7 @@ fastify.post('/api/versions/restore', async (request, reply) => {
     const updatedScene = await prisma.scene.update({
       where: { id: sceneId },
       data: {
-        body: version.snapshot,
+        body: version.snapshot as any,
       },
     })
 
