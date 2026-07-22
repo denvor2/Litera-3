@@ -178,3 +178,9 @@
   font-family: inherit;
   resize: vertical;
 }
+
+.scene-versions {
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  background: #f5f5f5;
+}

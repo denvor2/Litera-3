@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import type { Scene } from '../types'
 import { countWords } from '../utils/wordCount'
+import { VersionHistory } from './VersionHistory'
 import './SceneEditor.css'
 
 interface SceneEditorProps {
@@ -169,6 +170,10 @@ export function SceneEditor({
             onSave(updatedScene)
           }}
         />
+      </div>
+
+      <div className="scene-versions">
+        <VersionHistory scene={scene} />
       </div>
     </div>
   )

@@ -468,6 +468,109 @@ fastify.get('/api/books/:bookId/export', async (request, reply) => {
   }
 })
 
+// Search routes
+fastify.get('/api/search', async (request, reply) => {
+  const { projectId, query } = request.query as { projectId: string; query: string }
+
+  if (!projectId || !query || query.trim().length < 2) {
+    return []
+  }
+
+  try {
+    // Search in scene titles
+    const scenesByTitle = await prisma.scene.findMany({
+      where: {
+        chapter: {
+          book: {
+            projectId,
+          },
+        },
+        title: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      include: {
+        chapter: {
+          include: {
+            book: true,
+          },
+        },
+      },
+      take: 20,
+    })
+
+    // Search in scene body (simple text search)
+    const allScenes = await prisma.scene.findMany({
+      where: {
+        chapter: {
+          book: {
+            projectId,
+          },
+        },
+      },
+      include: {
+        chapter: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    })
+
+    const scenesByBody = allScenes.filter(scene => {
+      const text = extractTextFromScene(scene.body as unknown)
+      return text.toLowerCase().includes(query.toLowerCase())
+    })
+
+    // Search in codex
+    const codexEntries = await prisma.codexEntry.findMany({
+      where: {
+        projectId,
+        OR: [
+          {
+            name: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      take: 20,
+    })
+
+    // Combine results
+    const results = {
+      scenes: Array.from(new Set([...scenesByTitle, ...scenesByBody.slice(0, 20)])).slice(0, 20),
+      codexEntries,
+      total: scenesByTitle.length + scenesByBody.length + codexEntries.length,
+    }
+
+    return results
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Search failed' })
+  }
+})
+
+function extractTextFromScene(body: unknown): string {
+  if (!body || typeof body !== 'object') return ''
+  const doc = body as Record<string, unknown>
+  if (!doc.content || !Array.isArray(doc.content)) return ''
+
+  return (doc.content as unknown[])
+    .map(node => {
+      if (typeof node !== 'object' || !node) return ''
+      const n = node as Record<string, unknown>
+      if (n.type === 'text' && typeof n.text === 'string') return n.text
+      if (n.content && Array.isArray(n.content)) {
+        return extractTextFromScene({ content: n.content })
+      }
+      return ''
+    })
+    .join(' ')
+}
+
 // Start server
 const start = async () => {
   try {

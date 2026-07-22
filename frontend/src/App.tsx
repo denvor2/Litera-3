@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { ManuscriptEditor } from './components/ManuscriptEditor'
-import type { Project } from './types'
+import { SearchPanel } from './components/SearchPanel'
+import type { Project, Scene, CodexEntry } from './types'
 
 function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
 
   useEffect(() => {
     const initProject = async () => {
@@ -52,7 +54,12 @@ function App() {
 
   return (
     <div className="app">
-      <ManuscriptEditor project={project} />
+      <div className="app-header">
+        {project && <SearchPanel projectId={project.id} />}
+      </div>
+      <div className="app-main">
+        <ManuscriptEditor project={project} />
+      </div>
     </div>
   )
 }
