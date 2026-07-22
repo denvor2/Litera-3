@@ -36,11 +36,11 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'character',
         name: 'John Doe',
-        attributes: JSON.stringify({
+        attributes: {
           appearance: 'Tall, blue eyes',
           personality: 'Brave and confident',
           goal_conflict: 'Wants to save the world',
-        }),
+        },
       },
     })
 
@@ -62,9 +62,9 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'location',
         name: 'Dark Forest',
-        attributes: JSON.stringify({
+        attributes: {
           description: 'A mysterious and dangerous forest',
-        }),
+        },
       },
     })
 
@@ -111,7 +111,7 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'character',
         name: 'Hero',
-        attributes: JSON.stringify({}),
+        attributes: {},
       },
     })
 

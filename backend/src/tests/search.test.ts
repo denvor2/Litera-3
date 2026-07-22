@@ -53,7 +53,7 @@ describe('Search API', () => {
         title: 'The Beginning',
         status: 'DRAFT',
         order: 1,
-        body: JSON.stringify({ type: 'doc', content: [] }),
+        body: { type: 'doc', content: [] },
       },
     })
 
@@ -88,7 +88,7 @@ describe('Search API', () => {
         projectId: project.id,
         type: 'character',
         name: 'Hero the Great',
-        attributes: JSON.stringify({}),
+        attributes: {},
       },
     })
 

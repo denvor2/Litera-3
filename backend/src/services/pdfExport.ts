@@ -1,38 +1,8 @@
 import PDFDocument from 'pdfkit'
 import { PrismaClient } from '@prisma/client'
+import { extractTextFromTipTap, type TipTapNode } from '../utils/tiptap.js'
 
 const prisma = new PrismaClient()
-
-interface TipTapNode {
-  type: string
-  content?: TipTapNode[]
-  text?: string
-  marks?: Array<{ type: string }>
-  attrs?: Record<string, unknown>
-  level?: number
-}
-
-function extractTextFromTipTap(node: TipTapNode | TipTapNode[] | undefined): string {
-  if (!node) return ''
-
-  if (Array.isArray(node)) {
-    return node.map(n => extractTextFromTipTap(n)).join('')
-  }
-
-  if (node.type === 'text') {
-    return node.text || ''
-  }
-
-  if (node.type === 'doc' || node.type === 'paragraph' || node.type === 'bullet_list' || node.type === 'ordered_list') {
-    return extractTextFromTipTap(node.content)
-  }
-
-  if (node.type === 'list_item' || node.type === 'blockquote' || node.type === 'heading') {
-    return extractTextFromTipTap(node.content)
-  }
-
-  return ''
-}
 
 export async function exportBookToPdf(bookId: string): Promise<Buffer> {
   const book = await prisma.book.findUnique({

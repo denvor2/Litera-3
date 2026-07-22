@@ -321,7 +321,6 @@ export function App() {
         ...project,
         codexEntries: [...(project.codexEntries || []), newEntry],
       })
-      console.log(`Created ${type}:`, newEntry)
     } catch (error) {
       console.error(`Failed to create ${type}:`, error)
     }

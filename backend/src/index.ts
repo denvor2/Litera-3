@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 import { exportBookToDocx } from './services/docxExport.js'
 import { exportBookToFb2 } from './services/fbExport.js'
 import { exportBookToPdf } from './services/pdfExport.js'
+import { extractTextFromTipTap } from './utils/tiptap.js'
 
 const fastify = Fastify({
   logger: true,
@@ -683,6 +684,7 @@ fastify.get('/api/search', async (request, reply) => {
     // Search in scene titles
     const scenesByTitle = await prisma.scene.findMany({
       where: {
+        deletedAt: null,
         chapter: {
           book: {
             projectId,
@@ -690,6 +692,7 @@ fastify.get('/api/search', async (request, reply) => {
         },
         title: {
           contains: query,
+          mode: 'insensitive',
         },
       },
       include: {
@@ -705,6 +708,7 @@ fastify.get('/api/search', async (request, reply) => {
     // Search in scene body (simple text search)
     const allScenes = await prisma.scene.findMany({
       where: {
+        deletedAt: null,
         chapter: {
           book: {
             projectId,
@@ -722,7 +726,7 @@ fastify.get('/api/search', async (request, reply) => {
 
     const scenesByBody = allScenes.filter(scene => {
       try {
-        const text = extractTextFromScene(scene.body)
+        const text = extractTextFromTipTap(scene.body as any)
         return text.toLowerCase().includes(query.toLowerCase())
       } catch {
         return false
@@ -760,29 +764,11 @@ fastify.get('/api/search', async (request, reply) => {
   }
 })
 
-function extractTextFromScene(body: unknown): string {
-  if (!body || typeof body !== 'object') return ''
-  const doc = body as Record<string, unknown>
-  if (!doc.content || !Array.isArray(doc.content)) return ''
-
-  return (doc.content as unknown[])
-    .map(node => {
-      if (typeof node !== 'object' || !node) return ''
-      const n = node as Record<string, unknown>
-      if (n.type === 'text' && typeof n.text === 'string') return n.text
-      if (n.content && Array.isArray(n.content)) {
-        return extractTextFromScene({ content: n.content })
-      }
-      return ''
-    })
-    .join(' ')
-}
-
 // Start server
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: '0.0.0.0' })
-    console.log('Server running on http://localhost:3000')
+    fastify.log.info('Server running on http://localhost:3000')
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
