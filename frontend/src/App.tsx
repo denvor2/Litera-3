@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { SceneEditor } from './components/SceneEditor'
+import { ExportButton } from './components/ExportButton'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import { API_BASE } from './config'
-import type { Project, Scene } from './types'
+import type { Project, Scene, Book } from './types'
 
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
@@ -337,6 +338,8 @@ export function App() {
   const authorSheets = countAuthorSheets(charCount).toFixed(2)
   const pages = countPages(charCount).toFixed(0)
 
+  const currentBook = project?.books.find(b => b.id === selectedBookId) || project?.books[0]
+
   return (
     <div className={`app ${zenMode ? 'zen-mode' : ''}`}>
       {/* TopBar */}
@@ -352,7 +355,6 @@ export function App() {
           {menuOpen && (
             <div className="hmenu" ref={menuRef}>
               <div className="hmenu-item">📥 Импорт</div>
-              <div className="hmenu-item">📤 Экспорт</div>
               <div className="hmenu-sep"></div>
               <div className="hmenu-item">📚 История версий</div>
               <div className="hmenu-sep"></div>
@@ -362,9 +364,12 @@ export function App() {
           )}
           <h1 className="topbar-title">LitStudio 2</h1>
         </div>
-        <button className="zen-toggle" onClick={() => setZenMode(!zenMode)}>
-          ⛓️ Режим письма
-        </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {currentBook && <ExportButton book={currentBook as Book} />}
+          <button className="zen-toggle" onClick={() => setZenMode(!zenMode)}>
+            ⛓️ Режим письма
+          </button>
+        </div>
       </div>
 
       {/* Workspace */}
