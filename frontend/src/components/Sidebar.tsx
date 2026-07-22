@@ -9,6 +9,9 @@ interface SidebarProps {
   onSceneSelect?: (scene: Scene) => void
   onCreateScene?: (chapterId: string) => void
   onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
+  onCreateBook?: () => void
+  onCreateChapter?: (bookId: string) => void
+  onCreateCodexEntry?: (type: 'character' | 'location') => void
 }
 
 export function Sidebar({
@@ -18,6 +21,9 @@ export function Sidebar({
   onSceneSelect,
   onCreateScene,
   onUpdateSceneOrder,
+  onCreateBook,
+  onCreateChapter,
+  onCreateCodexEntry,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
@@ -82,12 +88,15 @@ export function Sidebar({
       </div>
 
       {/* Аккордеон секций */}
-      <details
-        className="acc"
-        open={openSection === 'manuscript'}
-        onToggle={() => toggleSection('manuscript')}
-      >
-        <summary>📖 РУКОПИСЬ</summary>
+      <div className="acc">
+        <button
+          className="acc-summary"
+          onClick={() => toggleSection('manuscript')}
+        >
+          <span className="acc-arrow">{openSection === 'manuscript' ? '▾' : '▸'}</span>
+          📖 РУКОПИСЬ
+        </button>
+        {openSection === 'manuscript' && (
         <div className="acc-body">
           {books.map(book => (
             <div key={book.id} className="book-section">
@@ -207,59 +216,96 @@ export function Sidebar({
                   </div>
                 ))}
                 <div className="add-item">
-                  <span className="add-link">+ глава</span>
+                  <button
+                    className="add-link"
+                    onClick={() => onCreateChapter?.(book.id)}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    + глава
+                  </button>
                 </div>
               </div>
             </div>
           ))}
           <div className="add-item">
-            <span className="add-link">+ книга</span>
+            <button
+              className="add-link"
+              onClick={() => onCreateBook?.()}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              + книга
+            </button>
           </div>
         </div>
-      </details>
+        )}
+      </div>
 
       {/* Кодекс */}
-      <details
-        className="acc"
-        open={openSection === 'codex'}
-        onToggle={() => toggleSection('codex')}
-      >
-        <summary>📚 КОДЕКС</summary>
+      <div className="acc">
+        <button
+          className="acc-summary"
+          onClick={() => toggleSection('codex')}
+        >
+          <span className="acc-arrow">{openSection === 'codex' ? '▾' : '▸'}</span>
+          📚 КОДЕКС
+        </button>
+        {openSection === 'codex' && (
         <div className="acc-body">
           <div className="codex-subhead">Персонажи</div>
           <div className="add-item">
-            <span className="add-link">+ персонаж</span>
+            <button
+              className="add-link"
+              onClick={() => onCreateCodexEntry?.('character')}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              + персонаж
+            </button>
           </div>
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
           <div className="add-item">
-            <span className="add-link">+ локация</span>
+            <button
+              className="add-link"
+              onClick={() => onCreateCodexEntry?.('location')}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              + локация
+            </button>
           </div>
         </div>
-      </details>
+        )}
+      </div>
 
       {/* Заметки */}
-      <details
-        className="acc"
-        open={openSection === 'notes'}
-        onToggle={() => toggleSection('notes')}
-      >
-        <summary>📝 ЗАМЕТКИ</summary>
+      <div className="acc">
+        <button
+          className="acc-summary"
+          onClick={() => toggleSection('notes')}
+        >
+          <span className="acc-arrow">{openSection === 'notes' ? '▾' : '▸'}</span>
+          📝 ЗАМЕТКИ
+        </button>
+        {openSection === 'notes' && (
         <div className="acc-body">
           <textarea className="notes-box" placeholder="Заметки на полях..."></textarea>
         </div>
-      </details>
+        )}
+      </div>
 
       {/* Корзина */}
-      <details
-        className="acc"
-        open={openSection === 'trash'}
-        onToggle={() => toggleSection('trash')}
-      >
-        <summary>🗑️ КОРЗИНА</summary>
+      <div className="acc">
+        <button
+          className="acc-summary"
+          onClick={() => toggleSection('trash')}
+        >
+          <span className="acc-arrow">{openSection === 'trash' ? '▾' : '▸'}</span>
+          🗑️ КОРЗИНА
+        </button>
+        {openSection === 'trash' && (
         <div className="acc-body">
           <div className="trash-empty">Корзина пуста</div>
         </div>
-      </details>
+        )}
+      </div>
     </aside>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { SceneEditor } from './components/SceneEditor'
@@ -13,6 +13,19 @@ export function App() {
   const [zenMode, setZenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuOpen])
 
   useEffect(() => {
     const initProject = async () => {
@@ -51,11 +64,14 @@ export function App() {
   const handleSceneSave = async (updatedScene: Scene) => {
     if (!project) return
     try {
-      await fetch(`http://localhost:3000/api/scenes/${updatedScene.id}`, {
+      const response = await fetch(`http://localhost:3000/api/scenes/${updatedScene.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedScene),
       })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
       setSelectedScene(updatedScene)
       // Update in project tree
       setProject({
@@ -86,7 +102,9 @@ export function App() {
           title: 'Новая сцена',
         }),
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
       const newScene: Scene = await response.json()
 
       setSelectedScene(newScene)
@@ -149,6 +167,86 @@ export function App() {
     }
   }
 
+  const handleCreateBook = async () => {
+    if (!project) return
+    try {
+      const response = await fetch('http://localhost:3000/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          title: `Книга ${project.books.length + 1}`,
+        }),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
+      const newBook = await response.json()
+
+      setProject({
+        ...project,
+        books: [...project.books, newBook],
+      })
+    } catch (error) {
+      console.error('Failed to create book:', error)
+    }
+  }
+
+  const handleCreateChapter = async (bookId: string) => {
+    if (!project) return
+    try {
+      const book = project.books.find(b => b.id === bookId)
+      if (!book) return
+
+      const response = await fetch('http://localhost:3000/api/chapters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId,
+          title: `Глава ${book.chapters.length + 1}`,
+        }),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
+      const newChapter = await response.json()
+
+      setProject({
+        ...project,
+        books: project.books.map(b =>
+          b.id === bookId ? { ...b, chapters: [...b.chapters, newChapter] } : b
+        ),
+      })
+    } catch (error) {
+      console.error('Failed to create chapter:', error)
+    }
+  }
+
+  const handleCreateCodexEntry = async (type: 'character' | 'location') => {
+    if (!project) return
+    const name = type === 'character' ? `Персонаж ${Math.random().toString(36).substr(2, 5)}` : `Локация ${Math.random().toString(36).substr(2, 5)}`
+    try {
+      const response = await fetch(`http://localhost:3000/api/codex`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          type,
+          name,
+          attributes: type === 'character'
+            ? { appearance: '', personality: '', goal_conflict: '' }
+            : { description: '' },
+        }),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
+      console.log(`Created ${type}`)
+    } catch (error) {
+      console.error(`Failed to create ${type}:`, error)
+    }
+  }
+
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
   if (!project) return <div className="app-error">Проект не найден</div>
@@ -172,7 +270,7 @@ export function App() {
             ☰
           </button>
           {menuOpen && (
-            <div className="hmenu">
+            <div className="hmenu" ref={menuRef}>
               <div className="hmenu-item">📥 Импорт</div>
               <div className="hmenu-item">📤 Экспорт</div>
               <div className="hmenu-sep"></div>
@@ -200,6 +298,9 @@ export function App() {
             onSceneSelect={handleSceneSelect}
             onCreateScene={handleCreateScene}
             onUpdateSceneOrder={handleUpdateSceneOrder}
+            onCreateBook={handleCreateBook}
+            onCreateChapter={handleCreateChapter}
+            onCreateCodexEntry={handleCreateCodexEntry}
           />
         )}
 
