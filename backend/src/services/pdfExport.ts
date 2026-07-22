@@ -70,19 +70,17 @@ export async function exportBookToPdf(bookId: string): Promise<Buffer> {
 
       // Scenes
       for (const scene of chapter.scenes) {
-        if (scene.status === 'DRAFT' || scene.status === 'EDITING') {
-          // Scene title
-          doc.fontSize(13).font(bodyFont).text(scene.title)
-          doc.moveDown(0.2)
+        // Scene title
+        doc.fontSize(13).font(bodyFont).text(scene.title)
+        doc.moveDown(0.2)
 
-          // Scene content
-          const text = extractTextFromTipTap(scene.body as any)
-          doc.fontSize(11).font(defaultFont).text(text, {
-            align: 'justify',
-            continued: false,
-          })
-          doc.moveDown(0.5)
-        }
+        // Scene content
+        const text = extractTextFromTipTap(scene.body as any)
+        doc.fontSize(11).font(defaultFont).text(text, {
+          align: 'justify',
+          continued: false,
+        })
+        doc.moveDown(0.5)
       }
 
       doc.moveDown(0.3)

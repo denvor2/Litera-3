@@ -3,6 +3,7 @@ import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { SceneEditor } from './components/SceneEditor'
 import { ExportButton } from './components/ExportButton'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import { API_BASE } from './config'
 import type { Project, Scene, Book } from './types'
@@ -373,22 +374,24 @@ export function App() {
       <div className="workspace" style={{ '--right-w': `${rightWidth}px` } as any}>
         {/* Sidebar */}
         {!zenMode && (
-          <Sidebar
-            project={project}
-            books={project.books}
-            selectedSceneId={selectedScene?.id}
-            selectedBookId={selectedBookId || undefined}
-            onSceneSelect={handleSceneSelect}
-            onBookSelect={handleBookSelect}
-            onCreateScene={handleCreateScene}
-            onUpdateSceneOrder={handleUpdateSceneOrder}
-            onCreateBook={handleCreateBook}
-            onCreateChapter={handleCreateChapter}
-            onDeleteBook={handleDeleteBook}
-            onDeleteChapter={handleDeleteChapter}
-            onDeleteScene={handleDeleteScene}
-            onCreateCodexEntry={handleCreateCodexEntry}
-          />
+          <ErrorBoundary>
+            <Sidebar
+              project={project}
+              books={project.books}
+              selectedSceneId={selectedScene?.id}
+              selectedBookId={selectedBookId || undefined}
+              onSceneSelect={handleSceneSelect}
+              onBookSelect={handleBookSelect}
+              onCreateScene={handleCreateScene}
+              onUpdateSceneOrder={handleUpdateSceneOrder}
+              onCreateBook={handleCreateBook}
+              onCreateChapter={handleCreateChapter}
+              onDeleteBook={handleDeleteBook}
+              onDeleteChapter={handleDeleteChapter}
+              onDeleteScene={handleDeleteScene}
+              onCreateCodexEntry={handleCreateCodexEntry}
+            />
+          </ErrorBoundary>
         )}
 
         {/* Center */}

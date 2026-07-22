@@ -91,14 +91,12 @@ export async function exportBookToFb2(bookId: string): Promise<string> {
     xml += `        <title><p>${escapeXml(chapter.title)}</p></title>\n`
 
     for (const scene of chapter.scenes) {
-      if (scene.status === 'DRAFT' || scene.status === 'EDITING') {
-        const sceneContent = convertTipTapToFb2Xml(scene.body as any)
-        if (sceneContent.trim()) {
-          xml += `        <section>\n`
-          xml += `          <title><p>${escapeXml(scene.title)}</p></title>\n`
-          xml += sceneContent.split('\n').map(line => line ? `          ${line}` : '').join('\n')
-          xml += `        </section>\n`
-        }
+      const sceneContent = convertTipTapToFb2Xml(scene.body as any)
+      if (sceneContent.trim()) {
+        xml += `        <section>\n`
+        xml += `          <title><p>${escapeXml(scene.title)}</p></title>\n`
+        xml += sceneContent.split('\n').map(line => line ? `          ${line}` : '').join('\n')
+        xml += `        </section>\n`
       }
     }
 

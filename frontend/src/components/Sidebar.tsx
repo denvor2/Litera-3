@@ -63,7 +63,14 @@ export function Sidebar({
       const response = await fetch(`${API_BASE}/api/trash/${project.id}`)
       if (response.ok) {
         const data = await response.json()
-        setTrashItems(data)
+        // API returns grouped object, convert to flat array
+        const items: TrashItem[] = [
+          ...(data.books || []).map((b: any) => ({ type: 'book' as const, id: b.id, title: b.title })),
+          ...(data.chapters || []).map((c: any) => ({ type: 'chapter' as const, id: c.id, title: c.title })),
+          ...(data.scenes || []).map((s: any) => ({ type: 'scene' as const, id: s.id, title: s.title })),
+          ...(data.codexEntries || []).map((e: any) => ({ type: 'codexentry' as const, id: e.id, title: e.name }))
+        ]
+        setTrashItems(items)
       }
     } catch (error) {
       console.error('Failed to load trash:', error)

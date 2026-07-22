@@ -104,15 +104,12 @@ export async function exportBookToDocx(bookId: string): Promise<Buffer> {
 
     // Scenes
     for (const scene of chapter.scenes) {
-      // Only include draft and editing, not done
-      if (scene.status === 'DRAFT' || scene.status === 'EDITING') {
-        const sceneContent = convertTipTapToDocxParagraphs(scene.body)
-        sections.push(...sceneContent)
+      const sceneContent = convertTipTapToDocxParagraphs(scene.body)
+      sections.push(...sceneContent)
 
-        // Empty line between scenes (except for last scene)
-        if (scene.id !== chapter.scenes[chapter.scenes.length - 1]?.id) {
-          sections.push(new Paragraph({ text: '' }))
-        }
+      // Empty line between scenes (except for last scene)
+      if (scene.id !== chapter.scenes[chapter.scenes.length - 1]?.id) {
+        sections.push(new Paragraph({ text: '' }))
       }
     }
   }
