@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { Book, Chapter, Scene } from '../types'
+import { ExportButton } from './ExportButton'
 import './Sidebar.css'
 
 interface SidebarProps {
@@ -63,8 +64,9 @@ export function Sidebar({
       <div className="sidebar-content">
         {books.map(book => (
           <div key={book.id} className="book">
-            <div className="book-title">
+            <div className="book-header">
               <h3>{book.title}</h3>
+              <ExportButton book={book} />
             </div>
 
             <div className="chapters-list">

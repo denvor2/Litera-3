@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { PrismaClient } from '@prisma/client'
+import { exportBookToDocx } from './services/docxExport'
 
 const fastify = Fastify({
   logger: true,
@@ -439,6 +440,31 @@ fastify.post('/api/versions/restore', async (request, reply) => {
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Failed to restore version' })
+  }
+})
+
+// Export routes
+fastify.get('/api/books/:bookId/export', async (request, reply) => {
+  const { bookId } = request.params as { bookId: string }
+
+  try {
+    const book = await prisma.book.findUnique({
+      where: { id: bookId },
+    })
+
+    if (!book) {
+      reply.code(404).send({ error: 'Book not found' })
+      return
+    }
+
+    const docxBuffer = await exportBookToDocx(bookId)
+
+    reply.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    reply.header('Content-Disposition', `attachment; filename="${book.title}.docx"`)
+    return reply.send(docxBuffer)
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(500).send({ error: 'Failed to export book' })
   }
 })
 
