@@ -329,7 +329,7 @@ export function Sidebar({
                     <div className="chip-type">перс.</div>
                     <div className="row-actions">
                       <button className="icon-btn" title="Редактировать" onClick={() => {
-                        onEditCodexEntry?.(entry.id, { name: entry.name })
+                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
                       }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
@@ -360,7 +360,7 @@ export function Sidebar({
                     <div className="chip-type">лок.</div>
                     <div className="row-actions">
                       <button className="icon-btn" title="Редактировать" onClick={() => {
-                        onEditCodexEntry?.(entry.id, { name: entry.name })
+                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
                       }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
