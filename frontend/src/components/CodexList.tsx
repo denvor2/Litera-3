@@ -41,9 +41,9 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
             </div>
           </div>
 
-          {type === 'character' && entry.attributes && (
+          {type === 'character' && entry.attributes ? (
             <>
-              {(entry.attributes as Record<string, string>).appearance && (
+              {(entry.attributes as Record<string, any>).appearance && (
                 <div className="codex-field">
                   <label>Внешность:</label>
                   <p>{(entry.attributes as Record<string, string>).appearance}</p>
@@ -62,18 +62,18 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
                 </div>
               )}
             </>
-          )}
+          ) : null}
 
-          {type === 'location' && entry.attributes && (
+          {type === 'location' && entry.attributes ? (
             <>
-              {(entry.attributes as Record<string, string>).description && (
+              {(entry.attributes as Record<string, any>).description && (
                 <div className="codex-field">
                   <label>Описание:</label>
-                  <p>{(entry.attributes as Record<string, string>).description}</p>
+                  <p>{(entry.attributes as Record<string, any>).description}</p>
                 </div>
               )}
             </>
-          )}
+          ) : null}
         </div>
       ))}
     </div>

@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import type { Scene } from '../types'
 
 export interface DragItem {
   id: string

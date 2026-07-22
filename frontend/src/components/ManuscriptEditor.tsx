@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Project, Book, Chapter, Scene, CodexEntry } from '../types'
+import type { Project, Book, Scene, CodexEntry } from '../types'
 import { SceneEditor } from './SceneEditor'
 import { Sidebar } from './Sidebar'
 import { CodexPanel } from './CodexPanel'

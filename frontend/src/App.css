@@ -237,6 +237,297 @@
   flex-shrink: 0;
 }
 
+/* Аккордеон (Sidebar секции) */
+.acc {
+  border: none;
+  border-bottom: 0.5px solid var(--border);
+  padding: 0;
+  margin: 0;
+}
+
+.acc:last-child {
+  border-bottom: none;
+}
+
+.acc summary {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.acc summary:hover {
+  background-color: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.acc summary::-webkit-details-marker {
+  display: none;
+}
+
+.acc summary::before {
+  content: '▸';
+  display: inline-block;
+  width: 16px;
+  margin-right: 8px;
+  font-size: 10px;
+  color: var(--ink-muted);
+  transition: transform 0.15s;
+  text-align: center;
+}
+
+.acc[open] summary::before {
+  content: '▾';
+  transform: rotate(0deg);
+}
+
+.acc-body {
+  padding: 0 8px 8px 14px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Книги и главы */
+.book-section {
+  margin-bottom: 8px;
+}
+
+.book-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 6px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  gap: 8px;
+  transition: background-color 0.15s;
+}
+
+.book-row:hover {
+  background-color: var(--surface-2);
+}
+
+.book-row span {
+  flex: 1;
+}
+
+.chapters-list {
+  margin-top: 4px;
+}
+
+.chapter-item {
+  margin-bottom: 4px;
+}
+
+.chapter-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 6px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-2);
+  gap: 6px;
+  transition: background-color 0.15s;
+}
+
+.chapter-row:hover {
+  background-color: var(--surface-2);
+}
+
+.toggle-icon {
+  display: inline-block;
+  width: 16px;
+  text-align: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* Сцены */
+.scenes-list {
+  padding: 0 0 6px 20px;
+  margin-top: 2px;
+}
+
+.scene-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 6px;
+  margin-bottom: 2px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-2);
+  gap: 6px;
+  transition: background-color 0.15s;
+}
+
+.scene-row:hover {
+  background-color: var(--surface-2);
+}
+
+.scene-row.selected {
+  background-color: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 500;
+}
+
+.scene-row.dragging {
+  opacity: 0.5;
+  background-color: var(--surface-2);
+}
+
+.scene-row .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.scene-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+.scene-row.selected .scene-title {
+  color: var(--selected-text);
+}
+
+.scene-wc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.row-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.scene-row:hover .row-actions,
+.chapter-row:hover .row-actions,
+.book-row:hover .row-actions {
+  opacity: 1;
+}
+
+.icon-btn {
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.icon-btn:hover {
+  background-color: var(--surface-2);
+}
+
+/* Добавление элементов */
+.add-item {
+  padding: 4px 6px 0;
+  margin-top: 6px;
+}
+
+.add-link {
+  font-size: 12px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s;
+  border-bottom: 0.5px solid transparent;
+}
+
+.add-link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Кодекс подзаголовки */
+.codex-subhead {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  padding: 0 6px;
+  margin: 8px 6px 6px;
+}
+
+/* Заметки */
+.notes-box {
+  width: 100%;
+  min-height: 120px;
+  resize: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+/* Корзина */
+.trash-empty {
+  padding: 14px 6px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* Переключатель книги */
+.book-switch-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.book-select {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.add-book {
+  padding: 6px 8px;
+  width: 32px;
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .workspace {
     grid-template-columns: 1fr;

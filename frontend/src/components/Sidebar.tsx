@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Book, Chapter, Scene, Project } from '../types'
+import type { Book, Scene, Project } from '../types'
 import './Sidebar.css'
 
 interface SidebarProps {

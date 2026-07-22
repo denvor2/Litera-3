@@ -4,10 +4,9 @@ import './EntityMention.css'
 
 interface EntityMentionProps {
   entry: CodexEntry
-  position?: { x: number; y: number }
 }
 
-export function EntityMention({ entry, position }: EntityMentionProps) {
+export function EntityMention({ entry }: EntityMentionProps) {
   const [showTooltip, setShowTooltip] = useState(false)
 
   const typeLabel = {
@@ -26,11 +25,11 @@ export function EntityMention({ entry, position }: EntityMentionProps) {
         <div className="entity-tooltip">
           <div className="tooltip-name">{entry.name}</div>
           <div className="tooltip-type">{typeLabel[entry.type as keyof typeof typeLabel]}</div>
-          {entry.attributes && typeof entry.attributes === 'object' && 'description' in entry.attributes && (
+          {entry.attributes && typeof entry.attributes === 'object' && 'description' in entry.attributes ? (
             <div className="tooltip-description">
-              {(entry.attributes as Record<string, unknown>).description}
+              {String((entry.attributes as Record<string, any>).description)}
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </span>

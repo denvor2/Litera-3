@@ -1,6 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import type { Scene } from '../types'
 import { countWords } from '../utils/wordCount'
 import { VersionHistory } from './VersionHistory'
@@ -9,8 +9,8 @@ import './SceneEditor.css'
 interface SceneEditorProps {
   scene: Scene
   onSave: (scene: Scene) => void
-  writeMode: boolean
-  onToggleWriteMode: () => void
+  writeMode?: boolean
+  onToggleWriteMode?: () => void
   onToggleCodex?: () => void
 }
 
@@ -19,16 +19,16 @@ const AUTOSAVE_DELAY = 2000 // 2 seconds
 export function SceneEditor({
   scene,
   onSave,
-  writeMode,
-  onToggleWriteMode,
+  writeMode = false,
+  onToggleWriteMode = () => {},
   onToggleCodex,
 }: SceneEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null)
+  const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: scene.body,
+    content: (scene.body as any) || '',
     onUpdate({ editor }) {
       // Clear previous timer
       if (autoSaveTimer) clearTimeout(autoSaveTimer)
@@ -97,12 +97,6 @@ export function SceneEditor({
   )
 
   if (!editor) return null
-
-  const statusLabels = {
-    DRAFT: 'Черновик',
-    EDITING: 'Редактирование',
-    DONE: 'Готово',
-  }
 
   const saveStatusIcon = {
     saved: '✓',

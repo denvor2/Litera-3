@@ -88,7 +88,7 @@ export function SearchPanel({ projectId, onSceneSelect, onCodexSelect }: SearchP
                       <span className="result-icon">📄</span>
                       <div className="result-content">
                         <div className="result-title">{scene.title}</div>
-                        <div className="result-meta">{scene.chapter?.book?.title}</div>
+                        <div className="result-meta">Сцена</div>
                       </div>
                     </button>
                   </li>
