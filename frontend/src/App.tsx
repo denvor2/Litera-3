@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { SceneEditor } from './components/SceneEditor'
+import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import type { Project, Scene } from './types'
 
 export function App() {
@@ -155,7 +156,10 @@ export function App() {
   if (!project) return <div className="app-error">Проект не найден</div>
 
   const wordCount = selectedScene?.wordCount ?? 0
-  const charCount = 0 // TODO: вычислить из body
+  const sceneText = selectedScene ? extractTextFromTipTap(selectedScene.body) : ''
+  const charCount = countCharacters(sceneText, true)
+  const authorSheets = countAuthorSheets(charCount).toFixed(2)
+  const pages = countPages(charCount).toFixed(0)
 
   return (
     <div className={`app ${zenMode ? 'zen-mode' : ''}`}>
@@ -248,8 +252,10 @@ export function App() {
       {/* BottomBar */}
       <div className="bottombar">
         <div className="stats-group">
-          <span>{wordCount} слов</span>
-          <span>{charCount} знаков</span>
+          <span title="Количество слов">{wordCount} слов</span>
+          <span title="Символы с пробелами">{charCount} знаков</span>
+          <span title="Авторские листы (1 а.л. = 40 000 знаков)">{authorSheets} а.л.</span>
+          <span title="Страницы (1 стр. = 1800 знаков)">{pages} стр.</span>
         </div>
         <div className="save-state">
           <span className="save-dot" style={{ backgroundColor: 'var(--done)' }}></span>

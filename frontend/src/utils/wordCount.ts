@@ -15,3 +15,38 @@ export function countCharacters(text: string, withSpaces: boolean = true): numbe
 export function estimatePages(wordCount: number, wordsPerPage: number = 250): number {
   return Math.ceil(wordCount / wordsPerPage)
 }
+
+// Извлечение текста из TipTap JSON
+export function extractTextFromTipTap(content: unknown): string {
+  if (!content || typeof content !== 'object') return ''
+
+  const doc = content as any
+  if (!doc.content || !Array.isArray(doc.content)) return ''
+
+  function processNode(node: any): string {
+    if (!node) return ''
+
+    let nodeText = ''
+    if (node.type === 'text') {
+      nodeText = node.text || ''
+    } else if (node.content && Array.isArray(node.content)) {
+      nodeText = node.content.map(processNode).join('')
+    }
+
+    return nodeText
+  }
+
+  return doc.content.map(processNode).join('')
+}
+
+// Расчёт авторских листов (1 а.л. = 40 000 знаков с пробелами)
+export function countAuthorSheets(charCount: number): number {
+  const CHARS_PER_SHEET = 40000
+  return charCount / CHARS_PER_SHEET
+}
+
+// Расчёт страниц (1 страница = 1800 знаков с пробелами)
+export function countPages(charCount: number): number {
+  const CHARS_PER_PAGE = 1800
+  return charCount / CHARS_PER_PAGE
+}
