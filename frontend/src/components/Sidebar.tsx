@@ -394,6 +394,7 @@ export function Sidebar({
         >
           <span className="acc-arrow">{openSection === 'trash' ? '▾' : '▸'}</span>
           КОРЗИНА
+          {trashItems.length > 0 && <span className="badge">{trashItems.length}</span>}
         </button>
         {openSection === 'trash' && (
         <div className="acc-body">
