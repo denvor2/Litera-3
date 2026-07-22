@@ -1,18 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { PrismaClient } from '@prisma/client'
 
 describe('API', () => {
   let prisma: PrismaClient
+  let testUserId: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     prisma = new PrismaClient()
+    const user = await prisma.user.upsert({
+      where: { email: 'test@example.com' },
+      update: {},
+      create: {
+        id: 'test-user-123',
+        email: 'test@example.com',
+        name: 'Test User',
+      },
+    })
+    testUserId = user.id
+  })
+
+  afterEach(async () => {
+    await prisma.$disconnect()
   })
 
   it('should create a project', async () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -24,7 +39,7 @@ describe('API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -44,7 +59,7 @@ describe('API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -72,7 +87,7 @@ describe('API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 

@@ -1,12 +1,27 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { PrismaClient } from '@prisma/client'
 import { exportBookToDocx } from '../services/docxExport'
 
 describe('Export Service', () => {
   let prisma: PrismaClient
+  let testUserId: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     prisma = new PrismaClient()
+    const user = await prisma.user.upsert({
+      where: { email: 'test-export@example.com' },
+      update: {},
+      create: {
+        id: 'test-user-export',
+        email: 'test-export@example.com',
+        name: 'Test User Export',
+      },
+    })
+    testUserId = user.id
+  })
+
+  afterEach(async () => {
+    await prisma.$disconnect()
   })
 
   it('should export book to docx format', async () => {
@@ -14,7 +29,7 @@ describe('Export Service', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -40,7 +55,7 @@ describe('Export Service', () => {
         title: 'Scene 1',
         status: 'DRAFT',
         order: 1,
-        body: {
+        body: JSON.stringify({
           type: 'doc',
           content: [
             {
@@ -53,7 +68,7 @@ describe('Export Service', () => {
               ],
             },
           ],
-        },
+        }),
       },
     })
 
@@ -73,7 +88,7 @@ describe('Export Service', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -100,7 +115,7 @@ describe('Export Service', () => {
         title: 'Draft Scene',
         status: 'DRAFT',
         order: 1,
-        body: {
+        body: JSON.stringify({
           type: 'doc',
           content: [
             {
@@ -108,7 +123,7 @@ describe('Export Service', () => {
               content: [{ type: 'text', text: 'Draft content' }],
             },
           ],
-        },
+        }),
       },
     })
 
@@ -118,7 +133,7 @@ describe('Export Service', () => {
         title: 'Done Scene',
         status: 'DONE',
         order: 2,
-        body: {
+        body: JSON.stringify({
           type: 'doc',
           content: [
             {
@@ -126,7 +141,7 @@ describe('Export Service', () => {
               content: [{ type: 'text', text: 'Done content (should not appear)' }],
             },
           ],
-        },
+        }),
       },
     })
 

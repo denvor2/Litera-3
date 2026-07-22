@@ -1,18 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { PrismaClient } from '@prisma/client'
 
 describe('Search API', () => {
   let prisma: PrismaClient
+  let testUserId: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     prisma = new PrismaClient()
+    const user = await prisma.user.upsert({
+      where: { email: 'test-search@example.com' },
+      update: {},
+      create: {
+        id: 'test-user-search',
+        email: 'test-search@example.com',
+        name: 'Test User Search',
+      },
+    })
+    testUserId = user.id
+  })
+
+  afterEach(async () => {
+    await prisma.$disconnect()
   })
 
   it('should find scenes by title', async () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -38,7 +53,7 @@ describe('Search API', () => {
         title: 'The Beginning',
         status: 'DRAFT',
         order: 1,
-        body: { type: 'doc', content: [] },
+        body: JSON.stringify({ type: 'doc', content: [] }),
       },
     })
 
@@ -52,7 +67,6 @@ describe('Search API', () => {
         },
         title: {
           contains: 'Beginning',
-          mode: 'insensitive',
         },
       },
     })
@@ -65,7 +79,7 @@ describe('Search API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -74,7 +88,7 @@ describe('Search API', () => {
         projectId: project.id,
         type: 'character',
         name: 'Hero the Great',
-        attributes: {},
+        attributes: JSON.stringify({}),
       },
     })
 
@@ -84,7 +98,6 @@ describe('Search API', () => {
         projectId: project.id,
         name: {
           contains: 'Hero',
-          mode: 'insensitive',
         },
       },
     })

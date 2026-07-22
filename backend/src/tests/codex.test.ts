@@ -1,18 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { PrismaClient } from '@prisma/client'
 
 describe('Codex API', () => {
   let prisma: PrismaClient
+  let testUserId: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     prisma = new PrismaClient()
+    const user = await prisma.user.upsert({
+      where: { email: 'test-codex@example.com' },
+      update: {},
+      create: {
+        id: 'test-user-codex',
+        email: 'test-codex@example.com',
+        name: 'Test User Codex',
+      },
+    })
+    testUserId = user.id
+  })
+
+  afterEach(async () => {
+    await prisma.$disconnect()
   })
 
   it('should create a character', async () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -21,11 +36,11 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'character',
         name: 'John Doe',
-        attributes: {
+        attributes: JSON.stringify({
           appearance: 'Tall, blue eyes',
           personality: 'Brave and confident',
           goal_conflict: 'Wants to save the world',
-        },
+        }),
       },
     })
 
@@ -38,7 +53,7 @@ describe('Codex API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -47,9 +62,9 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'location',
         name: 'Dark Forest',
-        attributes: {
+        attributes: JSON.stringify({
           description: 'A mysterious and dangerous forest',
-        },
+        }),
       },
     })
 
@@ -62,7 +77,7 @@ describe('Codex API', () => {
     const project = await prisma.project.create({
       data: {
         title: 'Test Project',
-        ownerId: 'test-user',
+        ownerId: testUserId,
       },
     })
 
@@ -96,7 +111,7 @@ describe('Codex API', () => {
         projectId: project.id,
         type: 'character',
         name: 'Hero',
-        attributes: {},
+        attributes: JSON.stringify({}),
       },
     })
 
