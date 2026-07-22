@@ -139,7 +139,7 @@ export function Sidebar({
         <div className="series-name">{project?.title || 'Проект'}</div>
         <div className="book-switch-row">
           <div style={{ flex: 1, fontSize: '14px', color: 'var(--ink)' }}>
-            {currentBook?.title || 'Книга'}
+            {books.find(b => b.id === currentBookId)?.title || 'Книга'}
           </div>
           <button className="add-book" title="Добавить книгу" onClick={() => onCreateBook?.()}>+</button>
         </div>
