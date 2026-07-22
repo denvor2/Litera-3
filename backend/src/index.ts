@@ -328,11 +328,12 @@ fastify.put('/api/codex/:entryId', async (request, reply) => {
   const { name, attributes } = request.body as { name?: string; attributes?: unknown }
 
   try {
+    const attributesStr = attributes ? (typeof attributes === 'string' ? attributes : JSON.stringify(attributes)) : undefined
     const entry = await prisma.codexEntry.update({
       where: { id: entryId },
       data: {
         ...(name && { name }),
-        ...(attributes && { attributes }),
+        ...(attributesStr && { attributes: attributesStr }),
       },
     })
     return entry
@@ -496,7 +497,6 @@ fastify.get('/api/search', async (request, reply) => {
         },
         title: {
           contains: query,
-          mode: 'insensitive',
         },
       },
       include: {
@@ -528,8 +528,13 @@ fastify.get('/api/search', async (request, reply) => {
     })
 
     const scenesByBody = allScenes.filter(scene => {
-      const text = extractTextFromScene(scene.body as unknown)
-      return text.toLowerCase().includes(query.toLowerCase())
+      try {
+        const body = typeof scene.body === 'string' ? JSON.parse(scene.body) : scene.body
+        const text = extractTextFromScene(body)
+        return text.toLowerCase().includes(query.toLowerCase())
+      } catch {
+        return false
+      }
     })
 
     // Search in codex

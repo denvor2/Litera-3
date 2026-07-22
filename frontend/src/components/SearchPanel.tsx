@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { API_BASE } from '../config'
 import type { Scene, CodexEntry } from '../types'
 import './SearchPanel.css'
 
@@ -29,7 +30,7 @@ export function SearchPanel({ projectId, onSceneSelect, onCodexSelect }: SearchP
     setIsSearching(true)
     try {
       const response = await fetch(
-        `http://localhost:3000/api/search?projectId=${projectId}&query=${encodeURIComponent(searchQuery)}`
+        `${API_BASE}/api/search?projectId=${projectId}&query=${encodeURIComponent(searchQuery)}`
       )
       const data = await response.json()
       setResults(data)

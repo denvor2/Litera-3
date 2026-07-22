@@ -40,3 +40,6 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+.log
+backend/*.log
+frontend/*.log

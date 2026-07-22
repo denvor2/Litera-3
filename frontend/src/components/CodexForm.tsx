@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { API_BASE } from '../config'
 import type { CodexEntry } from '../types'
 import './CodexForm.css'
 
@@ -61,14 +62,14 @@ export function CodexForm({
 
       if (initialEntry) {
         // Update
-        await fetch(`http://localhost:3000/api/codex/${initialEntry.id}`, {
+        await fetch(`${API_BASE}/api/codex/${initialEntry.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: formData.name, attributes }),
         })
       } else {
         // Create
-        await fetch('/api/codex', {
+        await fetch(`${API_BASE}/api/codex`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ projectId, type, name: formData.name, attributes }),

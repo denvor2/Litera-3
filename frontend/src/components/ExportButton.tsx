@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { API_BASE } from '../config'
 import type { Book } from '../types'
 import './ExportButton.css'
 
@@ -15,7 +16,7 @@ export function ExportButton({ book }: ExportButtonProps) {
     setError(null)
 
     try {
-      const response = await fetch(`/api/books/${book.id}/export`)
+      const response = await fetch(`${API_BASE}/api/books/${book.id}/export`)
 
       if (!response.ok) {
         throw new Error('Failed to export book')

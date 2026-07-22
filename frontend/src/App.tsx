@@ -3,6 +3,7 @@ import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { SceneEditor } from './components/SceneEditor'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
+import { API_BASE } from './config'
 import type { Project, Scene } from './types'
 
 export function App() {
@@ -30,7 +31,7 @@ export function App() {
   useEffect(() => {
     const initProject = async () => {
       try {
-        const apiUrl = 'http://localhost:3000/api/projects'
+        const apiUrl = '${API_BASE}/api/projects'
         const response = await fetch(apiUrl)
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`)
         const text = await response.text()
@@ -64,7 +65,7 @@ export function App() {
   const handleSceneSave = async (updatedScene: Scene) => {
     if (!project) return
     try {
-      const response = await fetch(`http://localhost:3000/api/scenes/${updatedScene.id}`, {
+      const response = await fetch(`${API_BASE}/api/scenes/${updatedScene.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedScene),
@@ -94,7 +95,7 @@ export function App() {
   const handleCreateScene = async (chapterId: string) => {
     if (!project) return
     try {
-      const response = await fetch('http://localhost:3000/api/scenes', {
+      const response = await fetch('${API_BASE}/api/scenes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -127,7 +128,7 @@ export function App() {
   const handleUpdateSceneOrder = async (sceneId: string, newChapterId: string, newOrder: number) => {
     if (!project) return
     try {
-      await fetch('http://localhost:3000/api/scenes/order', {
+      await fetch('${API_BASE}/api/scenes/order', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,7 +171,7 @@ export function App() {
   const handleCreateBook = async () => {
     if (!project) return
     try {
-      const response = await fetch('http://localhost:3000/api/books', {
+      const response = await fetch('${API_BASE}/api/books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -198,7 +199,7 @@ export function App() {
       const book = project.books.find(b => b.id === bookId)
       if (!book) return
 
-      const response = await fetch('http://localhost:3000/api/chapters', {
+      const response = await fetch('${API_BASE}/api/chapters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -226,7 +227,7 @@ export function App() {
     if (!project) return
     const name = type === 'character' ? `Персонаж ${Math.random().toString(36).substr(2, 5)}` : `Локация ${Math.random().toString(36).substr(2, 5)}`
     try {
-      const response = await fetch(`http://localhost:3000/api/codex`, {
+      const response = await fetch(`${API_BASE}/api/codex`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
