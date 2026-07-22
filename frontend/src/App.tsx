@@ -84,8 +84,6 @@ export function App() {
         body: JSON.stringify({
           chapterId,
           title: 'Новая сцена',
-          status: 'draft',
-          body: '',
         }),
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { countWords, countCharacters, estimatePages } from './wordCount'
+import { countWords, countCharacters } from './wordCount'
 
 describe('wordCount', () => {
   describe('countWords', () => {
@@ -32,18 +32,6 @@ describe('wordCount', () => {
 
     it('should count characters without spaces', () => {
       expect(countCharacters('hello world', false)).toBe(10)
-    })
-  })
-
-  describe('estimatePages', () => {
-    it('should estimate pages correctly', () => {
-      expect(estimatePages(250)).toBe(1)
-      expect(estimatePages(500)).toBe(2)
-      expect(estimatePages(251)).toBe(2)
-    })
-
-    it('should use custom words per page', () => {
-      expect(estimatePages(500, 100)).toBe(5)
     })
   })
 })

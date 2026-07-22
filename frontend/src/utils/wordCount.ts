@@ -12,10 +12,6 @@ export function countCharacters(text: string, withSpaces: boolean = true): numbe
   return text.replace(/\s/g, '').length
 }
 
-export function estimatePages(wordCount: number, wordsPerPage: number = 250): number {
-  return Math.ceil(wordCount / wordsPerPage)
-}
-
 // Извлечение текста из TipTap JSON
 export function extractTextFromTipTap(content: unknown): string {
   if (!content || typeof content !== 'object') return ''
@@ -36,7 +32,7 @@ export function extractTextFromTipTap(content: unknown): string {
     return nodeText
   }
 
-  return doc.content.map(processNode).join('')
+  return doc.content.map(processNode).join('\n')
 }
 
 // Расчёт авторских листов (1 а.л. = 40 000 знаков с пробелами)
