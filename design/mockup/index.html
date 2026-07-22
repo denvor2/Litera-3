@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>LitStudio 2 — мокап Фазы 0</title>
+<style>
+  :root{
+    --bg:#F3F1EC; --surface:#FFFFFF; --surface-2:#EDEAE2;
+    --ink:#232220; --ink-2:#6B6862; --ink-muted:#9C9891;
+    --border:#DEDAD0; --border-strong:#C9C4B7;
+    --accent:#7A2E33; --accent-soft:#F3E3E1;
+    --selected-bg:#E3EEF9; --selected-text:#1B4965;
+    --draft:#9C9891; --editing:#B9812E; --done:#4A7A54;
+    --radius:8px;
+    --font-sans:'IBM Plex Sans',system-ui,sans-serif;
+    --font-serif:'Source Serif 4',Georgia,serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:14px;}
+  .app{max-width:1280px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:0.5px solid var(--border);background:var(--surface);position:relative;}
+  .mark{width:8px;height:20px;background:var(--accent);border-radius:1px;}
+  .hamburger{width:32px;height:32px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:15px;color:var(--ink-2);}
+  .hmenu{display:none;position:absolute;top:52px;left:20px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 14px rgba(0,0,0,0.08);min-width:200px;z-index:10;padding:6px;}
+  .hmenu.open{display:block;}
+  .hmenu-item{padding:9px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--ink);}
+  .hmenu-item:hover{background:var(--surface-2);}
+  .hmenu-sep{height:1px;background:var(--border);margin:6px 2px;}
+  .topbar h1{font-family:var(--font-serif);font-size:16px;font-weight:600;margin:0;flex:1;}
+  .zen-toggle{font-size:12px;padding:7px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);color:var(--ink-2);cursor:pointer;}
+  .nav{display:flex;gap:4px;}
+  .nav button{font-family:var(--font-sans);font-size:13px;padding:7px 14px;border-radius:var(--radius);border:0.5px solid transparent;background:transparent;color:var(--ink-2);cursor:pointer;}
+  .nav button.active{background:var(--surface-2);color:var(--ink);border-color:var(--border);}
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* ---------- workspace grid: left / center / right / bottom ---------- */
+  .ws-grid{display:grid;grid-template-columns:270px 1fr var(--right-w, 280px);grid-template-rows:1fr 40px;grid-template-areas:"left center right" "bottom bottom bottom";height:640px;}
+  .ws-grid.zen .ws-left,.ws-grid.zen .ws-right{display:none;}
+  .ws-grid.zen{grid-template-columns:0 1fr 0;}
+
+  .ws-left{grid-area:left;border-right:0.5px solid var(--border);background:var(--surface);overflow-y:auto;}
+  .book-title{font-family:var(--font-serif);font-size:15px;font-weight:600;padding:14px 14px 6px;}
+  .series-block{padding:14px 14px 10px;border-bottom:0.5px solid var(--border);}
+  .series-label{font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted);margin-bottom:4px;}
+  .series-name{font-family:var(--font-serif);font-size:14px;font-weight:600;margin-bottom:8px;}
+  .book-switch-row{display:flex;gap:6px;}
+  .book-select{flex:1;font-family:var(--font-sans);font-size:12px;padding:6px 8px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);color:var(--ink);}
+  .add-book{width:28px;height:28px;flex-shrink:0;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--ink-2);cursor:pointer;font-size:14px;}
+  .row-actions{display:none;gap:2px;margin-left:auto;flex-shrink:0;}
+  .row-actions button{width:20px;height:20px;border:none;background:transparent;color:var(--ink-muted);cursor:pointer;font-size:11px;border-radius:5px;line-height:1;}
+  .row-actions button:hover{background:var(--surface);color:var(--ink);}
+  .tree-scene.selected .row-actions button:hover{background:var(--surface);}
+  .book-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--ink-2);}
+  .book-row:hover{background:var(--surface-2);}
+  .book-row:hover .row-actions,.series-row:hover .row-actions,.tree-chapter>.row:hover .row-actions,.tree-scene:hover .row-actions,.chip:hover .row-actions{display:flex;}
+  .book-row.selected{background:var(--selected-bg);color:var(--selected-text);}
+  .series-row{display:flex;align-items:center;gap:6px;}
+  details.acc{border-top:0.5px solid var(--border);}
+  details.acc summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted);padding:10px 14px;list-style:none;display:flex;align-items:center;gap:6px;}
+  details.acc summary::-webkit-details-marker{display:none;}
+  details.acc summary::before{content:'▸';font-size:10px;}
+  details.acc[open] summary::before{content:'▾';}
+  details.acc .acc-body{padding:2px 8px 10px;}
+  .badge{margin-left:auto;background:var(--surface-2);color:var(--ink-2);font-size:10px;padding:1px 6px;border-radius:8px;}
+
+  .tree-chapter{margin-bottom:2px;}
+  .tree-chapter > .row{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:var(--radius);font-weight:500;cursor:pointer;font-size:13px;}
+  .tree-chapter > .row:hover{background:var(--surface-2);}
+  .tree-scene{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 22px;border-radius:var(--radius);cursor:pointer;color:var(--ink-2);}
+  .tree-scene:hover{background:var(--surface-2);}
+  .tree-scene.selected{background:var(--selected-bg);color:var(--selected-text);}
+  .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dot.draft{background:var(--draft);} .dot.editing{background:var(--editing);} .dot.done{background:var(--done);}
+  .tree-scene .wc{font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);}
+  .tree-scene-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+  .drag-handle{color:var(--ink-muted);font-size:12px;cursor:grab;}
+  .add-scene{padding:6px 6px 6px 22px;font-size:12px;color:var(--ink-muted);cursor:pointer;}
+
+  .chip{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:5px;cursor:pointer;background:var(--surface);}
+  .chip:hover{border-color:var(--border-strong);}
+  .chip .avatar{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;font-family:var(--font-sans);}
+  .chip .name{font-size:13px;}
+  .chip .type{font-size:10px;color:var(--ink-muted);}
+  .chip-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+  .chip-subhead{font-size:10px;text-transform:uppercase;color:var(--ink-muted);margin:8px 0 4px 2px;}
+
+  .notes-box textarea{width:100%;min-height:80px;font-family:var(--font-sans);font-size:12px;border:0.5px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical;background:var(--surface);color:var(--ink);}
+
+  .trash-item{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:var(--radius);font-size:12px;color:var(--ink-2);}
+  .trash-item .name{flex:1;text-decoration:line-through;color:var(--ink-muted);}
+  .trash-item .restore{font-size:11px;color:var(--accent);cursor:pointer;text-decoration:none;}
+  .trash-empty{font-size:12px;color:var(--ink-muted);padding:6px;}
+
+  .ws-center{grid-area:center;padding:18px 28px;background:var(--surface);border-right:0.5px solid var(--border);overflow-y:auto;}
+  .ms-chapter-divider{font-family:var(--font-serif);font-size:14px;font-weight:600;padding:18px 4px 8px;margin-bottom:6px;border-bottom:0.5px solid var(--border);color:var(--ink-2);scroll-margin-top:12px;}
+  .ms-flow-toggle{font-size:11px;color:var(--ink-muted);cursor:pointer;text-align:right;padding:0 4px 8px;}
+  .ms-flow-toggle:hover{color:var(--ink);}
+  .status-select{font-family:var(--font-sans);font-size:12px;border:0.5px solid var(--border);border-radius:6px;padding:2px 5px;background:var(--surface);color:var(--ink);}
+  .ms-chapter-divider:first-child{padding-top:0;}
+  .ms-scene{margin-bottom:2px;scroll-margin-top:12px;}
+  .ms-scene-head{display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:var(--radius);cursor:pointer;}
+  .ms-scene-head:hover{background:var(--surface-2);}
+  .ms-scene-title{font-family:var(--font-serif);font-weight:600;font-size:15px;}
+  .ms-scene-wc{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);}
+  .ms-scene-toggle{font-size:10px;color:var(--ink-muted);width:12px;text-align:center;}
+  .ms-scene-body{display:none;padding:6px 6px 22px 24px;}
+  .ms-scene.expanded .ms-scene-body{display:block;}
+  .ms-scene.expanded .ms-scene-toggle{transform:rotate(0deg);}
+  .ms-scene:not(.expanded) .ms-scene-toggle{transform:rotate(-90deg);}
+  .center-back{font-size:12px;color:var(--ink-muted);margin-bottom:14px;cursor:pointer;}
+  .center-back:hover{color:var(--ink);}
+  .center-card{max-width:520px;}
+  .center-card .head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .center-card .avatar-lg{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-family:var(--font-sans);flex-shrink:0;}
+  .center-card h2{font-family:var(--font-serif);font-size:18px;margin:0;}
+  .center-card .subtitle{font-size:12px;color:var(--ink-muted);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-muted);margin-bottom:4px;}
+  .field p{margin:0;font-size:13px;line-height:1.6;}
+  .appears-in{border-top:0.5px solid var(--border);margin-top:16px;padding-top:12px;}
+  .appears-in .scene-link{font-size:12px;color:var(--accent);cursor:pointer;display:block;padding:3px 0;}
+  .guide-body h3{font-family:var(--font-serif);font-size:14px;margin:18px 0 6px;}
+  .guide-body h3:first-child{margin-top:4px;}
+  .guide-body p{font-size:13px;line-height:1.65;color:var(--ink-2);margin:0;}
+  .editor-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .editor-head input.title{flex:1;font-family:var(--font-serif);font-size:20px;font-weight:600;border:none;background:transparent;padding:2px 0;}
+  .editor-head input.title:focus{outline:none;border-bottom:1px solid var(--border-strong);}
+  select.status{font-family:var(--font-sans);font-size:12px;padding:5px 8px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);}
+  .meta-row{display:flex;gap:16px;margin-bottom:14px;font-size:12px;color:var(--ink-2);}
+  .meta-row label{color:var(--ink-muted);margin-right:4px;}
+  .toolbar{display:flex;gap:2px;margin-bottom:8px;border-bottom:0.5px solid var(--border);padding-bottom:8px;}
+  .toolbar button{width:26px;height:26px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--ink-2);font-family:var(--font-serif);font-size:13px;}
+  .toolbar button:hover{background:var(--surface-2);}
+  .body-text{font-family:var(--font-serif);font-size:16px;line-height:1.75;color:var(--ink);min-height:340px;outline:none;}
+  .mention{background:var(--accent-soft);color:var(--accent);border-bottom:1px solid var(--accent);cursor:pointer;padding:0 1px;}
+
+  .ws-right{grid-area:right;background:var(--surface);position:relative;display:flex;flex-direction:column;overflow:hidden;}
+  .resize-handle{position:absolute;top:0;left:0;width:6px;height:100%;cursor:col-resize;z-index:5;}
+  .resize-handle:hover,.resize-handle.dragging{background:var(--selected-bg);}
+  .ws-right-head{padding:14px 14px 0;}
+  .ai-context-note{font-size:11px;color:var(--ink-muted);margin:-6px 0 10px;padding:0 14px;}
+  .ai-scope-row{display:flex;gap:4px;flex-wrap:wrap;padding:0 14px 8px;}
+  .scope-chip{font-size:11px;padding:5px 9px;border-radius:12px;border:0.5px solid var(--border);cursor:pointer;color:var(--ink-2);background:var(--surface);}
+  .scope-chip.active{background:var(--selected-bg);color:var(--selected-text);border-color:var(--selected-bg);}
+  .ai-scope-hint{display:none;font-size:11px;color:var(--ink-muted);padding:0 14px 10px;font-style:italic;}
+  .ws-right h3{font-family:var(--font-sans);font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted);margin:0 0 10px;font-weight:500;}
+  .ai-chips{padding:0 14px;}
+  .ai-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 6px 6px 11px;border-radius:14px;border:0.5px solid var(--border);font-size:12px;margin:0 5px 6px 0;cursor:pointer;color:var(--ink-2);}
+  .ai-chip.active{background:var(--selected-bg);color:var(--selected-text);border-color:var(--selected-bg);}
+  .ai-chip.add{color:var(--ink-muted);border-style:dashed;}
+  .ai-gear{width:16px;height:16px;border:none;background:transparent;color:inherit;opacity:.55;cursor:pointer;font-size:10px;padding:0;line-height:1;}
+  .ai-gear:hover{opacity:1;}
+  .ai-quick{padding:10px 14px;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);}
+  .ai-quick-label{font-size:10px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-muted);margin-bottom:6px;}
+  .quick-btn{display:block;width:100%;text-align:left;font-size:12px;padding:7px 9px;margin-bottom:5px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--ink-2);cursor:pointer;font-family:var(--font-sans);}
+  .quick-btn:hover{background:var(--surface-2);color:var(--ink);}
+  .ai-chat{flex:1;overflow-y:auto;padding:10px 14px;background:var(--surface-2);font-size:12px;color:var(--ink-2);}
+  .ai-msg{background:var(--surface);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
+  .ai-msg .who{font-size:10px;color:var(--ink-muted);margin-bottom:3px;text-transform:uppercase;}
+  .ai-input-row{padding:10px 14px;border-top:0.5px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .ai-input{width:100%;font-family:var(--font-sans);font-size:12px;border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface);color:var(--ink);}
+
+  .ws-bottom{grid-area:bottom;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-top:0.5px solid var(--border);background:var(--surface);font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);}
+  .stats-group{display:flex;align-items:center;gap:14px;}
+  .progress-wrap{display:flex;align-items:center;gap:6px;}
+  .progress-bar{width:90px;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden;}
+  .progress-fill{height:100%;background:var(--done);border-radius:3px;}
+  .progress-label{font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);}
+  .save-state{display:inline-flex;align-items:center;gap:5px;}
+  .save-dot{width:6px;height:6px;border-radius:50%;background:var(--done);flex-shrink:0;}
+  .save-state.saving{color:var(--editing);}
+  .save-state.saving .save-dot{background:var(--editing);}
+  .save-state.error{color:#A32D2D;}
+  .save-state.error .save-dot{background:#A32D2D;}
+
+  /* ---------- book/codex card form controls (embedded in center) ---------- */
+  .bc-input,.bc-textarea,.bc-select{width:100%;font-family:var(--font-sans);font-size:13px;border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface);color:var(--ink);}
+  .bc-input:disabled{color:var(--ink-muted);background:var(--surface-2);}
+  .bc-textarea{min-height:70px;resize:vertical;font-family:var(--font-sans);line-height:1.5;}
+  .bc-hint{font-size:11px;color:var(--ink-muted);margin-top:3px;}
+  .add-field-link{font-size:12px;color:var(--ink-muted);cursor:pointer;padding:4px 0;}
+  .bc-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:0.5px solid var(--border);}
+  .bc-btn{font-size:12px;padding:7px 14px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);color:var(--ink-2);cursor:pointer;}
+  .bc-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* ---------- mobile ---------- */
+  .mobile-screen{display:flex;justify-content:center;padding:40px 24px;min-height:640px;background:var(--surface-2);}
+  .phone{width:360px;height:720px;background:var(--surface);border:8px solid var(--ink);border-radius:36px;overflow:hidden;position:relative;}
+  .phone-bar{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;border-bottom:0.5px solid var(--border);}
+  .phone-bar .back{font-size:16px;color:var(--ink-2);cursor:pointer;visibility:hidden;}
+  .phone-bar .back.show{visibility:visible;}
+  .phone-bar h4{font-family:var(--font-serif);font-size:14px;margin:0;flex:1;}
+  .phone-bar .save-state{font-size:10px;}
+  .m-list{padding:8px 10px;overflow-y:auto;height:calc(720px - 48px);}
+  .m-chapter-title{font-size:11px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-muted);padding:12px 6px 4px;}
+  .m-scene-row{display:flex;align-items:center;gap:10px;padding:12px 8px;border-radius:var(--radius);}
+  .m-scene-row:active{background:var(--surface-2);}
+  .m-scene-row .title{flex:1;font-size:14px;}
+  .m-scene-row .wc{font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);}
+  .m-editor{display:none;padding:14px 16px;height:calc(720px - 48px);overflow-y:auto;}
+  .m-editor.show{display:block;}
+  .m-list.hide{display:none;}
+  .m-editor .body-text{font-size:15px;line-height:1.7;min-height:120px;}
+  .m-editor .meta-row{flex-wrap:wrap;gap:8px 16px;}
+  .m-toolbar{position:sticky;bottom:0;display:flex;gap:4px;padding:8px 0;background:var(--surface);border-top:0.5px solid var(--border);margin-top:12px;}
+  .m-toolbar button{width:34px;height:34px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface);font-family:var(--font-serif);color:var(--ink-2);}
+  .m-fab{position:absolute;right:20px;bottom:20px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:22px;display:flex;align-items:center;justify-content:center;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <button class="hamburger" id="hamburgerBtn">☰</button>
+    <div class="hmenu" id="hmenu">
+      <div class="hmenu-item">Импорт</div>
+      <div class="hmenu-item">Экспорт</div>
+      <div class="hmenu-sep"></div>
+      <div class="hmenu-item">История версий / откатить</div>
+      <div class="hmenu-sep"></div>
+      <div class="hmenu-item" onclick="showCenterView('guide'); document.getElementById('hmenu').classList.remove('open');">Руководство</div>
+      <div class="hmenu-item">Настройки</div>
+    </div>
+    <div class="mark"></div>
+    <h1>LitStudio 2 — Фаза 0</h1>
+    <button class="zen-toggle" id="zenToggle">⛶ Полноэкранный текст</button>
+    <div class="nav">
+      <button class="tab active" data-screen="workspace">Рабочее пространство</button>
+      <button class="tab" data-screen="mobile">Мобильный</button>
+    </div>
+  </div>
+
+  <div class="screen active" id="workspace">
+    <div class="ws-grid" id="wsGrid">
+
+      <div class="ws-left">
+        <div class="series-block">
+          <div class="series-row">
+            <div class="series-label">Серия</div>
+            <div class="row-actions"><button title="Настройки серии" onclick="showCenterView('seriesSettings');">✎</button></div>
+          </div>
+          <div class="series-name">Портовые хроники</div>
+          <div class="book-list">
+            <div class="book-row selected">
+              <span class="title">Книга 1 — Слон, которого не было</span>
+              <div class="row-actions"><button title="Настройки книги" onclick="event.stopPropagation(); openBookCard();">✎</button><button title="В корзину">🗑</button></div>
+            </div>
+            <div class="book-row">
+              <span class="title">Книга 2 — (черновик)</span>
+              <div class="row-actions"><button title="Настройки книги" onclick="event.stopPropagation(); openBookCard();">✎</button><button title="В корзину">🗑</button></div>
+            </div>
+            <div class="add-scene">+ добавить книгу</div>
+          </div>
+        </div>
+
+        <details class="acc" open>
+          <summary>Рукопись</summary>
+          <div class="acc-body">
+            <div class="tree-chapter">
+              <div class="row" data-chapter-id="1" onclick="jumpToChapter(event,'1')"><span>▾</span> Глава 1. Прибытие <div class="row-actions"><button title="Настройки главы" onclick="event.stopPropagation(); showCenterView('chapterSettings');">✎</button><button title="Удалить главу" onclick="event.stopPropagation();">🗑</button></div></div>
+              <div class="tree-scene selected" data-scene-id="1" onclick="jumpToScene(event,'1')"><span class="drag-handle">⋮⋮</span><span class="dot done"></span> Причал <div class="tree-scene-right"><span class="wc">1 240</span><div class="row-actions"><button title="Настройки сцены" onclick="event.stopPropagation(); showCenterView('sceneSettings');">✎</button><button title="Удалить сцену" onclick="event.stopPropagation();">🗑</button></div></div></div>
+              <div class="tree-scene" data-scene-id="2" onclick="jumpToScene(event,'2')"><span class="drag-handle">⋮⋮</span><span class="dot editing"></span> Разговор с механиком <div class="tree-scene-right"><span class="wc">860</span><div class="row-actions"><button title="Настройки сцены" onclick="event.stopPropagation(); showCenterView('sceneSettings');">✎</button><button title="Удалить сцену" onclick="event.stopPropagation();">🗑</button></div></div></div>
+              <div class="add-scene">+ добавить сцену</div>
+            </div>
+            <div class="tree-chapter">
+              <div class="row" data-chapter-id="2" onclick="jumpToChapter(event,'2')"><span>▾</span> Глава 2. Механизм <div class="row-actions"><button title="Настройки главы" onclick="event.stopPropagation(); showCenterView('chapterSettings');">✎</button><button title="Удалить главу" onclick="event.stopPropagation();">🗑</button></div></div>
+              <div class="tree-scene" data-scene-id="3" onclick="jumpToScene(event,'3')"><span class="drag-handle">⋮⋮</span><span class="dot draft"></span> Чертежи <div class="tree-scene-right"><span class="wc">210</span><div class="row-actions"><button title="Настройки сцены" onclick="event.stopPropagation(); showCenterView('sceneSettings');">✎</button><button title="Удалить сцену" onclick="event.stopPropagation();">🗑</button></div></div></div>
+              <div class="add-scene">+ добавить сцену</div>
+            </div>
+            <div class="tree-chapter"><div class="row" data-chapter-id="3"><span>▸</span> Глава 3 <div class="row-actions"><button title="Настройки главы" onclick="event.stopPropagation(); showCenterView('chapterSettings');">✎</button><button title="Удалить главу" onclick="event.stopPropagation();">🗑</button></div></div></div>
+            <div class="add-scene">+ добавить главу</div>
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>Кодекс</summary>
+          <div class="acc-body">
+            <div class="chip-subhead">Персонажи</div>
+            <div class="chip"><div class="avatar">КС</div><div class="name">Ксения</div><div class="chip-right"><div class="type">перс.</div><div class="row-actions"><button title="Редактировать">✎</button><button title="В корзину">🗑</button></div></div></div>
+            <div class="chip"><div class="avatar">МВ</div><div class="name">Механик Вадим</div><div class="chip-right"><div class="type">перс.</div><div class="row-actions"><button title="Редактировать">✎</button><button title="В корзину">🗑</button></div></div></div>
+            <div class="add-scene">+ добавить персонажа</div>
+            <div class="chip-subhead">Локации</div>
+            <div class="chip"><div class="avatar">ПД</div><div class="name">Портовый док №4</div><div class="chip-right"><div class="type">лок.</div><div class="row-actions"><button title="Редактировать">✎</button><button title="В корзину">🗑</button></div></div></div>
+            <div class="add-scene">+ добавить локацию</div>
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>Заметки</summary>
+          <div class="acc-body notes-box">
+            <textarea placeholder="Заметки к текущей сцене...">Проверить: в главе 4 туман уже не упоминается — согласовать погоду.</textarea>
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>Корзина <span class="badge">2</span></summary>
+          <div class="acc-body">
+            <div class="trash-item"><span class="name">Сцена «Старый черновик встречи»</span><span class="restore">восстановить</span></div>
+            <div class="trash-item"><span class="name">Локация «Заброшенный маяк»</span><span class="restore">восстановить</span></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="ws-center">
+        <div class="center-view" id="centerEditor">
+          <div class="ms-flow-toggle" id="msFlowToggle" onclick="toggleFlowExpand()">Развернуть всю книгу</div>
+
+          <div class="ms-chapter-divider" id="ch-1">Глава 1. Прибытие</div>
+
+          <div class="ms-scene expanded" id="scene-1">
+            <div class="ms-scene-head" onclick="toggleScene('1')">
+              <span class="ms-scene-toggle">▾</span><span class="dot done"></span><span class="ms-scene-title">Причал</span><span class="ms-scene-wc">1 240 слов</span>
+            </div>
+            <div class="ms-scene-body">
+              <div class="meta-row">
+                <span><label>Статус</label><select class="status-select" onclick="event.stopPropagation();"><option>черновик</option><option>правка</option><option selected>готово</option></select></span>
+                <span><label>POV</label>Ксения</span>
+                <span><label>Локация</label>Портовый док №4</span>
+              </div>
+              <div class="toolbar">
+                <button><b>Ж</b></button><button><i>К</i></button><button>¶</button>
+              </div>
+              <div class="body-text" contenteditable="true">Туман над доком не рассеивался с самого утра. <span class="mention" onclick="event.stopPropagation(); showCenterView('codex');">Ксения</span> стояла у края причала и смотрела, как из белёсой пелены медленно проступают очертания корабля — слишком большого для этого порта, слишком тихого для того, что должно было в нём везти.</div>
+            </div>
+          </div>
+
+          <div class="ms-scene" id="scene-2">
+            <div class="ms-scene-head" onclick="toggleScene('2')">
+              <span class="ms-scene-toggle">▾</span><span class="dot editing"></span><span class="ms-scene-title">Разговор с механиком</span><span class="ms-scene-wc">860 слов</span>
+            </div>
+            <div class="ms-scene-body">
+              <div class="meta-row">
+                <span><label>Статус</label><select class="status-select" onclick="event.stopPropagation();"><option>черновик</option><option selected>правка</option><option>готово</option></select></span>
+                <span><label>POV</label>Ксения</span>
+                <span><label>Локация</label>Портовый док №4</span>
+              </div>
+              <div class="toolbar">
+                <button><b>Ж</b></button><button><i>К</i></button><button>¶</button>
+              </div>
+              <div class="body-text" contenteditable="true">Механик Вадим вытер руки о ветошь и посмотрел на неё так, будто уже знал, зачем она пришла.</div>
+            </div>
+          </div>
+
+          <div class="ms-chapter-divider" id="ch-2">Глава 2. Механизм</div>
+
+          <div class="ms-scene" id="scene-3">
+            <div class="ms-scene-head" onclick="toggleScene('3')">
+              <span class="ms-scene-toggle">▾</span><span class="dot draft"></span><span class="ms-scene-title">Чертежи</span><span class="ms-scene-wc">210 слов</span>
+            </div>
+            <div class="ms-scene-body">
+              <div class="meta-row">
+                <span><label>Статус</label><select class="status-select" onclick="event.stopPropagation();"><option selected>черновик</option><option>правка</option><option>готово</option></select></span>
+                <span><label>POV</label>—</span>
+                <span><label>Локация</label>—</span>
+              </div>
+              <div class="toolbar">
+                <button><b>Ж</b></button><button><i>К</i></button><button>¶</button>
+              </div>
+              <div class="body-text" contenteditable="true">[черновик]</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerCodexCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к сцене</div>
+          <div class="head">
+            <div class="avatar-lg">КС</div>
+            <div><h2>Ксения</h2><div class="subtitle">персонаж</div></div>
+          </div>
+          <div class="field"><label>Внешность</label><textarea class="bc-textarea" style="min-height:44px;">Невысокая, тёмные волосы собраны в узел, старый флотский бушлат на два размера больше.</textarea></div>
+          <div class="field"><label>Характер</label><textarea class="bc-textarea" style="min-height:44px;">Осторожная, но не из тех, кто отступает первой.</textarea></div>
+          <div class="field"><label>Цель / конфликт</label><textarea class="bc-textarea" style="min-height:44px;">Найти брата, пропавшего на том же маршруте три года назад.</textarea></div>
+          <div class="appears-in">
+            <label style="font-size:11px;text-transform:uppercase;color:var(--ink-muted);">Появляется в сценах</label>
+            <span class="scene-link" onclick="showCenterView('editor')">Глава 1 — Причал</span>
+            <span class="scene-link" onclick="showCenterView('editor')">Глава 1 — Разговор с механиком</span>
+          </div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerBookCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к сцене</div>
+          <div class="head">
+            <div><h2>Настройки книги</h2><div class="subtitle">Книга 1 в серии «Портовые хроники»</div></div>
+          </div>
+          <div class="field"><label>Название</label><input class="bc-input" value="Слон, которого не было"></div>
+          <div class="field">
+            <label>Серия</label>
+            <select class="bc-select">
+              <option selected>Портовые хроники</option>
+              <option>Без серии — отдельная книга</option>
+              <option>+ новая серия…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Жанр</label>
+            <select class="bc-select">
+              <optgroup label="Художественная литература">
+                <option>Детектив</option>
+                <option>Триллер</option>
+                <option>Фантастика</option>
+                <option>Научная фантастика</option>
+                <option>Фэнтези</option>
+                <option>Городское фэнтези</option>
+                <option selected>Магический реализм</option>
+                <option>Young Adult</option>
+                <option>New Adult</option>
+                <option>Любовный роман</option>
+                <option>Женская проза</option>
+                <option>Современная сказка / ретеллинг</option>
+              </optgroup>
+              <optgroup label="Документальная литература">
+                <option>Нон-фикшен</option>
+                <option>Автофикшен</option>
+                <option>Научно-популярная литература</option>
+              </optgroup>
+            </select>
+            <div class="bc-hint">Список — по жанровому классификатору Литрес. На Литрес можно указать несколько жанров/тегов на книгу — в Фазе 0 ограничиваемся одним основным, множественный выбор можно добавить позже без изменения структуры</div>
+          </div>
+          <div class="field"><label>Плановый объём</label><input class="bc-input" value="8 а.л."></div>
+          <div class="field"><label>Синопсис</label><textarea class="bc-textarea">Ксения прибывает в портовый город на поиски пропавшего брата и обнаруживает, что механизм в старом доке связан с его исчезновением сильнее, чем кажется.</textarea></div>
+          <div class="field"><label>Аннотация</label><textarea class="bc-textarea">Три года назад брат Ксении ушёл в море и не вернулся. Когда в порту находят механизм, о котором никто не должен был знать, она понимает: ответы там, откуда он не вернулся.</textarea></div>
+          <div class="add-field-link">+ добавить поле</div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+        <div class="center-view center-card" id="centerChapterCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к тексту</div>
+          <div class="head"><div><h2>Настройки главы</h2><div class="subtitle">Книга 1 — Слон, которого не было</div></div></div>
+          <div class="field"><label>Название</label><input class="bc-input" value="Глава 1. Прибытие"></div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerSceneCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к тексту</div>
+          <div class="head"><div><h2>Настройки сцены</h2><div class="subtitle">Глава 1. Прибытие</div></div></div>
+          <div class="field"><label>Название</label><input class="bc-input" value="Причал"></div>
+          <div class="field">
+            <label>Статус</label>
+            <select class="bc-select"><option>черновик</option><option selected>готово</option><option>правка</option></select>
+          </div>
+          <div class="field">
+            <label>POV</label>
+            <select class="bc-select"><option value="">—</option><option selected>Ксения</option><option>Механик Вадим</option></select>
+          </div>
+          <div class="field">
+            <label>Локация</label>
+            <select class="bc-select"><option value="">—</option><option selected>Портовый док №4</option></select>
+          </div>
+          <div class="field"><label>Целевой объём (слов)</label><input class="bc-input" value="1500"></div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerSeriesCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к тексту</div>
+          <div class="head"><div><h2>Настройки серии</h2></div></div>
+          <div class="field"><label>Название серии</label><input class="bc-input" value="Портовые хроники"></div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerAssistantCard" style="display:none;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к тексту</div>
+          <div class="head"><div><h2 id="assistantCardTitle">Новый помощник</h2><div class="subtitle" id="assistantCardSubtitle">AI-помощник для этого проекта</div></div></div>
+          <div class="field"><label>Название</label><input class="bc-input" id="assistantName" value=""></div>
+          <div class="field">
+            <label>Модель</label>
+            <select class="bc-select"><option>Как в остальном проекте (по умолчанию)</option><option>Отдельная модель для этой роли</option></select>
+          </div>
+          <div class="field"><label>Промпт-инструкция</label><textarea class="bc-textarea" placeholder="Опиши, как эта роль должна отвечать: тон, на что обращать внимание, чего избегать...">Комментируй по существу конкретной сцены, предлагай альтернативные формулировки, не переписывай текст целиком без запроса.</textarea></div>
+          <div class="field"><label>Типовые запросы (по одному на строку)</label><textarea class="bc-textarea" style="min-height:90px;">Продолжи сцену на 200 слов в том же стиле
+Предложи 3 варианта следующей реплики
+Что здесь можно усилить визуально?</textarea></div>
+          <div class="bc-actions">
+            <button class="bc-btn" onclick="showCenterView('editor')">Отмена</button>
+            <button class="bc-btn primary" onclick="showCenterView('editor')">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="center-view center-card" id="centerGuideCard" style="display:none; max-width:640px;">
+          <div class="center-back" onclick="showCenterView('editor')">← Назад к тексту</div>
+          <div class="head"><div><h2>Как написать книгу в LitStudio</h2></div></div>
+          <div class="guide-body">
+            <h3>1. Начните с серии и книги</h3>
+            <p>Всё начинается с серии, даже если книга одна — она просто единственная внутри. Все книги серии делят общий Кодекс персонажей и локаций. Переключатель серии/книги — наверху левой панели.</p>
+            <h3>2. Стройте рукопись главами и сценами</h3>
+            <p>Дерево «Рукопись» в левой панели — структура книги. Наведите курсор на строку — появятся ✎ и 🗑; под каждым списком — ссылка «добавить». Перетаскивайте, чтобы менять порядок.</p>
+            <h3>3. Пишите в едином потоке</h3>
+            <p>Центр — вся книга, главы идут одна за другой. Развёрнута обычно одна сцена; клик по сцене слева — сворачивает предыдущую, разворачивает и прокручивает к выбранной. Кнопка «Развернуть всю книгу» наверху показывает всё сразу — удобно перечитать несколько сцен подряд. Статус сцены меняется прямо в развёрнутом виде; POV, локация, целевой объём и переименование — через ✎.</p>
+            <h3>4. Ведите Кодекс</h3>
+            <p>Персонажи и локации из Кодекса подсвечиваются в тексте автоматически, а их карточка сама собирает список сцен, где они появляются.</p>
+            <h3>5. Спрашивайте AI-помощников</h3>
+            <p>Соавтор, Редактор, Критик, Читатель — у каждого своя настройка через ⚙. Помощники всегда видят всю книгу и весь Кодекс серии. Прицел конкретного запроса — отдельно: Сцена / Глава / Диалог / Выделение (выделите текст мышью — прицел переключится сам).</p>
+            <h3>6. Следите за прогрессом</h3>
+            <p>Внизу — счётчики, прогресс-бар к цели по сцене (если задана) и статус сохранения с цветной точкой.</p>
+            <h3>7. Ничего не пропадает</h3>
+            <p>Удалённое уходит в Корзину, а не стирается сразу — восстановить можно в любой момент.</p>
+            <h3>8. Экспортируйте, когда готовы</h3>
+            <p>Через меню ☰ — экспорт в .docx и история версий для отката сцены к более раннему состоянию.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ws-right">
+        <div class="resize-handle" id="rightResizeHandle" title="Потянуть, чтобы изменить ширину"></div>
+        <div class="ws-right-head"><h3>AI-помощники</h3></div>
+        <div class="ai-context-note">Контекст: текст этой книги + Кодекс всей серии «Портовые хроники»</div>
+        <div class="ai-chips">
+          <div class="ai-chip active" data-role="coauthor"><span>Соавтор</span><button class="ai-gear" title="Настройки Соавтора" onclick="event.stopPropagation(); openAssistantSettings('coauthor','Соавтор');">⚙</button></div>
+          <div class="ai-chip" data-role="editor"><span>Редактор</span><button class="ai-gear" title="Настройки Редактора" onclick="event.stopPropagation(); openAssistantSettings('editor','Редактор');">⚙</button></div>
+          <div class="ai-chip" data-role="critic"><span>Критик</span><button class="ai-gear" title="Настройки Критика" onclick="event.stopPropagation(); openAssistantSettings('critic','Критик');">⚙</button></div>
+          <div class="ai-chip" data-role="reader"><span>Читатель</span><button class="ai-gear" title="Настройки Читателя" onclick="event.stopPropagation(); openAssistantSettings('reader','Читатель');">⚙</button></div>
+          <div class="ai-chip add" onclick="openAssistantSettings(null, null);">+ свой</div>
+        </div>
+        <div class="ai-scope-row" id="aiScopeRow">
+          <button class="scope-chip active" data-scope="scene" onclick="setAiScope('scene')">Сцена</button>
+          <button class="scope-chip" data-scope="chapter" onclick="setAiScope('chapter')">Глава</button>
+          <button class="scope-chip" data-scope="dialogue" onclick="setAiScope('dialogue')">Диалог</button>
+          <button class="scope-chip" data-scope="selection" onclick="setAiScope('selection')">Выделение</button>
+        </div>
+        <div class="ai-scope-hint" id="aiScopeHint"></div>
+        <div class="ai-quick" id="aiQuick">
+          <div class="ai-quick-label" id="aiQuickLabel">Типовые запросы — Соавтор</div>
+          <button class="quick-btn">Продолжи сцену на 200 слов в том же стиле</button>
+          <button class="quick-btn">Предложи 3 варианта следующей реплики</button>
+          <button class="quick-btn">Что здесь можно усилить визуально?</button>
+        </div>
+        <div class="ai-chat">
+          <div class="ai-msg"><div class="who">Соавтор</div>Туман в открытии — сильный образ. Хочешь, предложу вариант, где он ещё и метафора для того, что скрывает Ксения?</div>
+        </div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="aiInput" placeholder="Спросить Соавтора о сцене...">
+        </div>
+      </div>
+
+      <div class="ws-bottom">
+        <div class="stats-group">
+          <span>1 240 слов · 7 130 зн. с пробелами · 0.18 а.л. · ≈4 стр.</span>
+          <div class="progress-wrap" title="Цель сцены — 1 500 слов">
+            <div class="progress-bar"><div class="progress-fill" style="width:83%"></div></div>
+            <span class="progress-label">83% цели сцены</span>
+          </div>
+        </div>
+        <span class="save-state" id="saveState"><span class="save-dot"></span>сохранено</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="screen" id="mobile">
+    <div class="mobile-screen">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="back" id="mBack">←</span>
+          <h4 id="mTitle">Слон, которого не было</h4>
+          <span class="save-state" id="mSaveState"></span>
+        </div>
+        <div class="m-list" id="mList">
+          <div class="m-chapter-title">Глава 1. Прибытие</div>
+          <div class="m-scene-row" onclick="openMobileScene('Причал','1 240')"><span class="dot done"></span><span class="title">Причал</span><span class="wc">1 240</span></div>
+          <div class="m-scene-row" onclick="openMobileScene('Разговор с механиком','860')"><span class="dot editing"></span><span class="title">Разговор с механиком</span><span class="wc">860</span></div>
+          <div class="m-chapter-title">Глава 2. Механизм</div>
+          <div class="m-scene-row" onclick="openMobileScene('Чертежи','210')"><span class="dot draft"></span><span class="title">Чертежи</span><span class="wc">210</span></div>
+        </div>
+        <div class="m-editor" id="mEditor">
+          <input class="title" style="width:100%;font-size:18px;margin-bottom:10px;" id="mEditorTitle" value="Причал">
+          <div class="meta-row" style="margin-bottom:12px;">
+            <span><label>POV</label>Ксения</span>
+            <select class="status"><option>черновик</option><option selected>готово</option><option>правка</option></select>
+          </div>
+          <div class="body-text" contenteditable="true">Туман над доком не рассеивался с самого утра. <span class="mention">Ксения</span> стояла у края причала и смотрела, как из белёсой пелены медленно проступают очертания корабля.</div>
+          <div class="m-toolbar">
+            <button><b>Ж</b></button><button><i>К</i></button><button>¶</button><button>≡</button>
+          </div>
+        </div>
+        <button class="m-fab" id="mFab" title="Новая сцена">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var centerViews = ['editor','codex','book','chapterSettings','sceneSettings','seriesSettings','assistant','guide'];
+var centerViewIds = {editor:'centerEditor', codex:'centerCodexCard', book:'centerBookCard', chapterSettings:'centerChapterCard', sceneSettings:'centerSceneCard', seriesSettings:'centerSeriesCard', assistant:'centerAssistantCard', guide:'centerGuideCard'};
+function showCenterView(view){
+  centerViews.forEach(function(v){
+    document.getElementById(centerViewIds[v]).style.display = (v === view) ? '' : 'none';
+  });
+  document.querySelector('.ws-center').scrollTop = 0;
+}
+function openBookCard(){ showCenterView('book'); }
+
+function toggleScene(id){
+  var el = document.getElementById('scene-' + id);
+  var wasExpanded = el.classList.contains('expanded');
+  document.querySelectorAll('.ms-scene').forEach(function(s){ s.classList.remove('expanded'); });
+  if(!wasExpanded) el.classList.add('expanded');
+  document.getElementById('msFlowToggle').textContent = 'Развернуть всю книгу';
+}
+
+function toggleFlowExpand(){
+  var allExpanded = document.querySelectorAll('.ms-scene:not(.expanded)').length === 0;
+  if(allExpanded){
+    document.querySelectorAll('.ms-scene').forEach(function(s, i){ s.classList.toggle('expanded', i === 0); });
+    document.getElementById('msFlowToggle').textContent = 'Развернуть всю книгу';
+  } else {
+    document.querySelectorAll('.ms-scene').forEach(function(s){ s.classList.add('expanded'); });
+    document.getElementById('msFlowToggle').textContent = 'Свернуть до одной сцены';
+  }
+}
+
+function jumpToScene(e, id){
+  if(e.target.closest('.row-actions')) return;
+  document.querySelectorAll('.tree-scene').forEach(function(r){r.classList.remove('selected');});
+  e.currentTarget.classList.add('selected');
+  showCenterView('editor');
+  document.querySelectorAll('.ms-scene').forEach(function(s){ s.classList.remove('expanded'); });
+  var el = document.getElementById('scene-' + id);
+  el.classList.add('expanded');
+  el.scrollIntoView({block:'start'});
+  document.getElementById('msFlowToggle').textContent = 'Развернуть всю книгу';
+}
+
+function jumpToChapter(e, id){
+  if(e.target.closest('.row-actions')) return;
+  showCenterView('editor');
+  var el = document.getElementById('ch-' + id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+
+document.querySelectorAll('.chip').forEach(function(chip){
+  chip.addEventListener('click', function(e){
+    if(e.target.closest('.row-actions')) return;
+    showCenterView('codex');
+  });
+});
+
+document.querySelectorAll('.ws-left details.acc').forEach(function(d){
+  d.addEventListener('toggle', function(){
+    if(d.open){
+      document.querySelectorAll('.ws-left details.acc').forEach(function(other){
+        if(other !== d) other.open = false;
+      });
+    } else {
+      var anyOpen = Array.prototype.some.call(document.querySelectorAll('.ws-left details.acc'), function(o){ return o.open; });
+      if(!anyOpen) d.open = true;
+    }
+  });
+});
+
+document.querySelectorAll('.nav .tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.nav .tab').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.screen).classList.add('active');
+  });
+});
+
+document.getElementById('hamburgerBtn').addEventListener('click', function(e){
+  e.stopPropagation();
+  document.getElementById('hmenu').classList.toggle('open');
+});
+document.addEventListener('click', function(){
+  document.getElementById('hmenu').classList.remove('open');
+});
+
+var aiQuickQueries = {
+  coauthor: { label: 'Соавтор', queries: ['Продолжи сцену на 200 слов в том же стиле', 'Предложи 3 варианта следующей реплики', 'Что здесь можно усилить визуально?'] },
+  editor:   { label: 'Редактор', queries: ['Проверь темп сцены — где провисает', 'Сократи абзац без потери смысла', 'Согласуй время глаголов в сцене'] },
+  critic:   { label: 'Критик', queries: ['Что не работает в этой сцене?', 'Есть ли клише в тексте?', 'Веришь ли ты в мотивацию Ксении здесь?'] },
+  reader:   { label: 'Читатель', queries: ['Что я почувствую, читая это впервые?', 'Где мне захочется отложить книгу?', 'Понятно ли, кто такая Ксения, без контекста?'] }
+};
+document.querySelectorAll('.ai-chip[data-role]').forEach(function(chip){
+  chip.addEventListener('click', function(e){
+    if(e.target.classList.contains('ai-gear')) return;
+    document.querySelectorAll('.ai-chip[data-role]').forEach(function(c){c.classList.remove('active');});
+    chip.classList.add('active');
+    var role = aiQuickQueries[chip.dataset.role];
+    document.getElementById('aiQuickLabel').textContent = 'Типовые запросы — ' + role.label;
+    document.getElementById('aiQuick').querySelectorAll('.quick-btn').forEach(function(btn, idx){ btn.textContent = role.queries[idx]; });
+    document.getElementById('aiInput').placeholder = 'Спросить ' + role.label + ' о сцене...';
+  });
+});
+function setAiScope(scope, selectionText){
+  document.querySelectorAll('.scope-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.scope === scope); });
+  var hint = document.getElementById('aiScopeHint');
+  if(scope === 'selection' && selectionText){
+    hint.style.display = 'block';
+    hint.textContent = '«' + (selectionText.length > 70 ? selectionText.slice(0,70) + '…' : selectionText) + '»';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+document.addEventListener('mouseup', function(){
+  var sel = window.getSelection();
+  var text = sel && sel.toString().trim();
+  if(text && text.length > 0 && sel.anchorNode && sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest('.body-text')){
+    setAiScope('selection', text);
+  }
+});
+
+function openAssistantSettings(role, name){
+  document.getElementById('assistantCardTitle').textContent = name ? ('Настройки: ' + name) : 'Новый помощник';
+  document.getElementById('assistantCardSubtitle').textContent = name ? 'Системная роль' : 'AI-помощник для этого проекта';
+  document.getElementById('assistantName').value = name || '';
+  showCenterView('assistant');
+}
+
+document.querySelectorAll('.ai-gear').forEach(function(gear){
+  gear.addEventListener('click', function(e){
+    e.stopPropagation();
+  });
+});
+
+var wsGrid = document.getElementById('wsGrid');
+var handle = document.getElementById('rightResizeHandle');
+var dragging = false;
+handle.addEventListener('mousedown', function(e){
+  dragging = true;
+  handle.classList.add('dragging');
+  document.body.style.userSelect = 'none';
+  e.preventDefault();
+});
+document.addEventListener('mousemove', function(e){
+  if(!dragging) return;
+  var rect = wsGrid.getBoundingClientRect();
+  var newWidth = rect.right - e.clientX;
+  newWidth = Math.max(200, Math.min(460, newWidth));
+  wsGrid.style.setProperty('--right-w', newWidth + 'px');
+});
+document.addEventListener('mouseup', function(){
+  if(!dragging) return;
+  dragging = false;
+  handle.classList.remove('dragging');
+  document.body.style.userSelect = '';
+});
+
+document.getElementById('zenToggle').addEventListener('click', function(){
+  var grid = document.getElementById('wsGrid');
+  grid.classList.toggle('zen');
+  this.textContent = grid.classList.contains('zen') ? '⛶ Вернуть панели' : '⛶ Полноэкранный текст';
+});
+
+var states = ['сохранено','сохраняется…','сохранено','ошибка сохранения'];
+var i = 0;
+var el = document.getElementById('saveState');
+setInterval(function(){
+  i = (i+1) % states.length;
+  el.innerHTML = '<span class="save-dot"></span>' + states[i];
+  el.className = 'save-state' + (states[i]==='сохраняется…' ? ' saving' : states[i]==='ошибка сохранения' ? ' error' : '');
+}, 3200);
+
+document.querySelectorAll('.book-row').forEach(function(row){
+  row.addEventListener('click', function(){
+    document.querySelectorAll('.book-row').forEach(function(r){r.classList.remove('selected');});
+    row.classList.add('selected');
+  });
+});
+
+function openMobileScene(title, wc){
+  document.getElementById('mList').classList.add('hide');
+  document.getElementById('mEditor').classList.add('show');
+  document.getElementById('mEditorTitle').value = title;
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mBack').classList.add('show');
+  document.getElementById('mFab').style.display = 'none';
+}
+document.getElementById('mBack').addEventListener('click', function(){
+  document.getElementById('mList').classList.remove('hide');
+  document.getElementById('mEditor').classList.remove('show');
+  document.getElementById('mTitle').textContent = 'Слон, которого не было';
+  document.getElementById('mBack').classList.remove('show');
+  document.getElementById('mFab').style.display = 'flex';
+});
+</script>
+</body>
+</html>

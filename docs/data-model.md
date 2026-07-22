@@ -16,10 +16,15 @@ USER
   name          string
 
 BOOK
-  id            uuid PK
-  project_id    uuid FK -> PROJECT
-  title         string
-  order         int
+  id                uuid PK
+  project_id        uuid FK -> PROJECT
+  title             string
+  order             int
+  genre             string, nullable  -- одно значение из классификатора жанров (см. design/mockup/UI-SPEC.md); переход на многие-ко-многим (несколько жанров/тегов на книгу, как на Литрес) — Фаза 2, не блокирует Фазу 0
+  synopsis          text, nullable    -- рабочий синопсис (для себя/редактора)
+  annotation        text, nullable    -- читательская аннотация (для обложки/публикации)
+  planned_volume    string, nullable  -- плановый объём, свободный текст ("8 а.л."), не строгое число — единицы у разных авторов разные
+  attributes        json, nullable    -- точка расширения: сюда идут дополнительные поля параметров книги, которые понадобятся позже, без миграции схемы (как у CODEXENTRY.attributes)
 
 CHAPTER
   id            uuid PK
@@ -34,6 +39,7 @@ SCENE
   status            string   -- enum: draft | editing | done
   pov_character_id  uuid FK -> CODEXENTRY (nullable)
   word_count        int      -- вычисляемое поле, пересчитывается при сохранении текста
+  target_word_count int      -- nullable, задаётся пользователем; если пусто — прогресс-бар в нижней полосе не показывается (см. design/mockup/UI-SPEC.md)
   body              text     -- сам текст сцены (или отдельная таблица SceneContent, если понадобится история)
   order             int
 
@@ -57,10 +63,12 @@ VERSION
   snapshot      text     -- содержимое sceny на момент версии
 ```
 
+**Мягкое удаление (Корзина).** BOOK, CHAPTER, SCENE, CODEXENTRY получают поле `deleted_at` (timestamp, nullable). Удаление в UI — это `UPDATE ... SET deleted_at = now()`, не `DELETE FROM`. Все обычные выборки (дерево рукописи, списки Кодекса) фильтруют `deleted_at IS NULL`; выборка для Корзины — наоборот, `deleted_at IS NOT NULL`. Восстановление — `deleted_at = NULL`. Окончательное удаление из Корзины (настоящий `DELETE`) в Фазу 0 можно не делать — не блокирует MVP.
+
 **Точки расширения, которые нужно оставить, но не реализовывать в Фазе 0:**
 - `CODEXENTRY.type` — уже строка, а не enum в БД, чтобы Фаза 2 добавила новые типы без миграции схемы
 - `CODEXENTRY.attributes` — уже json, добавление полей в Фазе 2 не требует ALTER TABLE
-- `PROJECT` уже названа так, а не `BOOK`, — это готовит почву под серии (несколько книг в одном проекте), даже если в MVP один проект = одна книга
+- `PROJECT` = Серия. Содержит одну или несколько `BOOK` — многокнижность серии входит в Фазу 0, не отложена. `CODEXENTRY` привязана к `project_id`, а не к `book_id`, — Кодекс общий на всю серию, персонажи/локации переиспользуются между книгами одной серии
 
 ## Фаза 2 — добавить
 

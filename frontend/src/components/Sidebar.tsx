@@ -99,7 +99,10 @@ export function Sidebar({
                           onDragStart={() => handleSceneDragStart(scene)}
                           onDragEnd={handleSceneDragEnd}
                         >
-                          <span className="scene-status">{scene.status.slice(0, 1)}</span>
+                          <span
+                            className="scene-status"
+                            style={{ backgroundColor: getStatusColor(scene.status) }}
+                          ></span>
                           <span className="scene-title">{scene.title}</span>
                           <span className="scene-word-count">
                             {scene.wordCount}
@@ -123,4 +126,18 @@ export function Sidebar({
       </div>
     </aside>
   )
+}
+
+function getStatusColor(status: string): string {
+  const statusLower = status?.toLowerCase() || 'draft'
+  switch (statusLower) {
+    case 'draft':
+      return '#9C9891'
+    case 'editing':
+      return '#B9812E'
+    case 'done':
+      return '#4A7A54'
+    default:
+      return '#9C9891'
+  }
 }

@@ -21,3 +21,11 @@
 14:00:59 [vite] hmr update /src/components/SearchPanel.tsx
 14:01:08 [vite] vite.config.ts changed, restarting server...
 14:01:08 [vite] server restarted.
+14:18:32 [vite] hmr update /src/index.css
+14:18:44 [vite] hmr update /src/index.css
+14:18:58 [vite] hmr update /src/App.tsx
+14:19:28 [vite] hmr update /src/App.css
+14:21:15 [vite] page reload src/App.tsx
+14:21:41 [vite] hmr update /src/App.css
+14:22:40 [vite] hmr update /src/App.tsx
+14:22:48 [vite] hmr update /src/App.tsx

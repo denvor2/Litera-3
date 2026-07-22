@@ -1,0 +1,86 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 0.5px solid var(--border);
+  background-color: var(--surface);
+  gap: 14px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.hamburger {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--ink-2);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamburger:hover {
+  background-color: var(--surface-2);
+}
+
+.hmenu {
+  position: absolute;
+  top: 52px;
+  left: 20px;
+  background-color: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  z-index: 10;
+  padding: 6px;
+}
+
+.hmenu-item {
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background-color 0.2s;
+}
+
+.hmenu-item:hover {
+  background-color: var(--surface-2);
+}
+
+.hmenu-sep {
+  height: 1px;
+  background-color: var(--border);
+  margin: 6px 2px;
+}
+
+.topbar-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+
+.zen-toggle {
+  font-size: 12px;
+  padding: 7px 12px;
+}
+
+.zen-toggle:hover {
+  background-color: var(--selected-bg);
+  color: var(--selected-text);
+}
