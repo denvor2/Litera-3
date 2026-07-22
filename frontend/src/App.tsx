@@ -31,7 +31,7 @@ export function App() {
   useEffect(() => {
     const initProject = async () => {
       try {
-        const apiUrl = '${API_BASE}/api/projects'
+        const apiUrl = `${API_BASE}/api/projects`
         const response = await fetch(apiUrl)
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`)
         const text = await response.text()
@@ -95,7 +95,7 @@ export function App() {
   const handleCreateScene = async (chapterId: string) => {
     if (!project) return
     try {
-      const response = await fetch('${API_BASE}/api/scenes', {
+      const response = await fetch(`${API_BASE}/api/scenes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +128,7 @@ export function App() {
   const handleUpdateSceneOrder = async (sceneId: string, newChapterId: string, newOrder: number) => {
     if (!project) return
     try {
-      await fetch('${API_BASE}/api/scenes/order', {
+      await fetch(`${API_BASE}/api/scenes/order`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -171,7 +171,7 @@ export function App() {
   const handleCreateBook = async () => {
     if (!project) return
     try {
-      const response = await fetch('${API_BASE}/api/books', {
+      const response = await fetch(`${API_BASE}/api/books`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,7 +199,7 @@ export function App() {
       const book = project.books.find(b => b.id === bookId)
       if (!book) return
 
-      const response = await fetch('${API_BASE}/api/chapters', {
+      const response = await fetch(`${API_BASE}/api/chapters`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
