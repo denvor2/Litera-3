@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -41,6 +41,7 @@ model Book {
   title     String
   chapters  Chapter[]
   order     Int
+  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -54,6 +55,7 @@ model Chapter {
   title     String
   scenes    Scene[]
   order     Int
+  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -69,8 +71,9 @@ model Scene {
   povCharacterId  String?
   povCharacter    CodexEntry? @relation("povCharacter", fields: [povCharacterId], references: [id], onDelete: SetNull)
   wordCount       Int      @default(0)
-  body            String   @default("{\"type\":\"doc\",\"content\":[]}")
+  body            Json     @default("{\"type\":\"doc\",\"content\":[]}")
   notes           String   @default("")
+  deletedAt       DateTime?
   order           Int
   entityLinks     SceneEntityLink[]
   versions        Version[]
@@ -86,7 +89,8 @@ model CodexEntry {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   type      String   // 'character' | 'location'
   name      String
-  attributes String  @default("{}")
+  attributes Json    @default("{}")
+  deletedAt DateTime?
   povScenes Scene[]  @relation("povCharacter")
   sceneLinks SceneEntityLink[]
   createdAt DateTime @default(now())
@@ -112,7 +116,7 @@ model Version {
   entityId  String
   sceneId   String
   scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
-  snapshot  String
+  snapshot  Json
   createdAt DateTime @default(now())
 
   @@map("versions")
