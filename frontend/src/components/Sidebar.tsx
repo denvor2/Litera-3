@@ -102,19 +102,34 @@ export function Sidebar({
               <div className="chapters-list">
                 {book.chapters.map(chapter => (
                   <div key={chapter.id} className="chapter-item">
-                    <button
-                      className="chapter-row"
-                      onClick={() => toggleChapter(chapter.id)}
-                    >
-                      <span className="toggle-icon">
-                        {expandedChapters.has(chapter.id) ? '▾' : '▸'}
-                      </span>
-                      <span>{chapter.title}</span>
+                    <div className="chapter-row">
+                      <button
+                        className="chapter-toggle"
+                        onClick={() => toggleChapter(chapter.id)}
+                        title="Раскрыть главу"
+                      >
+                        <span className="toggle-icon">
+                          {expandedChapters.has(chapter.id) ? '▾' : '▸'}
+                        </span>
+                      </button>
+                      <span className="chapter-title">{chapter.title}</span>
                       <div className="row-actions">
-                        <button className="icon-btn" title="Редактировать">✎</button>
-                        <button className="icon-btn" title="Удалить">🗑</button>
+                        <button
+                          className="icon-btn"
+                          title="Редактировать"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          ✎
+                        </button>
+                        <button
+                          className="icon-btn"
+                          title="Удалить"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          🗑
+                        </button>
                       </div>
-                    </button>
+                    </div>
 
                     {expandedChapters.has(chapter.id) && (
                       <div
@@ -123,27 +138,61 @@ export function Sidebar({
                         onDrop={(e) => handleChapterDrop(chapter.id, e)}
                       >
                         {chapter.scenes.map(scene => (
-                          <button
+                          <div
                             key={scene.id}
                             draggable
                             className={`scene-row ${
                               selectedSceneId === scene.id ? 'selected' : ''
                             } ${draggedScene?.id === scene.id ? 'dragging' : ''}`}
-                            onClick={() => onSceneSelect?.(scene)}
                             onDragStart={() => handleSceneDragStart(scene)}
                             onDragEnd={handleSceneDragEnd}
+                            onDragOver={(e) => e.preventDefault()}
                           >
-                            <div
-                              className="dot"
-                              style={{ backgroundColor: getStatusColor(scene.status) }}
-                            ></div>
-                            <span className="scene-title">{scene.title}</span>
-                            <span className="scene-wc">{scene.wordCount}</span>
+                            <button
+                              className="scene-select"
+                              onClick={() => onSceneSelect?.(scene)}
+                              title="Открыть сцену"
+                            >
+                              <div
+                                className="dot"
+                                style={{ backgroundColor: getStatusColor(scene.status) }}
+                              ></div>
+                              <span className="scene-title">{scene.title}</span>
+                              <span className="scene-wc">{scene.wordCount}</span>
+                            </button>
                             <div className="row-actions">
-                              <button className="icon-btn" title="Редактировать">✎</button>
-                              <button className="icon-btn" title="Удалить">🗑</button>
+                              <button
+                                className="icon-btn"
+                                title="Переместить выше"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const sceneIndex = chapter.scenes.findIndex(s => s.id === scene.id)
+                                  if (sceneIndex > 0) {
+                                    const targetScene = chapter.scenes[sceneIndex - 1]
+                                    onUpdateSceneOrder?.(scene.id, chapter.id, targetScene.order - 1)
+                                  }
+                                }}
+                              >
+                                ↑
+                              </button>
+                              <button
+                                className="icon-btn"
+                                title="Переместить ниже"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const sceneIndex = chapter.scenes.findIndex(s => s.id === scene.id)
+                                  if (sceneIndex < chapter.scenes.length - 1) {
+                                    const targetScene = chapter.scenes[sceneIndex + 1]
+                                    onUpdateSceneOrder?.(scene.id, chapter.id, targetScene.order + 1)
+                                  }
+                                }}
+                              >
+                                ↓
+                              </button>
+                              <button className="icon-btn" title="Редактировать" onClick={(e) => e.stopPropagation()}>✎</button>
+                              <button className="icon-btn" title="Удалить" onClick={(e) => e.stopPropagation()}>🗑</button>
                             </div>
-                          </button>
+                          </div>
                         ))}
                         <div className="add-item">
                           <button

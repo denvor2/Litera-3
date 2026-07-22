@@ -242,22 +242,30 @@ export function App() {
               <div className="right-panel-header">🤖 AI-помощники</div>
               <div className="right-panel-content">
                 <div className="expert-roles">
-                  <button className="expert-chip">
-                    <span className="chip-name">Соавтор</span>
+                  <div className="expert-chip">
+                    <button className="chip-select" title="Активировать Соавтор">
+                      <span className="chip-name">Соавтор</span>
+                    </button>
                     <button className="chip-settings" title="Настройки">⚙</button>
-                  </button>
-                  <button className="expert-chip">
-                    <span className="chip-name">Редактор</span>
+                  </div>
+                  <div className="expert-chip">
+                    <button className="chip-select" title="Активировать Редактор">
+                      <span className="chip-name">Редактор</span>
+                    </button>
                     <button className="chip-settings" title="Настройки">⚙</button>
-                  </button>
-                  <button className="expert-chip">
-                    <span className="chip-name">Критик</span>
+                  </div>
+                  <div className="expert-chip">
+                    <button className="chip-select" title="Активировать Критик">
+                      <span className="chip-name">Критик</span>
+                    </button>
                     <button className="chip-settings" title="Настройки">⚙</button>
-                  </button>
-                  <button className="expert-chip">
-                    <span className="chip-name">Читатель</span>
+                  </div>
+                  <div className="expert-chip">
+                    <button className="chip-select" title="Активировать Читатель">
+                      <span className="chip-name">Читатель</span>
+                    </button>
                     <button className="chip-settings" title="Настройки">⚙</button>
-                  </button>
+                  </div>
                 </div>
                 <button className="add-expert" title="Добавить помощника">+ свой</button>
                 <div className="expert-note">

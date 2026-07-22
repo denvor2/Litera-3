@@ -347,7 +347,6 @@
   border: none;
   border-radius: var(--radius);
   text-align: left;
-  cursor: pointer;
   font-size: 13px;
   font-weight: 400;
   color: var(--ink-2);
@@ -357,6 +356,31 @@
 
 .chapter-row:hover {
   background-color: var(--surface-2);
+}
+
+.chapter-toggle {
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+
+.chapter-toggle:hover {
+  background-color: var(--surface-2);
+}
+
+.chapter-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .toggle-icon {
@@ -378,8 +402,26 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 6px 6px;
   margin-bottom: 2px;
+  gap: 6px;
+  transition: background-color 0.15s;
+}
+
+.scene-row:hover {
+  background-color: var(--surface-2);
+  border-radius: var(--radius);
+}
+
+.scene-row.dragging {
+  opacity: 0.5;
+  background-color: var(--surface-2);
+}
+
+.scene-select {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 6px 6px;
   background: none;
   border: none;
   border-radius: var(--radius);
@@ -391,18 +433,13 @@
   transition: background-color 0.15s;
 }
 
-.scene-row:hover {
-  background-color: var(--surface-2);
-}
-
-.scene-row.selected {
+.scene-row.selected .scene-select {
   background-color: var(--selected-bg);
   color: var(--selected-text);
   font-weight: 500;
 }
 
-.scene-row.dragging {
-  opacity: 0.5;
+.scene-select:hover {
   background-color: var(--surface-2);
 }
 
@@ -430,7 +467,6 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--ink-muted);
-  margin-right: 4px;
   flex-shrink: 0;
 }
 
@@ -555,12 +591,11 @@
 .expert-chip {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
+  gap: 4px;
+  padding: 0;
   background-color: var(--surface-2);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
-  cursor: pointer;
   transition: background-color 0.15s;
 }
 
@@ -568,24 +603,37 @@
   background-color: var(--selected-bg);
 }
 
-.chip-name {
+.chip-select {
+  flex: 1;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
   font-size: 12px;
   font-weight: 500;
   color: var(--ink-2);
+  text-align: left;
+  transition: color 0.15s;
 }
 
-.expert-chip:hover .chip-name {
+.chip-select:hover {
   color: var(--selected-text);
 }
 
+.chip-name {
+  display: block;
+}
+
 .chip-settings {
-  padding: 2px 4px;
+  padding: 6px 8px;
   background: none;
   border: none;
   font-size: 11px;
   cursor: pointer;
   color: var(--ink-muted);
   transition: color 0.15s;
+  flex-shrink: 0;
 }
 
 .chip-settings:hover {
