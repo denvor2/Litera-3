@@ -251,7 +251,7 @@ export function Sidebar({
                           <button
                             className="add-link"
                             onClick={() => onCreateScene?.(chapter.id)}
-                          >+ сцена</button>
+                          >+ добавить сцену</button>
                         </div>
                       </div>
                     )}
@@ -261,7 +261,7 @@ export function Sidebar({
                   <button
                     className="add-link"
                     onClick={() => onCreateChapter?.(book.id)}
-                  >+ глава</button>
+                  >+ добавить главу</button>
                 </div>
               </div>
             </div>
@@ -270,7 +270,7 @@ export function Sidebar({
             <button
               className="add-link"
               onClick={() => onCreateBook?.()}
-            >+ книга</button>
+            >+ добавить книгу</button>
           </div>
         </div>
         )}
@@ -291,29 +291,49 @@ export function Sidebar({
           {project?.codexEntries
             ?.filter((e: any) => e.type === 'character')
             .map((entry: any) => (
-              <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
-                <span>{entry.name}</span>
+              <div key={entry.id} className="chip">
+                <div className="chip-avatar">
+                  {entry.name.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="chip-name">{entry.name}</div>
+                  <div className="chip-type">персонаж</div>
+                </div>
+                <div className="row-actions">
+                  <button className="icon-btn" title="Редактировать">✎</button>
+                  <button className="icon-btn" title="Удалить">🗑</button>
+                </div>
               </div>
             ))}
           <div className="add-item">
             <button
               className="add-link"
               onClick={() => onCreateCodexEntry?.('character')}
-            >+ персонаж</button>
+            >+ добавить персонажа</button>
           </div>
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
           {project?.codexEntries
             ?.filter((e: any) => e.type === 'location')
             .map((entry: any) => (
-              <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
-                <span>{entry.name}</span>
+              <div key={entry.id} className="chip">
+                <div className="chip-avatar">
+                  {entry.name.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="chip-name">{entry.name}</div>
+                  <div className="chip-type">локация</div>
+                </div>
+                <div className="row-actions">
+                  <button className="icon-btn" title="Редактировать">✎</button>
+                  <button className="icon-btn" title="Удалить">🗑</button>
+                </div>
               </div>
             ))}
           <div className="add-item">
             <button
               className="add-link"
               onClick={() => onCreateCodexEntry?.('location')}
-            >+ локация</button>
+            >+ добавить локацию</button>
           </div>
         </div>
         )}
@@ -354,21 +374,13 @@ export function Sidebar({
             <div className="trash-items">
               {trashItems.map((item) => (
                 <div key={`${item.type}-${item.id}`} className="trash-item">
-                  <div className="trash-item-info">
-                    <span className="trash-item-type" title={item.type}>
-                      {item.type === 'book' && '📖'}
-                      {item.type === 'chapter' && '📄'}
-                      {item.type === 'scene' && '🎬'}
-                      {item.type === 'codexentry' && '🎭'}
-                    </span>
-                    <span className="trash-item-title">{item.title}</span>
-                  </div>
+                  <span className="trash-item-title">{item.title}</span>
                   <button
-                    className="trash-restore-btn"
+                    className="trash-restore-link"
                     onClick={() => handleRestore(item)}
                     title="Восстановить"
                   >
-                    ⟲
+                    восстановить
                   </button>
                 </div>
               ))}
