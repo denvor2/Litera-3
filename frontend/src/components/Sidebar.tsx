@@ -137,17 +137,26 @@ export function Sidebar({
       <div className="series-block">
         <div className="series-label">СЕРИЯ</div>
         <div className="series-name">{project?.title || 'Проект'}</div>
-        <div className="book-switch-row">
-          <select
-            className="book-select"
-            value={currentBookId || ''}
-            onChange={(e) => onBookSelect?.(e.target.value)}
-          >
-            {books.map(book => (
-              <option key={book.id} value={book.id}>{book.title}</option>
-            ))}
-          </select>
-          <button className="add-book" title="Добавить книгу" onClick={() => onCreateBook?.()}>+</button>
+        <div className="books-list">
+          {books.map(book => (
+            <div
+              key={book.id}
+              className={`book-row ${currentBookId === book.id ? 'selected' : ''}`}
+              onClick={() => onBookSelect?.(book.id)}
+            >
+              <span>{book.title}</span>
+              <div className="row-actions">
+                <button className="icon-btn" title="Редактировать">✎</button>
+                <button className="icon-btn" title="Удалить" onClick={() => onDeleteBook?.(book.id)}>🗑</button>
+              </div>
+            </div>
+          ))}
+          <div className="add-item">
+            <button
+              className="add-link"
+              onClick={() => onCreateBook?.()}
+            >+ добавить книгу</button>
+          </div>
         </div>
       </div>
 

@@ -160,6 +160,13 @@
   font-weight: 600;
 }
 
+.books-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 /* Center */
 .center {
   grid-column: 2;
@@ -320,6 +327,13 @@
 
 .book-row:hover {
   background-color: var(--surface-2);
+  cursor: pointer;
+}
+
+.book-row.selected {
+  background-color: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
 }
 
 .book-row span {
