@@ -2,6 +2,8 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { PrismaClient } from '@prisma/client'
 import { exportBookToDocx } from './services/docxExport.js'
+import { exportBookToFb2 } from './services/fbExport.js'
+import { exportBookToPdf } from './services/pdfExport.js'
 
 const fastify = Fastify({
   logger: true,
@@ -632,6 +634,7 @@ fastify.put('/api/trash/codexentry/:entryId/restore', async (request, reply) => 
 // Export routes
 fastify.get('/api/books/:bookId/export', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
+  const { format } = request.query as { format?: string }
 
   try {
     const book = await prisma.book.findUnique({
@@ -643,8 +646,22 @@ fastify.get('/api/books/:bookId/export', async (request, reply) => {
       return
     }
 
-    const docxBuffer = await exportBookToDocx(bookId)
+    if (format === 'fb2') {
+      const fb2Content = await exportBookToFb2(bookId)
+      reply.type('application/xml')
+      reply.header('Content-Disposition', `attachment; filename="${book.title}.fb2"`)
+      return reply.send(fb2Content)
+    }
 
+    if (format === 'pdf') {
+      const pdfBuffer = await exportBookToPdf(bookId)
+      reply.type('application/pdf')
+      reply.header('Content-Disposition', `attachment; filename="${book.title}.pdf"`)
+      return reply.send(pdfBuffer)
+    }
+
+    // Default to docx
+    const docxBuffer = await exportBookToDocx(bookId)
     reply.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     reply.header('Content-Disposition', `attachment; filename="${book.title}.docx"`)
     return reply.send(docxBuffer)

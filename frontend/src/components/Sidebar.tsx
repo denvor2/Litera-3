@@ -6,7 +6,9 @@ interface SidebarProps {
   books?: Book[]
   project?: Project
   selectedSceneId?: string
+  selectedBookId?: string
   onSceneSelect?: (scene: Scene) => void
+  onBookSelect?: (bookId: string) => void
   onCreateScene?: (chapterId: string) => void
   onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
   onCreateBook?: () => void
@@ -21,7 +23,9 @@ export function Sidebar({
   books = [],
   project,
   selectedSceneId,
+  selectedBookId,
   onSceneSelect,
+  onBookSelect,
   onCreateScene,
   onUpdateSceneOrder,
   onCreateBook,
@@ -34,6 +38,7 @@ export function Sidebar({
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
   const [draggedScene, setDraggedScene] = useState<Scene | null>(null)
+  const currentBookId = selectedBookId || books[0]?.id
 
   const toggleChapter = (chapterId: string) => {
     const newSet = new Set(expandedChapters)
@@ -82,14 +87,18 @@ export function Sidebar({
         <div className="series-label">СЕРИЯ</div>
         <div className="series-name">{project?.title || 'Проект'}</div>
         <div className="book-switch-row">
-          <select className="book-select" defaultValue={books[0]?.id || ''}>
+          <select
+            className="book-select"
+            value={currentBookId || ''}
+            onChange={(e) => onBookSelect?.(e.target.value)}
+          >
             {books.map((book) => (
               <option key={book.id} value={book.id}>
                 {book.title}
               </option>
             ))}
           </select>
-          <button className="add-book" title="Добавить книгу">+</button>
+          <button className="add-book" title="Добавить книгу" onClick={() => onCreateBook?.()}>+</button>
         </div>
       </div>
 

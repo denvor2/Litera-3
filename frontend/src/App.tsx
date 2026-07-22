@@ -9,6 +9,7 @@ import type { Project, Scene } from './types'
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [zenMode, setZenMode] = useState(false)
@@ -60,6 +61,12 @@ export function App() {
 
   const handleSceneSelect = (scene: Scene) => {
     setSelectedScene(scene)
+  }
+
+  const handleBookSelect = (bookId: string) => {
+    setSelectedBookId(bookId)
+    // Deselect scene when switching books
+    setSelectedScene(null)
   }
 
   const handleSceneSave = async (updatedScene: Scene) => {
@@ -369,7 +376,9 @@ export function App() {
             project={project}
             books={project.books}
             selectedSceneId={selectedScene?.id}
+            selectedBookId={selectedBookId || undefined}
             onSceneSelect={handleSceneSelect}
+            onBookSelect={handleBookSelect}
             onCreateScene={handleCreateScene}
             onUpdateSceneOrder={handleUpdateSceneOrder}
             onCreateBook={handleCreateBook}

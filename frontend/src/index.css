@@ -121,9 +121,34 @@ input, textarea, select {
 }
 
 input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--border-strong);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--selected-bg);
+}
+
+button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+a:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Ensure minimum button size for touch targets (44x44px) */
+button {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Improve color contrast for muted text - use darker shade */
+.ink-muted, [class*='muted'] {
+  color: var(--ink-2) !important;
 }
 
 /* Override Material Design colors with author palette */
