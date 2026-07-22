@@ -93,8 +93,10 @@ export async function exportBookToDocx(bookId: string): Promise<Buffer> {
     where: { id: bookId },
     include: {
       chapters: {
+        where: { deletedAt: null },
         include: {
           scenes: {
+            where: { deletedAt: null },
             orderBy: { order: 'asc' },
           },
         },

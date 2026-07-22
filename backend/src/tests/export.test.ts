@@ -55,7 +55,7 @@ describe('Export Service', () => {
         title: 'Scene 1',
         status: 'DRAFT',
         order: 1,
-        body: JSON.stringify({
+        body: {
           type: 'doc',
           content: [
             {
@@ -68,7 +68,7 @@ describe('Export Service', () => {
               ],
             },
           ],
-        }),
+        },
       },
     })
 
@@ -115,7 +115,7 @@ describe('Export Service', () => {
         title: 'Draft Scene',
         status: 'DRAFT',
         order: 1,
-        body: JSON.stringify({
+        body: {
           type: 'doc',
           content: [
             {
@@ -123,7 +123,7 @@ describe('Export Service', () => {
               content: [{ type: 'text', text: 'Draft content' }],
             },
           ],
-        }),
+        },
       },
     })
 
@@ -133,7 +133,7 @@ describe('Export Service', () => {
         title: 'Done Scene',
         status: 'DONE',
         order: 2,
-        body: JSON.stringify({
+        body: {
           type: 'doc',
           content: [
             {
@@ -141,7 +141,7 @@ describe('Export Service', () => {
               content: [{ type: 'text', text: 'Done content (should not appear)' }],
             },
           ],
-        }),
+        },
       },
     })
 

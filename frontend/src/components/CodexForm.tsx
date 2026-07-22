@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { parseAttributes } from '../utils/parseAttributes'
 import { API_BASE } from '../config'
 import type { CodexEntry } from '../types'
 import './CodexForm.css'
@@ -19,7 +18,7 @@ export function CodexForm({
   onSave,
   onCancel,
 }: CodexFormProps) {
-  const attrs = initialEntry ? parseAttributes(initialEntry.attributes) : {}
+  const attrs = (initialEntry?.attributes || {}) as Record<string, string>
   const [formData, setFormData] = useState({
     name: initialEntry?.name || '',
     appearance: attrs.appearance || '',

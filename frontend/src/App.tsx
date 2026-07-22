@@ -223,6 +223,73 @@ export function App() {
     }
   }
 
+  const handleDeleteScene = async (sceneId: string) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/scenes/${sceneId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      // Update project state
+      if (selectedScene?.id === sceneId) {
+        setSelectedScene(null)
+      }
+      setProject({
+        ...project,
+        books: project.books.map(book => ({
+          ...book,
+          chapters: book.chapters.map(chapter => ({
+            ...chapter,
+            scenes: chapter.scenes.filter(scene => scene.id !== sceneId),
+          })),
+        })),
+      })
+    } catch (error) {
+      console.error('Failed to delete scene:', error)
+    }
+  }
+
+  const handleDeleteChapter = async (chapterId: string) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/chapters/${chapterId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        books: project.books.map(book => ({
+          ...book,
+          chapters: book.chapters.filter(chapter => chapter.id !== chapterId),
+        })),
+      })
+    } catch (error) {
+      console.error('Failed to delete chapter:', error)
+    }
+  }
+
+  const handleDeleteBook = async (bookId: string) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/books/${bookId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        books: project.books.filter(book => book.id !== bookId),
+      })
+    } catch (error) {
+      console.error('Failed to delete book:', error)
+    }
+  }
+
   const handleCreateCodexEntry = async (type: 'character' | 'location') => {
     if (!project) return
     const name = type === 'character' ? `Персонаж ${Math.random().toString(36).substr(2, 5)}` : `Локация ${Math.random().toString(36).substr(2, 5)}`
@@ -258,7 +325,7 @@ export function App() {
   if (!project) return <div className="app-error">Проект не найден</div>
 
   const wordCount = selectedScene?.wordCount ?? 0
-  const sceneBody = selectedScene ? (typeof selectedScene.body === 'string' ? JSON.parse(selectedScene.body) : selectedScene.body) : null
+  const sceneBody = selectedScene?.body
   const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
   const charCount = countCharacters(sceneText, true)
   const authorSheets = countAuthorSheets(charCount).toFixed(2)
@@ -307,6 +374,9 @@ export function App() {
             onUpdateSceneOrder={handleUpdateSceneOrder}
             onCreateBook={handleCreateBook}
             onCreateChapter={handleCreateChapter}
+            onDeleteBook={handleDeleteBook}
+            onDeleteChapter={handleDeleteChapter}
+            onDeleteScene={handleDeleteScene}
             onCreateCodexEntry={handleCreateCodexEntry}
           />
         )}

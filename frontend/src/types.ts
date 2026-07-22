@@ -9,6 +9,7 @@ export interface Project {
   title: string
   ownerId: string
   books: Book[]
+  codexEntries?: CodexEntry[]
   createdAt: string
   updatedAt: string
 }

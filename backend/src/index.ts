@@ -24,15 +24,21 @@ fastify.get('/api/projects', async (request, reply) => {
   const projects = await prisma.project.findMany({
     include: {
       books: {
+        where: { deletedAt: null },
         include: {
           chapters: {
+            where: { deletedAt: null },
             include: {
-              scenes: true,
+              scenes: {
+                where: { deletedAt: null },
+              },
             },
           },
         },
       },
-      codexEntries: true,
+      codexEntries: {
+        where: { deletedAt: null },
+      },
     },
   })
   return projects
@@ -101,11 +107,14 @@ fastify.post('/api/projects', async (request, reply) => {
 fastify.get('/api/books/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
   const books = await prisma.book.findMany({
-    where: { projectId },
+    where: { projectId, deletedAt: null },
     include: {
       chapters: {
+        where: { deletedAt: null },
         include: {
-          scenes: true,
+          scenes: {
+            where: { deletedAt: null },
+          },
         },
       },
     },
@@ -116,7 +125,7 @@ fastify.get('/api/books/:projectId', async (request, reply) => {
 fastify.post('/api/books', async (request, reply) => {
   const { projectId, title } = request.body as { projectId: string; title: string }
   const maxOrder = await prisma.book.findFirst({
-    where: { projectId },
+    where: { projectId, deletedAt: null },
     orderBy: { order: 'desc' },
   })
 
@@ -128,8 +137,11 @@ fastify.post('/api/books', async (request, reply) => {
     },
     include: {
       chapters: {
+        where: { deletedAt: null },
         include: {
-          scenes: true,
+          scenes: {
+            where: { deletedAt: null },
+          },
         },
       },
     },
@@ -137,11 +149,26 @@ fastify.post('/api/books', async (request, reply) => {
   return book
 })
 
+fastify.delete('/api/books/:bookId', async (request, reply) => {
+  const { bookId } = request.params as { bookId: string }
+
+  try {
+    await prisma.book.update({
+      where: { id: bookId },
+      data: { deletedAt: new Date() },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete book' })
+  }
+})
+
 // Chapters routes
 fastify.post('/api/chapters', async (request, reply) => {
   const { bookId, title } = request.body as { bookId: string; title: string }
   const maxOrder = await prisma.chapter.findFirst({
-    where: { bookId },
+    where: { bookId, deletedAt: null },
     orderBy: { order: 'desc' },
   })
 
@@ -155,11 +182,26 @@ fastify.post('/api/chapters', async (request, reply) => {
   return chapter
 })
 
+fastify.delete('/api/chapters/:chapterId', async (request, reply) => {
+  const { chapterId } = request.params as { chapterId: string }
+
+  try {
+    await prisma.chapter.update({
+      where: { id: chapterId },
+      data: { deletedAt: new Date() },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete chapter' })
+  }
+})
+
 // Scenes routes
 fastify.get('/api/scenes/:chapterId', async (request, reply) => {
   const { chapterId } = request.params as { chapterId: string }
   const scenes = await prisma.scene.findMany({
-    where: { chapterId },
+    where: { chapterId, deletedAt: null },
     orderBy: { order: 'asc' },
   })
   return scenes
@@ -251,6 +293,21 @@ fastify.put('/api/scenes/:sceneId', async (request, reply) => {
   }
 })
 
+fastify.delete('/api/scenes/:sceneId', async (request, reply) => {
+  const { sceneId } = request.params as { sceneId: string }
+
+  try {
+    await prisma.scene.update({
+      where: { id: sceneId },
+      data: { deletedAt: new Date() },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete scene' })
+  }
+})
+
 fastify.patch('/api/scenes/order', async (request, reply) => {
   const { updates } = request.body as { updates: Array<{ id: string; chapterId: string; order: number }> }
 
@@ -277,7 +334,7 @@ fastify.patch('/api/scenes/order', async (request, reply) => {
 fastify.get('/api/codex/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
   const entries = await prisma.codexEntry.findMany({
-    where: { projectId },
+    where: { projectId, deletedAt: null },
   })
   return entries
 })
@@ -285,7 +342,7 @@ fastify.get('/api/codex/:projectId', async (request, reply) => {
 fastify.get('/api/codex/:projectId/characters', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
   const entries = await prisma.codexEntry.findMany({
-    where: { projectId, type: 'character' },
+    where: { projectId, type: 'character', deletedAt: null },
   })
   return entries
 })
@@ -293,7 +350,7 @@ fastify.get('/api/codex/:projectId/characters', async (request, reply) => {
 fastify.get('/api/codex/:projectId/locations', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
   const entries = await prisma.codexEntry.findMany({
-    where: { projectId, type: 'location' },
+    where: { projectId, type: 'location', deletedAt: null },
   })
   return entries
 })
@@ -307,13 +364,12 @@ fastify.post('/api/codex', async (request, reply) => {
   }
 
   try {
-    const attributesStr = typeof attributes === 'string' ? attributes : JSON.stringify(attributes || {})
     const entry = await prisma.codexEntry.create({
       data: {
         projectId,
         type,
         name,
-        attributes: attributesStr,
+        attributes: attributes || {},
       },
     })
     return entry
@@ -328,12 +384,11 @@ fastify.put('/api/codex/:entryId', async (request, reply) => {
   const { name, attributes } = request.body as { name?: string; attributes?: unknown }
 
   try {
-    const attributesStr = attributes ? (typeof attributes === 'string' ? attributes : JSON.stringify(attributes)) : undefined
     const entry = await prisma.codexEntry.update({
       where: { id: entryId },
       data: {
         ...(name && { name }),
-        ...(attributesStr && { attributes: attributesStr }),
+        ...(attributes !== undefined && { attributes }),
       },
     })
     return entry
@@ -347,8 +402,9 @@ fastify.delete('/api/codex/:entryId', async (request, reply) => {
   const { entryId } = request.params as { entryId: string }
 
   try {
-    await prisma.codexEntry.delete({
+    await prisma.codexEntry.update({
       where: { id: entryId },
+      data: { deletedAt: new Date() },
     })
     return { success: true }
   } catch (error) {
@@ -453,6 +509,124 @@ fastify.post('/api/versions/restore', async (request, reply) => {
   }
 })
 
+// Trash routes
+fastify.get('/api/trash/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+
+  try {
+    const deletedBooks = await prisma.book.findMany({
+      where: { projectId, deletedAt: { not: null } },
+      include: {
+        chapters: {
+          where: { deletedAt: { not: null } },
+        },
+      },
+    })
+
+    const deletedChapters = await prisma.chapter.findMany({
+      where: {
+        book: { projectId },
+        deletedAt: { not: null },
+      },
+      include: {
+        book: true,
+      },
+    })
+
+    const deletedScenes = await prisma.scene.findMany({
+      where: {
+        chapter: {
+          book: {
+            projectId,
+          },
+        },
+        deletedAt: { not: null },
+      },
+      include: {
+        chapter: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    })
+
+    const deletedCodexEntries = await prisma.codexEntry.findMany({
+      where: { projectId, deletedAt: { not: null } },
+    })
+
+    return {
+      books: deletedBooks,
+      chapters: deletedChapters,
+      scenes: deletedScenes,
+      codexEntries: deletedCodexEntries,
+    }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to fetch trash' })
+  }
+})
+
+fastify.put('/api/trash/book/:bookId/restore', async (request, reply) => {
+  const { bookId } = request.params as { bookId: string }
+
+  try {
+    const book = await prisma.book.update({
+      where: { id: bookId },
+      data: { deletedAt: null },
+    })
+    return book
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore book' })
+  }
+})
+
+fastify.put('/api/trash/chapter/:chapterId/restore', async (request, reply) => {
+  const { chapterId } = request.params as { chapterId: string }
+
+  try {
+    const chapter = await prisma.chapter.update({
+      where: { id: chapterId },
+      data: { deletedAt: null },
+    })
+    return chapter
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore chapter' })
+  }
+})
+
+fastify.put('/api/trash/scene/:sceneId/restore', async (request, reply) => {
+  const { sceneId } = request.params as { sceneId: string }
+
+  try {
+    const scene = await prisma.scene.update({
+      where: { id: sceneId },
+      data: { deletedAt: null },
+    })
+    return scene
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore scene' })
+  }
+})
+
+fastify.put('/api/trash/codexentry/:entryId/restore', async (request, reply) => {
+  const { entryId } = request.params as { entryId: string }
+
+  try {
+    const entry = await prisma.codexEntry.update({
+      where: { id: entryId },
+      data: { deletedAt: null },
+    })
+    return entry
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore codex entry' })
+  }
+})
+
 // Export routes
 fastify.get('/api/books/:bookId/export', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
@@ -529,8 +703,7 @@ fastify.get('/api/search', async (request, reply) => {
 
     const scenesByBody = allScenes.filter(scene => {
       try {
-        const body = typeof scene.body === 'string' ? JSON.parse(scene.body) : scene.body
-        const text = extractTextFromScene(body)
+        const text = extractTextFromScene(scene.body)
         return text.toLowerCase().includes(query.toLowerCase())
       } catch {
         return false
@@ -541,6 +714,7 @@ fastify.get('/api/search', async (request, reply) => {
     const codexEntries = await prisma.codexEntry.findMany({
       where: {
         projectId,
+        deletedAt: null,
         OR: [
           {
             name: {

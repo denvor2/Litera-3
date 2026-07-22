@@ -28,7 +28,7 @@ export function SceneEditor({
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: typeof scene.body === 'string' ? JSON.parse(scene.body) : scene.body || {},
+    content: scene.body || {},
     onUpdate({ editor }) {
       // Clear previous timer
       if (autoSaveTimer) clearTimeout(autoSaveTimer)
@@ -41,7 +41,7 @@ export function SceneEditor({
         const wordCount = countWords(editor.getText())
         const updatedScene = {
           ...scene,
-          body: JSON.stringify(content),
+          body: content,
           wordCount,
           updatedAt: new Date().toISOString(),
         }

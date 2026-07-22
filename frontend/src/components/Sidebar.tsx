@@ -11,6 +11,9 @@ interface SidebarProps {
   onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
   onCreateBook?: () => void
   onCreateChapter?: (bookId: string) => void
+  onDeleteBook?: (bookId: string) => void
+  onDeleteChapter?: (chapterId: string) => void
+  onDeleteScene?: (sceneId: string) => void
   onCreateCodexEntry?: (type: 'character' | 'location') => void
 }
 
@@ -23,6 +26,9 @@ export function Sidebar({
   onUpdateSceneOrder,
   onCreateBook,
   onCreateChapter,
+  onDeleteBook,
+  onDeleteChapter,
+  onDeleteScene,
   onCreateCodexEntry,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
@@ -104,7 +110,7 @@ export function Sidebar({
                 <span>{book.title}</span>
                 <div className="row-actions">
                   <button className="icon-btn" title="Редактировать">✎</button>
-                  <button className="icon-btn" title="Удалить">🗑</button>
+                  <button className="icon-btn" title="Удалить" onClick={() => onDeleteBook?.(book.id)}>🗑</button>
                 </div>
               </div>
 
@@ -133,7 +139,10 @@ export function Sidebar({
                         <button
                           className="icon-btn"
                           title="Удалить"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onDeleteChapter?.(chapter.id)
+                          }}
                         >
                           🗑
                         </button>
@@ -199,7 +208,10 @@ export function Sidebar({
                                 ↓
                               </button>
                               <button className="icon-btn" title="Редактировать" onClick={(e) => e.stopPropagation()}>✎</button>
-                              <button className="icon-btn" title="Удалить" onClick={(e) => e.stopPropagation()}>🗑</button>
+                              <button className="icon-btn" title="Удалить" onClick={(e) => {
+                                e.stopPropagation()
+                                onDeleteScene?.(scene.id)
+                              }}>🗑</button>
                             </div>
                           </div>
                         ))}
@@ -253,8 +265,8 @@ export function Sidebar({
         <div className="acc-body">
           <div className="codex-subhead">Персонажи</div>
           {project?.codexEntries
-            ?.filter(e => e.type === 'character')
-            .map(entry => (
+            ?.filter((e: any) => e.type === 'character')
+            .map((entry: any) => (
               <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
                 <span>{entry.name}</span>
               </div>
@@ -270,8 +282,8 @@ export function Sidebar({
           </div>
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
           {project?.codexEntries
-            ?.filter(e => e.type === 'location')
-            .map(entry => (
+            ?.filter((e: any) => e.type === 'location')
+            .map((entry: any) => (
               <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
                 <span>{entry.name}</span>
               </div>

@@ -1,4 +1,3 @@
-import { parseAttributes } from '../utils/parseAttributes'
 import type { CodexEntry } from '../types'
 import './CodexList.css'
 
@@ -20,31 +19,31 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
 
   return (
     <div className="codex-list">
-      {entries.map(entry => (
-        <div key={entry.id} className="codex-item">
-          <div className="codex-item-header">
-            <h3>{entry.name}</h3>
-            <div className="codex-item-actions">
-              <button
-                className="btn-icon edit"
-                onClick={() => onEdit(entry)}
-                title="Редактировать"
-              >
-                ✎
-              </button>
-              <button
-                className="btn-icon delete"
-                onClick={() => onDelete?.(entry.id)}
-                title="Удалить"
-              >
-                ✕
-              </button>
+      {entries.map(entry => {
+        const attrs = (entry.attributes || {}) as Record<string, string>
+        return (
+          <div key={entry.id} className="codex-item">
+            <div className="codex-item-header">
+              <h3>{entry.name}</h3>
+              <div className="codex-item-actions">
+                <button
+                  className="btn-icon edit"
+                  onClick={() => onEdit(entry)}
+                  title="Редактировать"
+                >
+                  ✎
+                </button>
+                <button
+                  className="btn-icon delete"
+                  onClick={() => onDelete?.(entry.id)}
+                  title="Удалить"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-          </div>
 
-          {type === 'character' && entry.attributes ? (() => {
-            const attrs = parseAttributes(entry.attributes)
-            return (
+            {type === 'character' && (
               <>
                 {attrs.appearance && (
                   <div className="codex-field">
@@ -65,12 +64,9 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
                   </div>
                 )}
               </>
-            )
-          })() : null}
+            )}
 
-          {type === 'location' && entry.attributes ? (() => {
-            const attrs = parseAttributes(entry.attributes)
-            return (
+            {type === 'location' && (
               <>
                 {attrs.description && (
                   <div className="codex-field">
@@ -79,10 +75,10 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
                   </div>
                 )}
               </>
-            )
-          })() : null}
-        </div>
-      ))}
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
