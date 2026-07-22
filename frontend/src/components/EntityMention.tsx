@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { parseAttributes } from '../utils/parseAttributes'
 import type { CodexEntry } from '../types'
 import './EntityMention.css'
 
@@ -25,11 +26,14 @@ export function EntityMention({ entry }: EntityMentionProps) {
         <div className="entity-tooltip">
           <div className="tooltip-name">{entry.name}</div>
           <div className="tooltip-type">{typeLabel[entry.type as keyof typeof typeLabel]}</div>
-          {entry.attributes && typeof entry.attributes === 'object' && 'description' in entry.attributes ? (
-            <div className="tooltip-description">
-              {String((entry.attributes as Record<string, any>).description)}
-            </div>
-          ) : null}
+          {entry.attributes ? (() => {
+            const attrs = parseAttributes(entry.attributes)
+            return attrs.description ? (
+              <div className="tooltip-description">
+                {String(attrs.description)}
+              </div>
+            ) : null
+          })() : null}
         </div>
       )}
     </span>

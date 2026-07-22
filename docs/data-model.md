@@ -20,11 +20,8 @@ BOOK
   project_id        uuid FK -> PROJECT
   title             string
   order             int
-  genre             string, nullable  -- одно значение из классификатора жанров (см. design/mockup/UI-SPEC.md); переход на многие-ко-многим (несколько жанров/тегов на книгу, как на Литрес) — Фаза 2, не блокирует Фазу 0
-  synopsis          text, nullable    -- рабочий синопсис (для себя/редактора)
-  annotation        text, nullable    -- читательская аннотация (для обложки/публикации)
-  planned_volume    string, nullable  -- плановый объём, свободный текст ("8 а.л."), не строгое число — единицы у разных авторов разные
-  attributes        json, nullable    -- точка расширения: сюда идут дополнительные поля параметров книги, которые понадобятся позже, без миграции схемы (как у CODEXENTRY.attributes)
+  -- Не реализовано в Фазе 0, отложено на Фазу 2+:
+  -- genre, synopsis, annotation, planned_volume, attributes
 
 CHAPTER
   id            uuid PK
@@ -39,16 +36,18 @@ SCENE
   status            string   -- enum: draft | editing | done
   pov_character_id  uuid FK -> CODEXENTRY (nullable)
   word_count        int      -- вычисляемое поле, пересчитывается при сохранении текста
-  target_word_count int      -- nullable, задаётся пользователем; если пусто — прогресс-бар в нижней полосе не показывается (см. design/mockup/UI-SPEC.md)
-  body              text     -- сам текст сцены (или отдельная таблица SceneContent, если понадобится история)
+  body              string   -- JSON-сериализованный TipTap документ (SQLite несовместим с Json типом)
+  notes             string   -- текстовые заметки/комментарии к сцене
   order             int
+  -- Не реализовано в Фазе 0, отложено на Фазу 2+:
+  -- target_word_count, deleted_at
 
 CODEXENTRY
   id            uuid PK
   project_id    uuid FK -> PROJECT
   type          string   -- MVP: 'character' | 'location' только
   name          string
-  attributes    json     -- MVP: минимальный набор полей (внешность/характер для character, описание для location); гибкость json — точка расширения для Фазы 2
+  attributes    string   -- JSON-сериализованные поля (внешность/характер для character, описание для location); гибкость json — точка расширения для Фазы 2; хранится как String для SQLite совместимости
 
 SCENEENTITYLINK
   scene_id       uuid FK -> SCENE
@@ -59,11 +58,12 @@ VERSION
   id            uuid PK
   entity_type   string   -- MVP: только 'scene'
   entity_id     uuid
+  scene_id      uuid FK -> SCENE
+  snapshot      string   -- JSON-сериализованный TipTap документ на момент версии (String для SQLite)
   created_at    timestamp
-  snapshot      text     -- содержимое sceny на момент версии
 ```
 
-**Мягкое удаление (Корзина).** BOOK, CHAPTER, SCENE, CODEXENTRY получают поле `deleted_at` (timestamp, nullable). Удаление в UI — это `UPDATE ... SET deleted_at = now()`, не `DELETE FROM`. Все обычные выборки (дерево рукописи, списки Кодекса) фильтруют `deleted_at IS NULL`; выборка для Корзины — наоборот, `deleted_at IS NOT NULL`. Восстановление — `deleted_at = NULL`. Окончательное удаление из Корзины (настоящий `DELETE`) в Фазу 0 можно не делать — не блокирует MVP.
+**Мягкое удаление (Корзина).** Отложено на Фазу 2. BOOK, CHAPTER, SCENE, CODEXENTRY не имеют `deleted_at` в Фазе 0. Удаление элементов (кнопка 🗑) не реализовано; интерфейс показывает мёртвые кнопки удаления для будущей Фазы.
 
 **Точки расширения, которые нужно оставить, но не реализовывать в Фазе 0:**
 - `CODEXENTRY.type` — уже строка, а не enum в БД, чтобы Фаза 2 добавила новые типы без миграции схемы

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { parseAttributes } from '../utils/parseAttributes'
 import { API_BASE } from '../config'
 import type { CodexEntry } from '../types'
 import './CodexForm.css'
@@ -18,12 +19,13 @@ export function CodexForm({
   onSave,
   onCancel,
 }: CodexFormProps) {
+  const attrs = initialEntry ? parseAttributes(initialEntry.attributes) : {}
   const [formData, setFormData] = useState({
     name: initialEntry?.name || '',
-    appearance: (initialEntry?.attributes as Record<string, string>)?.appearance || '',
-    personality: (initialEntry?.attributes as Record<string, string>)?.personality || '',
-    goal_conflict: (initialEntry?.attributes as Record<string, string>)?.goal_conflict || '',
-    description: (initialEntry?.attributes as Record<string, string>)?.description || '',
+    appearance: attrs.appearance || '',
+    personality: attrs.personality || '',
+    goal_conflict: attrs.goal_conflict || '',
+    description: attrs.description || '',
   })
   const [isLoading, setIsLoading] = useState(false)
 

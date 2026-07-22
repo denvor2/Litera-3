@@ -1,3 +1,4 @@
+import { parseAttributes } from '../utils/parseAttributes'
 import type { CodexEntry } from '../types'
 import './CodexList.css'
 
@@ -41,39 +42,45 @@ export function CodexList({ entries, type, onEdit, onDelete }: CodexListProps) {
             </div>
           </div>
 
-          {type === 'character' && entry.attributes ? (
-            <>
-              {(entry.attributes as Record<string, any>).appearance && (
-                <div className="codex-field">
-                  <label>Внешность:</label>
-                  <p>{(entry.attributes as Record<string, string>).appearance}</p>
-                </div>
-              )}
-              {(entry.attributes as Record<string, string>).personality && (
-                <div className="codex-field">
-                  <label>Характер:</label>
-                  <p>{(entry.attributes as Record<string, string>).personality}</p>
-                </div>
-              )}
-              {(entry.attributes as Record<string, string>).goal_conflict && (
-                <div className="codex-field">
-                  <label>Цель/конфликт:</label>
-                  <p>{(entry.attributes as Record<string, string>).goal_conflict}</p>
-                </div>
-              )}
-            </>
-          ) : null}
+          {type === 'character' && entry.attributes ? (() => {
+            const attrs = parseAttributes(entry.attributes)
+            return (
+              <>
+                {attrs.appearance && (
+                  <div className="codex-field">
+                    <label>Внешность:</label>
+                    <p>{attrs.appearance}</p>
+                  </div>
+                )}
+                {attrs.personality && (
+                  <div className="codex-field">
+                    <label>Характер:</label>
+                    <p>{attrs.personality}</p>
+                  </div>
+                )}
+                {attrs.goal_conflict && (
+                  <div className="codex-field">
+                    <label>Цель/конфликт:</label>
+                    <p>{attrs.goal_conflict}</p>
+                  </div>
+                )}
+              </>
+            )
+          })() : null}
 
-          {type === 'location' && entry.attributes ? (
-            <>
-              {(entry.attributes as Record<string, any>).description && (
-                <div className="codex-field">
-                  <label>Описание:</label>
-                  <p>{(entry.attributes as Record<string, any>).description}</p>
-                </div>
-              )}
-            </>
-          ) : null}
+          {type === 'location' && entry.attributes ? (() => {
+            const attrs = parseAttributes(entry.attributes)
+            return (
+              <>
+                {attrs.description && (
+                  <div className="codex-field">
+                    <label>Описание:</label>
+                    <p>{attrs.description}</p>
+                  </div>
+                )}
+              </>
+            )
+          })() : null}
         </div>
       ))}
     </div>
