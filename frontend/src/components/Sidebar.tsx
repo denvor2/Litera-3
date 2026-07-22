@@ -28,6 +28,8 @@ interface SidebarProps {
   onEditChapter?: (chapterId: string, bookId: string, title: string) => void
   onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
   onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
+  onNotesChange?: (notes: string) => void
+  selectedScene?: Scene
 }
 
 export function Sidebar({
@@ -35,6 +37,7 @@ export function Sidebar({
   project,
   selectedSceneId,
   selectedBookId,
+  selectedScene,
   onSceneSelect,
   onBookSelect,
   onCreateScene,
@@ -47,7 +50,7 @@ export function Sidebar({
   onCreateCodexEntry,
   onEditChapter,
   onEditScene,
-  // onEditCodexEntry подключить в пункте 5-6
+  onNotesChange,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
@@ -381,7 +384,12 @@ export function Sidebar({
         </button>
         {openSection === 'notes' && (
         <div className="acc-body">
-          <textarea className="notes-box" placeholder="Заметки на полях..."></textarea>
+          <textarea
+            className="notes-box"
+            placeholder="Заметки на полях..."
+            value={selectedScene?.notes || ''}
+            onChange={(e) => onNotesChange?.(e.target.value)}
+          ></textarea>
         </div>
         )}
       </div>

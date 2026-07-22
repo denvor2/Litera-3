@@ -26,6 +26,7 @@ export function App() {
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -296,6 +297,26 @@ export function App() {
     setEditingItem(null)
   }
 
+  const handleNotesChange = async (notes: string) => {
+    if (!selectedScene) return
+    // Дебаунс 2 сек
+    if (noteSaveTimeoutRef.current) clearTimeout(noteSaveTimeoutRef.current)
+    noteSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/scenes/${selectedScene.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes }),
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const updated = await response.json()
+        setSelectedScene(updated)
+      } catch (error) {
+        console.error('Failed to save notes:', error)
+      }
+    }, 2000)
+  }
+
   const handleDeleteScene = async (sceneId: string) => {
     if (!project) return
     try {
@@ -444,6 +465,7 @@ export function App() {
               books={project.books}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
+              selectedScene={selectedScene || undefined}
               onSceneSelect={handleSceneSelect}
               onBookSelect={handleBookSelect}
               onCreateScene={handleCreateScene}
@@ -457,6 +479,7 @@ export function App() {
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
+              onNotesChange={handleNotesChange}
             />
           </ErrorBoundary>
         )}
