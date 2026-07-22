@@ -24,6 +24,21 @@
   flex: 1;
 }
 
+.settings-btn {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.settings-btn:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+}
+
 .app-main {
   flex: 1;
   overflow: hidden;

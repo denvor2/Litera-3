@@ -3,6 +3,7 @@ import './App.css'
 import { ManuscriptEditor } from './components/ManuscriptEditor'
 import { SearchPanel } from './components/SearchPanel'
 import { ThemeToggle } from './components/ThemeToggle'
+import { SettingsDialog } from './components/SettingsDialog'
 import { ThemeProvider } from './contexts/ThemeContext'
 import type { Project, Scene, CodexEntry } from './types'
 
@@ -11,6 +12,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     const initProject = async () => {
@@ -55,17 +57,27 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="app-header">
-        <div className="app-header-content">
-          {project && <SearchPanel projectId={project.id} />}
-          <ThemeToggle />
+    <>
+      <div className="app">
+        <div className="app-header">
+          <div className="app-header-content">
+            {project && <SearchPanel projectId={project.id} />}
+            <ThemeToggle />
+            <button
+              className="settings-btn"
+              onClick={() => setShowSettings(true)}
+              title="Настройки"
+            >
+              ⚙️
+            </button>
+          </div>
+        </div>
+        <div className="app-main">
+          <ManuscriptEditor project={project} />
         </div>
       </div>
-      <div className="app-main">
-        <ManuscriptEditor project={project} />
-      </div>
-    </div>
+      <SettingsDialog isOpen={showSettings} onClose={() => setShowSettings(false)} />
+    </>
   )
 }
 
