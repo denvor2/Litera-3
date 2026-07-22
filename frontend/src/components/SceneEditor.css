@@ -110,7 +110,8 @@
   color: #555;
 }
 
-.write-mode-btn {
+.write-mode-btn,
+.codex-btn {
   padding: 6px 12px;
   background-color: #228be6;
   color: white;
@@ -118,10 +119,20 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
 }
 
-.write-mode-btn:hover {
+.write-mode-btn:hover,
+.codex-btn:hover {
   background-color: #1971c2;
+}
+
+.codex-btn {
+  background-color: #7b68ee;
+}
+
+.codex-btn:hover {
+  background-color: #6a5acd;
 }
 
 .editor-content {

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import type { Project, Book, Chapter, Scene } from '../types'
+import type { Project, Book, Chapter, Scene, CodexEntry } from '../types'
 import { SceneEditor } from './SceneEditor'
 import { Sidebar } from './Sidebar'
+import { CodexPanel } from './CodexPanel'
 import './ManuscriptEditor.css'
 
 interface ManuscriptEditorProps {
@@ -12,8 +13,10 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [writeMode, setWriteMode] = useState(false)
   const [books, setBooks] = useState<Book[]>(project.books)
+  const [codexEntries, setCodexEntries] = useState<CodexEntry[]>([])
+  const [showCodex, setShowCodex] = useState(false)
 
-  // Auto-select first scene if available
+  // Auto-select first scene and load codex entries
   useEffect(() => {
     if (books.length > 0 && books[0].chapters && books[0].chapters.length > 0) {
       const firstScene = books[0].chapters[0].scenes?.[0]
@@ -21,7 +24,20 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
         setSelectedScene(firstScene)
       }
     }
-  }, [books, selectedScene])
+
+    // Load codex entries
+    const loadCodex = async () => {
+      try {
+        const response = await fetch(`/api/codex/${project.id}`)
+        const entries = await response.json()
+        setCodexEntries(entries)
+      } catch (error) {
+        console.error('Failed to load codex entries:', error)
+      }
+    }
+
+    loadCodex()
+  }, [books, selectedScene, project.id])
 
   const handleSceneSelect = (scene: Scene) => {
     setSelectedScene(scene)
@@ -124,6 +140,26 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
     }
   }
 
+  const handleCreateCodexEntry = (entry: CodexEntry) => {
+    setCodexEntries([...codexEntries, entry])
+  }
+
+  const handleUpdateCodexEntry = (entry: CodexEntry) => {
+    setCodexEntries(codexEntries.map(e => (e.id === entry.id ? entry : e)))
+  }
+
+  const handleDeleteCodexEntry = async (entryId: string) => {
+    try {
+      await fetch(`/api/codex/${entryId}`, { method: 'DELETE' })
+      setCodexEntries(codexEntries.filter(e => e.id !== entryId))
+    } catch (error) {
+      console.error('Failed to delete codex entry:', error)
+    }
+  }
+
+  const characters = codexEntries.filter(e => e.type === 'character')
+  const locations = codexEntries.filter(e => e.type === 'location')
+
   return (
     <div className="manuscript-editor">
       <Sidebar
@@ -140,6 +176,7 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
             onSave={handleSceneSave}
             writeMode={writeMode}
             onToggleWriteMode={() => setWriteMode(!writeMode)}
+            onToggleCodex={() => setShowCodex(!showCodex)}
           />
         ) : (
           <div className="no-scene-selected">
@@ -147,6 +184,18 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
           </div>
         )}
       </div>
+      {showCodex && (
+        <div className="codex-sidebar">
+          <CodexPanel
+            projectId={project.id}
+            characters={characters}
+            locations={locations}
+            onCreateEntry={handleCreateCodexEntry}
+            onUpdateEntry={handleUpdateCodexEntry}
+            onDeleteEntry={handleDeleteCodexEntry}
+          />
+        </div>
+      )}
     </div>
   )
 }

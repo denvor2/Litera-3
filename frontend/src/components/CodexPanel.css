@@ -1,0 +1,76 @@
+.codex-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-left: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.codex-header {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+.codex-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.codex-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #ddd;
+  background: white;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: #f5f5f5;
+}
+
+.tab.active {
+  color: #1976d2;
+  border-bottom-color: #1976d2;
+}
+
+.codex-actions {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.btn-add {
+  width: 100%;
+  padding: 8px 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background: #c8e6c9;
+}
+
+.codex-panel > div:last-child {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}

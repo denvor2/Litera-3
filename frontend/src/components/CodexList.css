@@ -1,0 +1,90 @@
+.codex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.codex-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #999;
+  font-size: 14px;
+}
+
+.codex-item {
+  padding: 12px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.codex-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.codex-item-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.codex-item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  border-color: #999;
+}
+
+.btn-icon.edit {
+  color: #1976d2;
+}
+
+.btn-icon.delete {
+  color: #d32f2f;
+}
+
+.codex-field {
+  margin: 8px 0;
+  padding: 8px;
+  background: white;
+  border-left: 3px solid #1976d2;
+  border-radius: 2px;
+}
+
+.codex-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.codex-field p {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}

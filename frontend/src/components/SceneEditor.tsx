@@ -10,6 +10,7 @@ interface SceneEditorProps {
   onSave: (scene: Scene) => void
   writeMode: boolean
   onToggleWriteMode: () => void
+  onToggleCodex?: () => void
 }
 
 const AUTOSAVE_DELAY = 2000 // 2 seconds
@@ -19,6 +20,7 @@ export function SceneEditor({
   onSave,
   writeMode,
   onToggleWriteMode,
+  onToggleCodex,
 }: SceneEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null)
@@ -141,6 +143,12 @@ export function SceneEditor({
           <button onClick={onToggleWriteMode} className="write-mode-btn">
             {writeMode ? 'Закрыть режим письма' : 'Режим письма'}
           </button>
+
+          {onToggleCodex && (
+            <button onClick={onToggleCodex} className="codex-btn">
+              📖 Кодекс
+            </button>
+          )}
         </div>
       </div>
 
