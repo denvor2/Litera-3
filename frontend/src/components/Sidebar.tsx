@@ -252,6 +252,13 @@ export function Sidebar({
         {openSection === 'codex' && (
         <div className="acc-body">
           <div className="codex-subhead">Персонажи</div>
+          {project?.codexEntries
+            ?.filter(e => e.type === 'character')
+            .map(entry => (
+              <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
+                <span>{entry.name}</span>
+              </div>
+            ))}
           <div className="add-item">
             <button
               className="add-link"
@@ -262,6 +269,13 @@ export function Sidebar({
             </button>
           </div>
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
+          {project?.codexEntries
+            ?.filter(e => e.type === 'location')
+            .map(entry => (
+              <div key={entry.id} className="codex-entry" style={{padding: '4px 8px'}}>
+                <span>{entry.name}</span>
+              </div>
+            ))}
           <div className="add-item">
             <button
               className="add-link"

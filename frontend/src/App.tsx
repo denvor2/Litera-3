@@ -241,7 +241,12 @@ export function App() {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${await response.text()}`)
       }
-      console.log(`Created ${type}`)
+      const newEntry = await response.json()
+      setProject({
+        ...project,
+        codexEntries: [...(project.codexEntries || []), newEntry],
+      })
+      console.log(`Created ${type}:`, newEntry)
     } catch (error) {
       console.error(`Failed to create ${type}:`, error)
     }
@@ -252,7 +257,8 @@ export function App() {
   if (!project) return <div className="app-error">Проект не найден</div>
 
   const wordCount = selectedScene?.wordCount ?? 0
-  const sceneText = selectedScene ? extractTextFromTipTap(selectedScene.body) : ''
+  const sceneBody = selectedScene ? (typeof selectedScene.body === 'string' ? JSON.parse(selectedScene.body) : selectedScene.body) : null
+  const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
   const charCount = countCharacters(sceneText, true)
   const authorSheets = countAuthorSheets(charCount).toFixed(2)
   const pages = countPages(charCount).toFixed(0)
@@ -308,6 +314,7 @@ export function App() {
         <div className="center">
           {selectedScene ? (
             <SceneEditor
+              key={selectedScene.id}
               scene={selectedScene}
               onSave={handleSceneSave}
             />

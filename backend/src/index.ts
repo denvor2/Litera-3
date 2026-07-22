@@ -32,6 +32,7 @@ fastify.get('/api/projects', async (request, reply) => {
           },
         },
       },
+      codexEntries: true,
     },
   })
   return projects
@@ -124,6 +125,13 @@ fastify.post('/api/books', async (request, reply) => {
       projectId,
       title,
       order: (maxOrder?.order ?? 0) + 1,
+    },
+    include: {
+      chapters: {
+        include: {
+          scenes: true,
+        },
+      },
     },
   })
   return book
@@ -299,12 +307,13 @@ fastify.post('/api/codex', async (request, reply) => {
   }
 
   try {
+    const attributesStr = typeof attributes === 'string' ? attributes : JSON.stringify(attributes || {})
     const entry = await prisma.codexEntry.create({
       data: {
         projectId,
         type,
         name,
-        attributes: attributes || {},
+        attributes: attributesStr,
       },
     })
     return entry
