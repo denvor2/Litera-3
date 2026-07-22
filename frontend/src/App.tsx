@@ -8,10 +8,18 @@ import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages }
 import { API_BASE } from './config'
 import type { Project, Scene, Book } from './types'
 
+interface EditingItem {
+  type: 'chapter' | 'scene' | 'codexEntry'
+  id: string
+  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry
+  data: Record<string, any>
+}
+
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [zenMode] = useState(false)
@@ -232,6 +240,62 @@ export function App() {
     }
   }
 
+  const handleEdit = (type: 'chapter' | 'scene' | 'codexEntry', id: string, parentId: string | undefined, data: Record<string, any>) => {
+    setEditingItem({ type, id, parentId, data: { ...data } })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingItem || !project) return
+    try {
+      const { type, id, parentId, data } = editingItem
+      const endpoint = type === 'chapter' ? `/api/chapters/${id}` :
+                       type === 'scene' ? `/api/scenes/${id}` :
+                       `/api/codex/${id}`
+
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const updated = await response.json()
+
+      if (type === 'chapter' && parentId) {
+        setProject({
+          ...project,
+          books: project.books.map(b =>
+            b.id === parentId
+              ? { ...b, chapters: b.chapters.map(c => (c.id === id ? updated : c)) }
+              : b
+          ),
+        })
+      } else if (type === 'scene' && parentId) {
+        const updatedBooks = project.books.map(b => ({
+          ...b,
+          chapters: b.chapters.map(c =>
+            c.id === parentId ? { ...c, scenes: c.scenes.map(s => (s.id === id ? updated : s)) } : c
+          ),
+        }))
+        setProject({ ...project, books: updatedBooks })
+        if (selectedScene?.id === id) setSelectedScene(updated)
+      } else if (type === 'codexEntry') {
+        setProject({
+          ...project,
+          codexEntries: project.codexEntries?.map(e => (e.id === id ? updated : e)) || [],
+        })
+      }
+      setEditingItem(null)
+    } catch (error) {
+      console.error('Failed to save:', error)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingItem(null)
+  }
+
   const handleDeleteScene = async (sceneId: string) => {
     if (!project) return
     try {
@@ -390,13 +454,42 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
+              onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
+              onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
+              onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
             />
           </ErrorBoundary>
         )}
 
         {/* Center */}
         <div className="center">
-          {selectedScene ? (
+          {editingItem ? (
+            <div className="center-card">
+              <div className="head">
+                <h2>{editingItem.type === 'chapter' ? 'Редактировать главу' :
+                      editingItem.type === 'scene' ? 'Редактировать сцену' :
+                      'Редактировать запись'}</h2>
+              </div>
+
+              {editingItem.type === 'chapter' && (
+                <div className="field">
+                  <label>Название</label>
+                  <input
+                    type="text"
+                    value={editingItem.data.title}
+                    onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                    className="bc-input"
+                    placeholder="Название главы"
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+                <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
+                <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
+              </div>
+            </div>
+          ) : selectedScene ? (
             <SceneEditor
               key={selectedScene.id}
               scene={selectedScene}

@@ -25,6 +25,9 @@ interface SidebarProps {
   onDeleteChapter?: (chapterId: string) => void
   onDeleteScene?: (sceneId: string) => void
   onCreateCodexEntry?: (type: 'character' | 'location') => void
+  onEditChapter?: (chapterId: string, bookId: string, title: string) => void
+  onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
+  onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
 }
 
 export function Sidebar({
@@ -42,7 +45,9 @@ export function Sidebar({
   onDeleteChapter,
   onDeleteScene,
   onCreateCodexEntry,
+  onEditChapter,
 }: SidebarProps) {
+  // TODO: onEditScene и onEditCodexEntry подключить в пунктах 4-6
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
   const [draggedScene, setDraggedScene] = useState<Scene | null>(null)
@@ -201,7 +206,10 @@ export function Sidebar({
                         <button
                           className="icon-btn"
                           title="Редактировать"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onEditChapter?.(chapter.id, book.id, chapter.title)
+                          }}
                         >
                           ✎
                         </button>
