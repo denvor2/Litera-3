@@ -13,7 +13,7 @@ export function App() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [zenMode, setZenMode] = useState(false)
+  const [zenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -366,9 +366,6 @@ export function App() {
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {currentBook && <ExportButton book={currentBook as Book} />}
-          <button className="zen-toggle" onClick={() => setZenMode(!zenMode)}>
-            ⛓️ Режим письма
-          </button>
         </div>
       </div>
 
