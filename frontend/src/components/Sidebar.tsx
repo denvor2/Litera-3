@@ -290,21 +290,26 @@ export function Sidebar({
           <div className="codex-subhead">Персонажи</div>
           {project?.codexEntries
             ?.filter((e: any) => e.type === 'character')
-            .map((entry: any) => (
-              <div key={entry.id} className="chip">
-                <div className="chip-avatar">
-                  {entry.name.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+            .map((entry: any) => {
+              const initials = entry.name
+                .split(' ')
+                .slice(0, 2)
+                .map((word: string) => word.charAt(0).toUpperCase())
+                .join('')
+              return (
+                <div key={entry.id} className="chip">
+                  <div className="chip-avatar">{initials}</div>
                   <div className="chip-name">{entry.name}</div>
-                  <div className="chip-type">персонаж</div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div className="chip-type">перс.</div>
+                    <div className="row-actions">
+                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Удалить">🗑</button>
+                    </div>
+                  </div>
                 </div>
-                <div className="row-actions">
-                  <button className="icon-btn" title="Редактировать">✎</button>
-                  <button className="icon-btn" title="Удалить">🗑</button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           <div className="add-item">
             <button
               className="add-link"
@@ -314,21 +319,26 @@ export function Sidebar({
           <div className="codex-subhead" style={{marginTop: '12px'}}>Локации</div>
           {project?.codexEntries
             ?.filter((e: any) => e.type === 'location')
-            .map((entry: any) => (
-              <div key={entry.id} className="chip">
-                <div className="chip-avatar">
-                  {entry.name.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+            .map((entry: any) => {
+              const initials = entry.name
+                .split(' ')
+                .slice(0, 2)
+                .map((word: string) => word.charAt(0).toUpperCase())
+                .join('')
+              return (
+                <div key={entry.id} className="chip">
+                  <div className="chip-avatar">{initials}</div>
                   <div className="chip-name">{entry.name}</div>
-                  <div className="chip-type">локация</div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div className="chip-type">лок.</div>
+                    <div className="row-actions">
+                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Удалить">🗑</button>
+                    </div>
+                  </div>
                 </div>
-                <div className="row-actions">
-                  <button className="icon-btn" title="Редактировать">✎</button>
-                  <button className="icon-btn" title="Удалить">🗑</button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           <div className="add-item">
             <button
               className="add-link"

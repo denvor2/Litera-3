@@ -266,6 +266,7 @@
   -webkit-user-select: none;
   transition: background-color 0.15s, color 0.15s;
   text-align: left;
+  justify-content: flex-start !important;
 }
 
 .acc-summary:hover {
@@ -475,22 +476,14 @@
 
 .scene-row:hover .row-actions,
 .chapter-row:hover .row-actions,
-.book-row:hover .row-actions {
+.book-row:hover .row-actions,
+.chip:hover .row-actions {
   opacity: 1;
 }
 
 .icon-btn {
-  padding: 2px 4px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  font-size: 11px;
   cursor: pointer;
   transition: background-color 0.15s;
-}
-
-.icon-btn:hover {
-  background-color: var(--surface-2);
 }
 
 /* Добавление элементов */
@@ -500,12 +493,9 @@
 }
 
 .add-link {
-  font-size: 12px;
-  color: var(--ink-muted);
   cursor: pointer;
   text-decoration: none;
   transition: color 0.15s;
-  border-bottom: 0.5px solid transparent;
 }
 
 .add-link:hover {
@@ -582,6 +572,40 @@
   opacity: 0.7;
 }
 
+/* Reset global button styles for sidebar utility buttons */
+.add-link,
+.icon-btn,
+.acc-summary,
+.chapter-toggle,
+.book-select,
+.add-book,
+.trash-restore-link {
+  min-height: auto !important;
+  min-width: auto !important;
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  color: inherit !important;
+  justify-content: flex-start !important;
+}
+
+.add-link {
+  font-size: 12px;
+  color: var(--ink-muted) !important;
+}
+
+.icon-btn {
+  font-size: 11px;
+  color: var(--ink-muted) !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+}
+
+.icon-btn:hover {
+  background-color: var(--surface-2) !important;
+  color: var(--ink) !important;
+}
+
 /* Кодекс чипы */
 .chip {
   display: flex;
@@ -598,7 +622,6 @@
 
 .chip:hover {
   border-color: var(--border-strong);
-  background-color: var(--surface-2);
 }
 
 .chip-avatar {
@@ -624,6 +647,8 @@
 .chip-type {
   font-size: 10px;
   color: var(--ink-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Переключатель книги */
