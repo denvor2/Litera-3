@@ -153,6 +153,22 @@ fastify.post('/api/books', async (request, reply) => {
   return book
 })
 
+fastify.put('/api/books/:bookId', async (request, reply) => {
+  const { bookId } = request.params as { bookId: string }
+  const { title } = request.body as { title?: string }
+
+  try {
+    const book = await prisma.book.update({
+      where: { id: bookId },
+      data: { ...(title && { title }) },
+    })
+    return book
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update book' })
+  }
+})
+
 fastify.delete('/api/books/:bookId', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
 
@@ -184,6 +200,22 @@ fastify.post('/api/chapters', async (request, reply) => {
     },
   })
   return chapter
+})
+
+fastify.put('/api/chapters/:chapterId', async (request, reply) => {
+  const { chapterId } = request.params as { chapterId: string }
+  const { title } = request.body as { title?: string }
+
+  try {
+    const chapter = await prisma.chapter.update({
+      where: { id: chapterId },
+      data: { ...(title && { title }) },
+    })
+    return chapter
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update chapter' })
+  }
 })
 
 fastify.delete('/api/chapters/:chapterId', async (request, reply) => {

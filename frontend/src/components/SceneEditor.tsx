@@ -108,7 +108,16 @@ export function SceneEditor({
     <div className={`scene-editor ${writeMode ? 'write-mode' : ''}`}>
       <div className="scene-toolbar">
         <div className="scene-title-bar">
-          <h1 contentEditable suppressContentEditableWarning>
+          <h1
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => {
+              const newTitle = e.currentTarget.textContent || ''
+              if (newTitle !== scene.title) {
+                onSave({ ...scene, title: newTitle })
+              }
+            }}
+          >
             {scene.title}
           </h1>
           <div className="save-status">
