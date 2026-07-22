@@ -1,0 +1,16 @@
+
+> backend@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":30,"time":1784716945950,"pid":49416,"hostname":"EMK","msg":"Server listening at http://127.0.0.1:3000"}
+Server running on http://localhost:3000
+{"level":30,"time":1784716945950,"pid":49416,"hostname":"EMK","msg":"Server listening at http://172.18.0.1:3000"}
+{"level":30,"time":1784716945950,"pid":49416,"hostname":"EMK","msg":"Server listening at http://192.168.1.100:3000"}
+{"level":30,"time":1784716945950,"pid":49416,"hostname":"EMK","msg":"Server listening at http://172.18.144.1:3000"}
+{"level":30,"time":1784716945950,"pid":49416,"hostname":"EMK","msg":"Server listening at http://172.23.16.1:3000"}
+{"level":30,"time":1784717013803,"pid":49416,"hostname":"EMK","reqId":"req-1","req":{"method":"GET","url":"/api/projects","host":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":61324},"msg":"incoming request"}
+{"level":30,"time":1784717013822,"pid":49416,"hostname":"EMK","reqId":"req-1","res":{"statusCode":200},"responseTime":18.44680000000517,"msg":"request completed"}
+{"level":30,"time":1784717021276,"pid":49416,"hostname":"EMK","reqId":"req-2","req":{"method":"GET","url":"/api/projects","host":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":39714},"msg":"incoming request"}
+{"level":30,"time":1784717021279,"pid":49416,"hostname":"EMK","reqId":"req-2","res":{"statusCode":200},"responseTime":2.932300000000396,"msg":"request completed"}
+{"level":30,"time":1784717828488,"pid":49416,"hostname":"EMK","reqId":"req-3","req":{"method":"GET","url":"/api/projects","host":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":48338},"msg":"incoming request"}
+{"level":30,"time":1784717828491,"pid":49416,"hostname":"EMK","reqId":"req-3","res":{"statusCode":200},"responseTime":3.0239999999757856,"msg":"request completed"}

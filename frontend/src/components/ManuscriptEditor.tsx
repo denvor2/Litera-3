@@ -28,7 +28,7 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
     // Load codex entries
     const loadCodex = async () => {
       try {
-        const response = await fetch(`/api/codex/${project.id}`)
+        const response = await fetch(`http://localhost:3000/api/codex/${project.id}`)
         const entries = await response.json()
         setCodexEntries(entries)
       } catch (error) {
@@ -46,7 +46,7 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
   const handleSceneSave = async (updatedScene: Scene) => {
     try {
       // Save to API
-      await fetch(`/api/scenes/${updatedScene.id}`, {
+      await fetch(`http://localhost:3000/api/scenes/${updatedScene.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedScene),
@@ -150,7 +150,7 @@ export function ManuscriptEditor({ project }: ManuscriptEditorProps) {
 
   const handleDeleteCodexEntry = async (entryId: string) => {
     try {
-      await fetch(`/api/codex/${entryId}`, { method: 'DELETE' })
+      await fetch(`http://localhost:3000/api/codex/${entryId}`, { method: 'DELETE' })
       setCodexEntries(codexEntries.filter(e => e.id !== entryId))
     } catch (error) {
       console.error('Failed to delete codex entry:', error)

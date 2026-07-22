@@ -26,7 +26,7 @@ export function VersionHistory({ scene, onRestore }: VersionHistoryProps) {
     const loadVersions = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`/api/scenes/${scene.id}/versions`)
+        const response = await fetch(`http://localhost:3000/api/scenes/${scene.id}/versions`)
         const data = await response.json()
         setVersions(data)
       } catch (error) {

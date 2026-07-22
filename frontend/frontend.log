@@ -1,0 +1,23 @@
+
+> frontend@1.0.0 dev
+> vite --host 0.0.0.0 --port 5176
+
+
+  VITE v5.4.21  ready in 367 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://172.18.0.1:5176/
+  ➜  Network: http://192.168.1.100:5176/
+  ➜  Network: http://172.18.144.1:5176/
+  ➜  Network: http://172.23.16.1:5176/
+13:43:54 [vite] hmr update /src/App.tsx
+13:57:18 [vite] hmr update /src/App.tsx
+13:58:48 [vite] hmr update /src/App.tsx
+14:00:15 [vite] hmr update /src/App.tsx
+14:00:21 [vite] hmr update /src/App.tsx
+14:00:35 [vite] hmr update /src/components/ManuscriptEditor.tsx
+14:00:43 [vite] hmr update /src/components/VersionHistory.tsx
+14:00:49 [vite] hmr update /src/components/CodexForm.tsx
+14:00:59 [vite] hmr update /src/components/SearchPanel.tsx
+14:01:08 [vite] vite.config.ts changed, restarting server...
+14:01:08 [vite] server restarted.

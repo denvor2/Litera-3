@@ -61,7 +61,7 @@ export function CodexForm({
 
       if (initialEntry) {
         // Update
-        await fetch(`/api/codex/${initialEntry.id}`, {
+        await fetch(`http://localhost:3000/api/codex/${initialEntry.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: formData.name, attributes }),

@@ -17,13 +17,32 @@ function App() {
   useEffect(() => {
     const initProject = async () => {
       try {
-        const response = await fetch('/api/projects')
-        const projects = await response.json()
+        const apiUrl = 'http://localhost:3000/api/projects'
+        console.log('Fetching projects from:', apiUrl)
+        const response = await fetch(apiUrl)
+        console.log('Response status:', response.status, response.statusText)
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`)
+        }
+
+        const text = await response.text()
+        console.log('Response text length:', text.length)
+        console.log('Response text:', text.substring(0, 200))
+
+        if (!text) {
+          throw new Error('Empty response from API')
+        }
+
+        const projects = JSON.parse(text)
+        console.log('Parsed projects:', projects.length)
+
         if (projects.length > 0) {
+          console.log('Using first project:', projects[0].title)
           setProject(projects[0])
         } else {
-          // Create default project if none exists
-          const createResponse = await fetch('/api/projects', {
+          console.log('No projects found, creating new one...')
+          const createResponse = await fetch('http://localhost:3000/api/projects', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -31,11 +50,16 @@ function App() {
               ownerId: 'default-user',
             }),
           })
+          if (!createResponse.ok) throw new Error(`Create failed: ${createResponse.status}`)
           const newProject = await createResponse.json()
+          console.log('Created project:', newProject.title)
           setProject(newProject)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+        console.error('Full error:', err)
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('Error message:', msg)
+        setError(msg)
       } finally {
         setLoading(false)
       }
@@ -49,11 +73,26 @@ function App() {
   }
 
   if (error) {
-    return <div className="error">Ошибка: {error}</div>
+    return (
+      <div className="error" style={{ padding: '20px', whiteSpace: 'pre-wrap', textAlign: 'left', fontFamily: 'monospace' }}>
+        <h3>Ошибка при загрузке проекта:</h3>
+        <code>{error}</code>
+        <p style={{ fontSize: '12px', marginTop: '20px', color: '#666' }}>
+          Откройте F12 → Network tab, сделайте Ctrl+R и проверьте запрос к /api/projects
+        </p>
+      </div>
+    )
   }
 
   if (!project) {
-    return <div className="error">Проект не найден</div>
+    return (
+      <div className="error">
+        <p>Проект не найден</p>
+        <p style={{ fontSize: '12px', color: '#666' }}>
+          Откройте F12 (DevTools) → Console для диагностики
+        </p>
+      </div>
+    )
   }
 
   return (
