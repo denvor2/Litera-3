@@ -484,6 +484,33 @@ export function App() {
                 </div>
               )}
 
+              {editingItem.type === 'scene' && (
+                <>
+                  <div className="field">
+                    <label>Название</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название сцены"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Статус</label>
+                    <select
+                      value={editingItem.data.status || 'draft'}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, status: e.target.value } })}
+                      className="bc-select"
+                    >
+                      <option value="draft">Черновик</option>
+                      <option value="editing">Редактирование</option>
+                      <option value="done">Готово</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
                 <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>

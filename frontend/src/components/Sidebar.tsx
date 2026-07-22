@@ -46,8 +46,9 @@ export function Sidebar({
   onDeleteScene,
   onCreateCodexEntry,
   onEditChapter,
+  onEditScene,
+  // onEditCodexEntry подключить в пункте 5-6
 }: SidebarProps) {
-  // TODO: onEditScene и onEditCodexEntry подключить в пунктах 4-6
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
   const [draggedScene, setDraggedScene] = useState<Scene | null>(null)
@@ -256,7 +257,10 @@ export function Sidebar({
                               <span className="scene-wc">{scene.wordCount}</span>
                             </button>
                             <div className="row-actions">
-                              <button className="icon-btn" title="Редактировать" onClick={(e) => e.stopPropagation()}>✎</button>
+                              <button className="icon-btn" title="Редактировать" onClick={(e) => {
+                                e.stopPropagation()
+                                onEditScene?.(scene.id, chapter.id, { title: scene.title, status: scene.status })
+                              }}>✎</button>
                               <button className="icon-btn" title="Удалить" onClick={(e) => {
                                 e.stopPropagation()
                                 onDeleteScene?.(scene.id)
