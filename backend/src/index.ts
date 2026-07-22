@@ -12,6 +12,16 @@ const fastify = Fastify({
 
 const prisma = new PrismaClient()
 
+function getDispositionHeader(filename: string, ext: string): string {
+  // RFC 5987: для любого текста используем percent-encoded UTF-8
+  const encoded = Buffer.from(`${filename}.${ext}`, 'utf-8')
+    .toString('hex')
+    .match(/.{2}/g)
+    ?.map(h => `%${h}`)
+    .join('') || `${filename}.${ext}`
+  return `attachment; filename*=UTF-8''${encoded}`
+}
+
 // Register CORS
 fastify.register(cors, {
   origin: true,
@@ -650,21 +660,21 @@ fastify.get('/api/books/:bookId/export', async (request, reply) => {
     if (format === 'fb2') {
       const fb2Content = await exportBookToFb2(bookId)
       reply.type('application/xml')
-      reply.header('Content-Disposition', `attachment; filename="${book.title}.fb2"`)
+      reply.header('Content-Disposition', getDispositionHeader(book.title, 'fb2'))
       return reply.send(fb2Content)
     }
 
     if (format === 'pdf') {
       const pdfBuffer = await exportBookToPdf(bookId)
       reply.type('application/pdf')
-      reply.header('Content-Disposition', `attachment; filename="${book.title}.pdf"`)
+      reply.header('Content-Disposition', getDispositionHeader(book.title, 'pdf'))
       return reply.send(pdfBuffer)
     }
 
     // Default to docx
     const docxBuffer = await exportBookToDocx(bookId)
     reply.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    reply.header('Content-Disposition', `attachment; filename="${book.title}.docx"`)
+    reply.header('Content-Disposition', getDispositionHeader(book.title, 'docx'))
     return reply.send(docxBuffer)
   } catch (error) {
     fastify.log.error(error)
