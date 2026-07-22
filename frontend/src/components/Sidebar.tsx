@@ -239,34 +239,6 @@ export function Sidebar({
                               <span className="scene-wc">{scene.wordCount}</span>
                             </button>
                             <div className="row-actions">
-                              <button
-                                className="icon-btn"
-                                title="Переместить выше"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const sceneIndex = chapter.scenes.findIndex(s => s.id === scene.id)
-                                  if (sceneIndex > 0) {
-                                    const targetScene = chapter.scenes[sceneIndex - 1]
-                                    onUpdateSceneOrder?.(scene.id, chapter.id, targetScene.order - 1)
-                                  }
-                                }}
-                              >
-                                ↑
-                              </button>
-                              <button
-                                className="icon-btn"
-                                title="Переместить ниже"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const sceneIndex = chapter.scenes.findIndex(s => s.id === scene.id)
-                                  if (sceneIndex < chapter.scenes.length - 1) {
-                                    const targetScene = chapter.scenes[sceneIndex + 1]
-                                    onUpdateSceneOrder?.(scene.id, chapter.id, targetScene.order + 1)
-                                  }
-                                }}
-                              >
-                                ↓
-                              </button>
                               <button className="icon-btn" title="Редактировать" onClick={(e) => e.stopPropagation()}>✎</button>
                               <button className="icon-btn" title="Удалить" onClick={(e) => {
                                 e.stopPropagation()
