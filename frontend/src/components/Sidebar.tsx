@@ -50,6 +50,7 @@ export function Sidebar({
   onCreateCodexEntry,
   onEditChapter,
   onEditScene,
+  onEditCodexEntry,
   onNotesChange,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
@@ -327,7 +328,9 @@ export function Sidebar({
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div className="chip-type">перс.</div>
                     <div className="row-actions">
-                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Редактировать" onClick={() => {
+                        onEditCodexEntry?.(entry.id, { name: entry.name })
+                      }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
                   </div>
@@ -356,7 +359,9 @@ export function Sidebar({
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div className="chip-type">лок.</div>
                     <div className="row-actions">
-                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Редактировать" onClick={() => {
+                        onEditCodexEntry?.(entry.id, { name: entry.name })
+                      }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
                   </div>

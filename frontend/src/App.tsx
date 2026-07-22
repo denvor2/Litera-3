@@ -534,6 +534,19 @@ export function App() {
                 </>
               )}
 
+              {editingItem.type === 'codexEntry' && (
+                <div className="field">
+                  <label>Название</label>
+                  <input
+                    type="text"
+                    value={editingItem.data.name}
+                    onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                    className="bc-input"
+                    placeholder="Название записи"
+                  />
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
                 <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
