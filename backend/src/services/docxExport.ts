@@ -1,38 +1,8 @@
-import { Document, Packer, Paragraph, HeadingLevel, convertInchesToTwip, TextRun } from 'docx'
+import { Document, Packer, Paragraph, HeadingLevel } from 'docx'
 import { PrismaClient } from '@prisma/client'
+import { extractTextFromTipTap, type TipTapNode } from '../utils/tiptap.js'
 
 const prisma = new PrismaClient()
-
-interface TipTapNode {
-  type: string
-  content?: TipTapNode[]
-  text?: string
-  marks?: Array<{ type: string }>
-  attrs?: Record<string, unknown>
-  level?: number
-}
-
-function extractTextFromTipTap(node: TipTapNode | TipTapNode[] | undefined): string {
-  if (!node) return ''
-
-  if (Array.isArray(node)) {
-    return node.map(n => extractTextFromTipTap(n)).join('')
-  }
-
-  if (node.type === 'text') {
-    return node.text || ''
-  }
-
-  if (node.type === 'doc' || node.type === 'paragraph' || node.type === 'bullet_list' || node.type === 'ordered_list') {
-    return extractTextFromTipTap(node.content)
-  }
-
-  if (node.type === 'list_item' || node.type === 'blockquote' || node.type === 'heading') {
-    return extractTextFromTipTap(node.content)
-  }
-
-  return ''
-}
 
 function convertTipTapToDocxParagraphs(body: unknown): Paragraph[] {
   const doc = body as TipTapNode | undefined
@@ -70,7 +40,7 @@ function convertTipTapToDocxParagraphs(body: unknown): Paragraph[] {
       )
     }
 
-    if (node.type === 'bullet_list' || node.type === 'ordered_list') {
+    if (node.type === 'bulletList' || node.type === 'orderedList' || node.type === 'bullet_list' || node.type === 'ordered_list') {
       const items = node.content as TipTapNode[] | undefined
       if (items) {
         for (const item of items) {

@@ -24,7 +24,7 @@ function convertTipTapToFb2Xml(body: unknown): string {
       xml += `<subtitle>${escapeXml(text)}</subtitle>\n`
     }
 
-    if (node.type === 'bullet_list' || node.type === 'ordered_list') {
+    if (node.type === 'bulletList' || node.type === 'orderedList' || node.type === 'bullet_list' || node.type === 'ordered_list') {
       const items = node.content as TipTapNode[] | undefined
       if (items) {
         for (const item of items) {

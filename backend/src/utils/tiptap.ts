@@ -18,11 +18,23 @@ export function extractTextFromTipTap(node: TipTapNode | TipTapNode[] | undefine
     return node.text || ''
   }
 
-  if (node.type === 'doc' || node.type === 'paragraph' || node.type === 'bullet_list' || node.type === 'ordered_list') {
-    return extractTextFromTipTap(node.content)
-  }
+  // Контейнерные ноды: рекурсивно обходим содержимое.
+  // TipTap StarterKit использует camelCase (bulletList/orderedList/listItem),
+  // поддерживаем и snake_case на случай legacy-данных.
+  const containerTypes = new Set([
+    'doc',
+    'paragraph',
+    'heading',
+    'blockquote',
+    'bulletList',
+    'orderedList',
+    'listItem',
+    'bullet_list',
+    'ordered_list',
+    'list_item',
+  ])
 
-  if (node.type === 'list_item' || node.type === 'blockquote' || node.type === 'heading') {
+  if (containerTypes.has(node.type)) {
     return extractTextFromTipTap(node.content)
   }
 

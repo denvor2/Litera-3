@@ -540,6 +540,68 @@
   color: var(--ink-muted);
 }
 
+.trash-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background-color: var(--surface-2);
+  border-radius: 4px;
+  font-size: 12px;
+  gap: 8px;
+}
+
+.trash-item:hover {
+  background-color: var(--border);
+}
+
+.trash-item-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.trash-item-type {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.trash-item-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-2);
+}
+
+.trash-restore-btn {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  min-height: 32px;
+  min-width: 32px;
+  font-size: 14px;
+  background-color: var(--surface);
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.trash-restore-btn:hover {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Переключатель книги */
 .book-switch-row {
   display: flex;

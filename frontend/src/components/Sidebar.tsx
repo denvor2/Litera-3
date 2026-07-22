@@ -1,6 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Book, Scene, Project } from '../types'
+import { API_BASE } from '../config'
 import './Sidebar.css'
+
+interface TrashItem {
+  type: 'book' | 'chapter' | 'scene' | 'codexentry'
+  id: string
+  title: string
+  bookId?: string
+}
 
 interface SidebarProps {
   books?: Book[]
@@ -38,7 +46,43 @@ export function Sidebar({
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
   const [draggedScene, setDraggedScene] = useState<Scene | null>(null)
+  const [trashItems, setTrashItems] = useState<TrashItem[]>([])
+  const [trashLoading, setTrashLoading] = useState(false)
   const currentBookId = selectedBookId || books[0]?.id
+
+  useEffect(() => {
+    if (openSection === 'trash' && project && trashItems.length === 0) {
+      loadTrash()
+    }
+  }, [openSection, project])
+
+  const loadTrash = async () => {
+    if (!project) return
+    setTrashLoading(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/trash/${project.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setTrashItems(data)
+      }
+    } catch (error) {
+      console.error('Failed to load trash:', error)
+    } finally {
+      setTrashLoading(false)
+    }
+  }
+
+  const handleRestore = async (item: TrashItem) => {
+    try {
+      const endpoint = `${API_BASE}/api/trash/${item.type}/${item.id}/restore`
+      const response = await fetch(endpoint, { method: 'PUT' })
+      if (response.ok) {
+        setTrashItems(trashItems.filter(t => t.id !== item.id))
+      }
+    } catch (error) {
+      console.error('Failed to restore item:', error)
+    }
+  }
 
   const toggleChapter = (chapterId: string) => {
     const newSet = new Set(expandedChapters)
@@ -337,7 +381,34 @@ export function Sidebar({
         </button>
         {openSection === 'trash' && (
         <div className="acc-body">
-          <div className="trash-empty">Корзина пуста</div>
+          {trashLoading ? (
+            <div className="trash-empty">Загрузка...</div>
+          ) : trashItems.length === 0 ? (
+            <div className="trash-empty">Корзина пуста</div>
+          ) : (
+            <div className="trash-items">
+              {trashItems.map((item) => (
+                <div key={`${item.type}-${item.id}`} className="trash-item">
+                  <div className="trash-item-info">
+                    <span className="trash-item-type" title={item.type}>
+                      {item.type === 'book' && '📖'}
+                      {item.type === 'chapter' && '📄'}
+                      {item.type === 'scene' && '🎬'}
+                      {item.type === 'codexentry' && '🎭'}
+                    </span>
+                    <span className="trash-item-title">{item.title}</span>
+                  </div>
+                  <button
+                    className="trash-restore-btn"
+                    onClick={() => handleRestore(item)}
+                    title="Восстановить"
+                  >
+                    ⟲
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         )}
       </div>

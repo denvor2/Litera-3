@@ -31,6 +31,23 @@ export async function exportBookToPdf(bookId: string): Promise<Buffer> {
     bufferPages: true,
   })
 
+  let fontRegistered = false
+  try {
+    doc.registerFont('Body', 'C:\\Windows\\Fonts\\arial.ttf')
+    doc.registerFont('BodyBold', 'C:\\Windows\\Fonts\\arialbd.ttf')
+    fontRegistered = true
+  } catch {
+    try {
+      doc.registerFont('Body', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+      doc.registerFont('BodyBold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')
+      fontRegistered = true
+    } catch {
+    }
+  }
+
+  const bodyFont = fontRegistered ? 'BodyBold' : 'Helvetica-Bold'
+  const defaultFont = fontRegistered ? 'Body' : 'Helvetica'
+
   // Collect output
   const chunks: Buffer[] = []
   await new Promise<void>((resolve, reject) => {
@@ -39,28 +56,28 @@ export async function exportBookToPdf(bookId: string): Promise<Buffer> {
     doc.on('error', reject)
 
     // Title
-    doc.fontSize(24).font('Helvetica-Bold').text(book.title, { align: 'center' })
+    doc.fontSize(24).font(bodyFont).text(book.title, { align: 'center' })
     doc.moveDown(0.5)
-    doc.fontSize(11).font('Helvetica').text(`Дата: ${new Date().toLocaleDateString('ru-RU')}`, { align: 'center' })
+    doc.fontSize(11).font(defaultFont).text(`Дата: ${new Date().toLocaleDateString('ru-RU')}`, { align: 'center' })
     doc.moveDown(1)
 
     // Chapters and scenes
     for (const chapter of book.chapters) {
       // Chapter heading
-      doc.fontSize(16).font('Helvetica-Bold').text(chapter.title)
+      doc.fontSize(16).font(bodyFont).text(chapter.title)
       doc.moveDown(0.3)
-      doc.fontSize(11).font('Helvetica')
+      doc.fontSize(11).font(defaultFont)
 
       // Scenes
       for (const scene of chapter.scenes) {
         if (scene.status === 'DRAFT' || scene.status === 'EDITING') {
           // Scene title
-          doc.fontSize(13).font('Helvetica-Bold').text(scene.title)
+          doc.fontSize(13).font(bodyFont).text(scene.title)
           doc.moveDown(0.2)
 
           // Scene content
           const text = extractTextFromTipTap(scene.body as any)
-          doc.fontSize(11).font('Helvetica').text(text, {
+          doc.fontSize(11).font(defaultFont).text(text, {
             align: 'justify',
             continued: false,
           })

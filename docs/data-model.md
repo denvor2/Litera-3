@@ -20,6 +20,7 @@ BOOK
   project_id        uuid FK -> PROJECT
   title             string
   order             int
+  deleted_at        timestamp (nullable) -- мягкое удаление; null = активная книга, значение = в корзине
   -- Не реализовано в Фазе 0, отложено на Фазу 2+:
   -- genre, synopsis, annotation, planned_volume, attributes
 
@@ -28,6 +29,7 @@ CHAPTER
   book_id       uuid FK -> BOOK
   title         string
   order         int
+  deleted_at    timestamp (nullable) -- мягкое удаление; null = активная глава, значение = в корзине
 
 SCENE
   id                uuid PK
@@ -36,18 +38,20 @@ SCENE
   status            string   -- enum: draft | editing | done
   pov_character_id  uuid FK -> CODEXENTRY (nullable)
   word_count        int      -- вычисляемое поле, пересчитывается при сохранении текста
-  body              string   -- JSON-сериализованный TipTap документ (SQLite несовместим с Json типом)
+  body              json     -- TipTap документ, хранится как JSONB в PostgreSQL
   notes             string   -- текстовые заметки/комментарии к сцене
   order             int
+  deleted_at        timestamp (nullable) -- мягкое удаление; null = активная сцена, значение = в корзине
   -- Не реализовано в Фазе 0, отложено на Фазу 2+:
-  -- target_word_count, deleted_at
+  -- target_word_count
 
 CODEXENTRY
   id            uuid PK
   project_id    uuid FK -> PROJECT
   type          string   -- MVP: 'character' | 'location' только
   name          string
-  attributes    string   -- JSON-сериализованные поля (внешность/характер для character, описание для location); гибкость json — точка расширения для Фазы 2; хранится как String для SQLite совместимости
+  attributes    json     -- TipTap-структура атрибутов (внешность/характер для character, описание для location); гибкость — точка расширения для Фазы 2
+  deleted_at    timestamp (nullable) -- мягкое удаление; null = активная запись, значение = в корзине
 
 SCENEENTITYLINK
   scene_id       uuid FK -> SCENE
@@ -59,11 +63,11 @@ VERSION
   entity_type   string   -- MVP: только 'scene'
   entity_id     uuid
   scene_id      uuid FK -> SCENE
-  snapshot      string   -- JSON-сериализованный TipTap документ на момент версии (String для SQLite)
+  snapshot      json     -- TipTap документ на момент версии, хранится как JSONB в PostgreSQL
   created_at    timestamp
 ```
 
-**Мягкое удаление (Корзина).** Отложено на Фазу 2. BOOK, CHAPTER, SCENE, CODEXENTRY не имеют `deleted_at` в Фазе 0. Удаление элементов (кнопка 🗑) не реализовано; интерфейс показывает мёртвые кнопки удаления для будущей Фазы.
+**Мягкое удаление (Корзина).** Реализовано в Фазе 0. BOOK, CHAPTER, SCENE, CODEXENTRY имеют `deleted_at DateTime?` для мягкого удаления. Удаление элементов (кнопка 🗑) выполняется UPDATE с установкой `deleted_at`, не DELETE. Восстановление из корзины — UPDATE с обнулением `deleted_at`. Все запросы READ фильтруют `deleted_at IS NULL` для исключения удалённых элементов.
 
 **Точки расширения, которые нужно оставить, но не реализовывать в Фазе 0:**
 - `CODEXENTRY.type` — уже строка, а не enum в БД, чтобы Фаза 2 добавила новые типы без миграции схемы
