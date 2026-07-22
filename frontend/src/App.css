@@ -275,10 +275,10 @@
 
 .acc-arrow {
   display: inline-block;
-  width: 16px;
+  width: 20px;
   margin-right: 8px;
-  font-size: 10px;
-  color: var(--ink-muted);
+  font-size: 16px;
+  color: var(--ink-2);
   transition: transform 0.15s;
   text-align: center;
   flex-shrink: 0;
