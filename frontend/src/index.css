@@ -125,3 +125,36 @@ input:focus, textarea:focus, select:focus {
   border-color: var(--border-strong);
   box-shadow: 0 0 0 2px var(--selected-bg);
 }
+
+/* Override Material Design colors with author palette */
+body {
+  background-color: var(--bg) !important;
+  color: var(--ink) !important;
+}
+
+button {
+  background-color: var(--surface) !important;
+  color: var(--ink-2) !important;
+  border-color: var(--border) !important;
+}
+
+button.primary {
+  background-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+button:hover {
+  background-color: var(--surface-2) !important;
+  color: var(--ink) !important;
+}
+
+/* Fix green export button */
+button.primary:has(+ *, [style*="green"]) {
+  background-color: var(--accent) !important;
+}
+
+/* Fix selected elements */
+[style*="e3f2fd"], [class*="selected"] {
+  background-color: var(--selected-bg) !important;
+  color: var(--selected-text) !important;
+}

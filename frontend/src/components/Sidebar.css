@@ -6,6 +6,7 @@
   background-color: var(--surface);
   color: var(--ink);
   overflow-y: auto;
+  font-size: 13px;
 }
 
 .sidebar-header {
