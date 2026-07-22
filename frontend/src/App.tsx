@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { ManuscriptEditor } from './components/ManuscriptEditor'
 import { SearchPanel } from './components/SearchPanel'
+import { ThemeToggle } from './components/ThemeToggle'
+import { ThemeProvider } from './contexts/ThemeContext'
 import type { Project, Scene, CodexEntry } from './types'
 
 function App() {
@@ -55,7 +57,10 @@ function App() {
   return (
     <div className="app">
       <div className="app-header">
-        {project && <SearchPanel projectId={project.id} />}
+        <div className="app-header-content">
+          {project && <SearchPanel projectId={project.id} />}
+          <ThemeToggle />
+        </div>
       </div>
       <div className="app-main">
         <ManuscriptEditor project={project} />
