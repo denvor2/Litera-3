@@ -490,42 +490,32 @@ export function App() {
         <div className="center">
           {editingItem ? (
             <div className="center-card">
-              <div className="head">
+              <div className="center-back">
                 <button
                   className="back-link"
                   onClick={handleCancelEdit}
                   title="Назад"
                 >
-                  ←
+                  ← Назад к сцене
                 </button>
+              </div>
+              <div className="head">
                 {editingItem.type === 'chapter' ? (
                   <h2>Редактировать главу</h2>
                 ) : editingItem.type === 'scene' ? (
                   <h2>Редактировать сцену</h2>
                 ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--surface-2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        {editingItem.data.name?.split(' ').slice(0, 2).map((w: string) => w.charAt(0).toUpperCase()).join('')}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ margin: '0 0 4px 0' }}>{editingItem.data.name}</h2>
-                        <span style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>
-                          {editingItem.data.type === 'character' ? 'Персонаж' : 'Локация'}
-                        </span>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div className="avatar-lg">
+                      {editingItem.data.name?.split(' ').slice(0, 2).map((w: string) => w.charAt(0).toUpperCase()).join('')}
+                    </div>
+                    <div>
+                      <h2>{editingItem.data.name}</h2>
+                      <div className="subtitle">
+                        {editingItem.data.type === 'character' ? 'персонаж' : 'локация'}
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 
@@ -653,7 +643,7 @@ export function App() {
                 </>
               )}
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              <div className="bc-actions">
                 <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
               </div>

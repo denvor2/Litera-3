@@ -824,29 +824,59 @@
   border-radius: var(--radius);
 }
 
-.center-card .head {
+.center-back {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.center-card .head h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.center-card .head .back-link {
+.center-back .back-link {
   text-decoration: none;
   color: var(--ink-2);
   font-size: 14px;
   cursor: pointer;
   transition: color 0.15s;
+  padding: 0;
+  border: none;
+  background: none;
 }
 
-.center-card .head .back-link:hover {
+.center-back .back-link:hover {
   color: var(--ink);
+}
+
+.center-card .head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.center-card .head h2 {
+  margin: 0 0 4px 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.avatar-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--ink-muted);
+  text-transform: lowercase;
 }
 
 .field {
@@ -912,6 +942,15 @@
 
 .bc-btn.primary:hover {
   opacity: 0.9;
+}
+
+.bc-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--border);
+  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {
