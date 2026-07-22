@@ -6,7 +6,7 @@
 }
 
 .scene-editor.write-mode {
-  background: linear-gradient(135deg, #f5f5f0 0%, #fffaf0 100%);
+  background: var(--surface);
 }
 
 .scene-editor.write-mode .scene-toolbar {
@@ -35,8 +35,8 @@
 
 .scene-toolbar {
   padding: 16px;
-  border-bottom: 1px solid #ddd;
-  background-color: white;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface);
 }
 
 .scene-title-bar {
@@ -64,16 +64,16 @@
 }
 
 .status-icon.saved {
-  color: #51cf66;
+  color: var(--done);
 }
 
 .status-icon.saving {
-  color: #ffd43b;
+  color: var(--editing);
   animation: spin 1s linear infinite;
 }
 
 .status-icon.error {
-  color: #ff6b6b;
+  color: var(--accent);
 }
 
 @keyframes spin {
@@ -113,26 +113,26 @@
 .write-mode-btn,
 .codex-btn {
   padding: 6px 12px;
-  background-color: #228be6;
-  color: white;
+  background-color: var(--accent);
+  color: var(--ink-0);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s;
+  transition: opacity 0.2s;
 }
 
 .write-mode-btn:hover,
 .codex-btn:hover {
-  background-color: #1971c2;
+  opacity: 0.8;
 }
 
 .codex-btn {
-  background-color: #7b68ee;
+  background-color: var(--accent);
 }
 
 .codex-btn:hover {
-  background-color: #6a5acd;
+  opacity: 0.8;
 }
 
 .editor-content {
