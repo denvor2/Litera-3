@@ -1120,9 +1120,19 @@ fastify.get('/api/ai-roles/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
 
   try {
-    const roles = await prisma.aIRole.findMany({
+    let roles = await prisma.aIRole.findMany({
       where: { projectId, isDeleted: false },
     })
+
+    // If no roles exist, initialize them
+    if (roles.length === 0) {
+      await initializeAIRolesForProject(projectId)
+      await initializeFieldPromptsForProject(projectId)
+      roles = await prisma.aIRole.findMany({
+        where: { projectId, isDeleted: false },
+      })
+    }
+
     return roles
   } catch (error) {
     fastify.log.error(error)

@@ -79,13 +79,58 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
       if (!response.ok) throw new Error('Failed to load AI roles')
-      const roles: AIRole[] = await response.json()
+      let roles: AIRole[] = await response.json()
+
+      // If no roles exist, try loading again (backend will initialize them)
+      if (roles.length === 0) {
+        console.log('No AI roles found, retrying...')
+        const retryResponse = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
+        if (retryResponse.ok) {
+          roles = await retryResponse.json()
+        }
+      }
+
       setAIRoles(roles)
       if (roles.length > 0 && !activeAIRole) {
         setActiveAIRole(roles[0])
       }
     } catch (err) {
       console.error('Failed to load AI roles:', err)
+      // Use default roles as fallback
+      const defaultRoles: AIRole[] = [
+        {
+          id: '1',
+          name: 'Соавтор',
+          type: 'coauthor',
+          icon: '🤖',
+          quickPrompts: ['Продолжи сцену на 3–4 абзаца', 'Переформулируй выразительнее', 'Что не хватает?']
+        },
+        {
+          id: '2',
+          name: 'Редактор',
+          type: 'editor',
+          icon: '✏️',
+          quickPrompts: ['Найди логические разрывы', 'Персонажи говорят натурально?', 'Что сократить?']
+        },
+        {
+          id: '3',
+          name: 'Критик',
+          type: 'critic',
+          icon: '🧐',
+          quickPrompts: ['Что не работает?', 'Какие стереотипы?', 'Насколько необходима?']
+        },
+        {
+          id: '4',
+          name: 'Читатель',
+          type: 'reader',
+          icon: '👁️',
+          quickPrompts: ['Что я почувствую?', 'Где запутался?', 'Убедительна ли мотивация?']
+        },
+      ]
+      setAIRoles(defaultRoles)
+      if (!activeAIRole) {
+        setActiveAIRole(defaultRoles[0])
+      }
     }
   }
 

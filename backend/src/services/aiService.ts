@@ -3,7 +3,20 @@ import { LLMResponse } from '../ai-providers/base.js';
 import { getProviderFromEnv } from '../ai-providers/factory.js';
 
 const prisma = new PrismaClient();
-const provider = getProviderFromEnv();
+let provider: ReturnType<typeof getProviderFromEnv> | null = null;
+
+// Lazy load provider
+function getProvider() {
+  if (!provider) {
+    try {
+      provider = getProviderFromEnv();
+    } catch (err) {
+      console.warn('AI provider not available:', (err as Error).message);
+      return null;
+    }
+  }
+  return provider;
+}
 
 export type Scope = 'scene' | 'chapter' | 'dialogue' | 'selection' | 'idea' | 'codex-element' | 'field';
 
@@ -182,7 +195,12 @@ export async function queryAI(request: AIQueryRequest): Promise<AIQueryResponse>
     const systemPrompt = request.customPrompt || aiRole.systemPrompt;
 
     // Query LLM
-    const result = await provider.query({
+    const llmProvider = getProvider();
+    if (!llmProvider) {
+      throw new Error('AI provider not configured. Set CLAUDE_API_KEY in .env');
+    }
+
+    const result = await llmProvider.query({
       systemPrompt,
       context,
       userMessage: request.userMessage,
