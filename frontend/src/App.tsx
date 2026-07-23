@@ -699,7 +699,7 @@ export function App() {
             onClick={() => setZenMode(!zenMode)}
             title={zenMode ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
           >
-            {zenMode ? '⛔' : '⛺'}
+            {zenMode ? '⊟' : '⊞'}
           </button>
         </div>
       </div>
