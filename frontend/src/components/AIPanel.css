@@ -49,6 +49,8 @@
   color: var(--ink-2);
   background: var(--surface);
   transition: all 0.15s;
+  position: relative;
+  padding-right: 20px;
 }
 
 .ai-chip:hover {
@@ -73,22 +75,27 @@
 }
 
 .ai-gear {
-  /* Inline button inside chip (like mockup) */
-  width: 16px;
-  height: 16px;
+  /* 22px icon with 32x32px invisible click area, positioned at bottom-right corner */
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  background: none;
-  color: inherit;
-  opacity: 0.55;
+  background: transparent;
+  color: var(--ink-muted);
   cursor: pointer;
-  font-size: 10px;
-  padding: 0;
+  font-size: 20px;
+  padding: 5px;
   line-height: 1;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
 .ai-gear:hover {
-  opacity: 1;
+  color: var(--ink-2);
 }
 
 /* Масштаб запроса */

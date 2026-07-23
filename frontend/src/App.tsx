@@ -58,6 +58,7 @@ export function App() {
   const [aiMessages, setAIMessages] = useState<AIMessage[]>([])
   const [aiLoading, setAILoading] = useState(false)
   const [aiError, setAIError] = useState<string | null>(null)
+  const [selectedAIText, setSelectedAIText] = useState<string>('')
   // Token stats will be shown in bottom bar when implemented
   // const [aiTokensUsed, setAITokensUsed] = useState(0)
   // const [aiTokenLimit, setAITokenLimit] = useState(200000)
@@ -77,6 +78,27 @@ export function App() {
       loadAIRoles(project.id)
     }
   }, [project?.id])
+
+  // Handle text selection in manuscript for AI queries
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const selection = window.getSelection()
+      if (selection && selection.toString().length > 0) {
+        const selectedText = selection.toString()
+        const range = selection.getRangeAt(0)
+        const bodyTextElement = range.commonAncestorContainer.parentElement?.closest('.body-text')
+
+        if (bodyTextElement) {
+          // Auto-switch to 'selection' scope and save selected text
+          setAIScope('selection')
+          setSelectedAIText(selectedText)
+        }
+      }
+    }
+
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => document.removeEventListener('mouseup', handleMouseUp)
+  }, [])
 
   const loadAIRoles = async (projectId: string) => {
     try {
@@ -1367,7 +1389,8 @@ export function App() {
                 messages={aiMessages}
                 onSendMessage={handleAISendMessage}
                 onSendQuickPrompt={handleAISendQuickPrompt}
-                contextInfo={project ? `текст этой книги + Кодекс серии${selectedBookForCard?.projectId ? ` + синопсисы других книг «${project.title}»` : ''}` : 'контекст'}
+                selectedText={selectedAIText}
+                contextInfo={project ? `текст этой книги + Кодекс серии + синопсисы других книг «${project.title}»` : 'контекст'}
                 isLoading={aiLoading}
                 error={aiError || undefined}
                 onAddCustomRole={() => {
