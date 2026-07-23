@@ -112,7 +112,7 @@ export function AIPanel({
             role="button"
             tabIndex={0}
           >
-            <span>{role.name}</span>
+            {role.name}
             <button
               className="ai-gear"
               onClick={(e) => {
