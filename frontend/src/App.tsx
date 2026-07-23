@@ -93,12 +93,16 @@ export function App() {
 
   const handleSceneSelect = (scene: Scene) => {
     setSelectedScene(scene)
+    // Show manuscript view
+    setCenterView('manuscript')
   }
 
   const handleBookSelect = (bookId: string) => {
     setSelectedBookId(bookId)
     // Deselect scene when switching books
     setSelectedScene(null)
+    // Show manuscript view
+    setCenterView('manuscript')
   }
 
   const handleSceneSave = async (updatedScene: Scene) => {
