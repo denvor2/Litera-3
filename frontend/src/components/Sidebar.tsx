@@ -103,6 +103,18 @@ export function Sidebar({
     }
   }
 
+  const handlePermanentDelete = async (item: TrashItem) => {
+    try {
+      const endpoint = `${API_BASE}/api/trash/${item.type}/${item.id}/permanent`
+      const response = await fetch(endpoint, { method: 'DELETE' })
+      if (response.ok) {
+        setTrashItems(trashItems.filter(t => t.id !== item.id))
+      }
+    } catch (error) {
+      console.error('Failed to permanently delete item:', error)
+    }
+  }
+
   const toggleChapter = (chapterId: string) => {
     const newSet = new Set(expandedChapters)
     if (newSet.has(chapterId)) {
@@ -428,13 +440,28 @@ export function Sidebar({
               {trashItems.map((item) => (
                 <div key={`${item.type}-${item.id}`} className="trash-item">
                   <span className="trash-item-title">{item.title}</span>
-                  <button
-                    className="trash-restore-link"
-                    onClick={() => handleRestore(item)}
-                    title="Восстановить"
-                  >
-                    восстановить
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      className="trash-restore-link"
+                      onClick={() => handleRestore(item)}
+                      title="Восстановить"
+                      style={{ fontSize: '14px', padding: '2px 6px' }}
+                    >
+                      ↩️
+                    </button>
+                    <button
+                      className="trash-restore-link"
+                      onClick={() => {
+                        if (confirm(`Окончательно удалить "${item.title}"?`)) {
+                          handlePermanentDelete(item)
+                        }
+                      }}
+                      title="Окончательно удалить"
+                      style={{ fontSize: '14px', padding: '2px 6px', color: '#d32f2f' }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

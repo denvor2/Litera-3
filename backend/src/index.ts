@@ -739,6 +739,55 @@ fastify.put('/api/trash/codexentry/:entryId/restore', async (request, reply) => 
   }
 })
 
+// Permanent delete routes
+fastify.delete('/api/trash/book/:bookId/permanent', async (request, reply) => {
+  const { bookId } = request.params as { bookId: string }
+
+  try {
+    await prisma.book.delete({ where: { id: bookId } })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to permanently delete book' })
+  }
+})
+
+fastify.delete('/api/trash/chapter/:chapterId/permanent', async (request, reply) => {
+  const { chapterId } = request.params as { chapterId: string }
+
+  try {
+    await prisma.chapter.delete({ where: { id: chapterId } })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to permanently delete chapter' })
+  }
+})
+
+fastify.delete('/api/trash/scene/:sceneId/permanent', async (request, reply) => {
+  const { sceneId } = request.params as { sceneId: string }
+
+  try {
+    await prisma.scene.delete({ where: { id: sceneId } })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to permanently delete scene' })
+  }
+})
+
+fastify.delete('/api/trash/codexentry/:entryId/permanent', async (request, reply) => {
+  const { entryId } = request.params as { entryId: string }
+
+  try {
+    await prisma.codexEntry.delete({ where: { id: entryId } })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to permanently delete codex entry' })
+  }
+})
+
 // Export routes
 fastify.get('/api/books/:bookId/export', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
