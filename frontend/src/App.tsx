@@ -787,7 +787,7 @@ export function App() {
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
               onEditBook={(bookId) => {
                 const book = project.books.find(b => b.id === bookId)
-                if (book) handleEdit('book', bookId, project.id, { title: book.title, series: book.series, genre: book.genre, synopsis: book.synopsis, description: book.description })
+                if (book) handleEdit('book', bookId, project.id, { title: book.title, genre: book.genre, synopsis: book.synopsis, description: book.description, plannedCharCount: book.plannedCharCount, plannedAuthorSheets: book.plannedAuthorSheets })
               }}
               onCreateNote={() => setEditingItem({ type: 'note', id: 'new', data: { title: '', content: '' } })}
               onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}

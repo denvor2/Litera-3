@@ -30,10 +30,11 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
   const bookData = book as any
   const [formData, setFormData] = useState<any>({
     ...book,
-    series: bookData.series || '',
     genre: bookData.genre || '',
     description: bookData.description || '',
     synopsis: bookData.synopsis || '',
+    plannedCharCount: bookData.plannedCharCount || '',
+    plannedAuthorSheets: bookData.plannedAuthorSheets || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -115,6 +116,31 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
             placeholder="Полное описание для читателя"
             rows={4}
             className="bc-textarea"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Плановый объём (символы)</label>
+          <input
+            type="number"
+            value={formData.plannedCharCount}
+            onChange={(e) => setFormData({ ...formData, plannedCharCount: e.target.value ? parseInt(e.target.value) : '' })}
+            placeholder="Например: 120000"
+            className="bc-input"
+            min="0"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Плановый объём (авт. листы)</label>
+          <input
+            type="number"
+            value={formData.plannedAuthorSheets}
+            onChange={(e) => setFormData({ ...formData, plannedAuthorSheets: e.target.value ? parseInt(e.target.value) : '' })}
+            placeholder="Например: 3 (= 120000 знаков)"
+            className="bc-input"
+            min="0"
+            step="0.25"
           />
         </div>
 

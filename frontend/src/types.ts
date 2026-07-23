@@ -20,10 +20,11 @@ export interface Book {
   id: string
   projectId: string
   title: string
-  series?: string
   genre?: string
   description?: string
   synopsis?: string
+  plannedCharCount?: number | null
+  plannedAuthorSheets?: number | null
   chapters: Chapter[]
   order: number
   createdAt: string
