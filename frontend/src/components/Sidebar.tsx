@@ -25,6 +25,7 @@ interface SidebarProps {
   onDeleteChapter?: (chapterId: string) => void
   onDeleteScene?: (sceneId: string) => void
   onCreateCodexEntry?: (type: 'character' | 'location') => void
+  onCreateProject?: () => void
   onEditChapter?: (chapterId: string, bookId: string, title: string) => void
   onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
   onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
@@ -52,6 +53,7 @@ export function Sidebar({
   onDeleteChapter,
   onDeleteScene,
   onCreateCodexEntry,
+  onCreateProject,
   onEditChapter,
   onEditScene,
   onEditCodexEntry,
@@ -175,7 +177,17 @@ export function Sidebar({
     <aside className="sidebar">
       {/* Серия / Книга переключатель */}
       <div className="series-block">
-        <div className="series-label">СЕРИЯ</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div className="series-label">СЕРИЯ</div>
+          <button
+            className="add-link"
+            style={{ fontSize: '14px', padding: '0 6px' }}
+            onClick={() => onCreateProject?.()}
+            title="Создать новую серию"
+          >
+            +
+          </button>
+        </div>
         <div className="series-name">{project?.title || 'Проект'}</div>
         <div className="books-list">
           {books.map(book => (

@@ -506,6 +506,10 @@ export function App() {
     }
   }
 
+  const handleCreateProject = () => {
+    setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
+  }
+
   const handleSaveCodexEntry = async (entry: CodexEntry) => {
     if (!project) return
     try {
@@ -769,6 +773,7 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
+              onCreateProject={handleCreateProject}
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
