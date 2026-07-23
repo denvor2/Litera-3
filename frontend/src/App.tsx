@@ -238,6 +238,7 @@ export function App() {
         if (!text) throw new Error('Empty response')
         const projects = JSON.parse(text)
         // Загрузить все серии для выпадающего списка
+        console.log('Loaded projects:', projects.length, projects.map((p: any) => p.title))
         setAllSeries(projects)
         if (projects.length > 0) {
           const proj = projects[0]
