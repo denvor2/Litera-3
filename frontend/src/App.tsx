@@ -287,14 +287,11 @@ export function App() {
       const updated = await response.json()
 
       if (type === 'project' && id === 'new') {
-        // After creating project, reload projects list
-        const projectsResponse = await fetch(`${API_BASE}/api/projects`)
-        if (projectsResponse.ok) {
-          const projects = await projectsResponse.json()
-          if (projects.length > 0) {
-            setProject(projects[0])
-          }
-        }
+        // After creating project, update to the newly created project
+        setProject(updated)
+      } else if (type === 'project') {
+        // Update existing project
+        setProject(updated)
       } else if (type === 'book' && id === 'new') {
         // After creating book, add to project
         setProject({
@@ -927,6 +924,17 @@ export function App() {
                       className="bc-textarea"
                       placeholder="Полное описание для читателя"
                       rows={4}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Целевой объём (слов)</label>
+                    <input
+                      type="number"
+                      value={editingItem.data.targetWordCount || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, targetWordCount: e.target.value ? parseInt(e.target.value) : null } })}
+                      className="bc-input"
+                      placeholder="Например: 80000"
+                      min="0"
                     />
                   </div>
                 </>
