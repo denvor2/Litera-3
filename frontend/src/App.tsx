@@ -15,6 +15,18 @@ interface EditingItem {
   data: Record<string, any>
 }
 
+type CenterViewType = 'manuscript' | 'codex-card' | 'book-card' | 'project-card' |
+                      'settings-scene' | 'settings-chapter' | 'settings-project' |
+                      'guide' | 'ai-settings'
+
+interface CenterViewContext {
+  codexEntryId?: string
+  bookId?: string
+  projectId?: string
+  sceneId?: string
+  chapterId?: string
+}
+
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
@@ -25,8 +37,25 @@ export function App() {
   const [zenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [centerView, setCenterView] = useState<CenterViewType>('manuscript')
+  const [centerViewContext, setCenterViewContext] = useState<CenterViewContext | null>(null)
+  const [viewStack, setViewStack] = useState<CenterViewType[]>([])
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showCenterView = (view: CenterViewType, context?: CenterViewContext) => {
+    setViewStack([...viewStack, centerView])
+    setCenterView(view)
+    setCenterViewContext(context || null)
+  }
+
+  const goBackInCenter = () => {
+    if (viewStack.length > 0) {
+      const prev = viewStack[viewStack.length - 1]
+      setViewStack(viewStack.slice(0, -1))
+      setCenterView(prev)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

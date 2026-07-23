@@ -12,6 +12,7 @@ interface SceneEditorProps {
   writeMode?: boolean
   onToggleWriteMode?: () => void
   onToggleCodex?: () => void
+  onMentionClick?: (entryId: string) => void
 }
 
 const AUTOSAVE_DELAY = 2000 // 2 seconds
