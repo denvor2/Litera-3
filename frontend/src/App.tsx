@@ -14,9 +14,9 @@ import { API_BASE } from './config'
 import type { Project, Scene, Book, CodexEntry } from './types'
 
 interface EditingItem {
-  type: 'chapter' | 'scene' | 'codexEntry' | 'project'
+  type: 'book' | 'chapter' | 'scene' | 'codexEntry' | 'project'
   id: string
-  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry
+  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry, projectId для book
   data: Record<string, any>
 }
 
@@ -134,38 +134,22 @@ export function App() {
     }
   }
 
-  const handleCreateScene = async (chapterId: string) => {
+  const handleCreateScene = (chapterId: string) => {
     if (!project) return
-    try {
-      const response = await fetch(`${API_BASE}/api/scenes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chapterId,
-          title: 'Новая сцена',
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
-      }
-      const newScene: Scene = await response.json()
-
-      setSelectedScene(newScene)
-      setProject({
-        ...project,
-        books: project.books.map(book => ({
-          ...book,
-          chapters: book.chapters.map(chapter =>
-            chapter.id === chapterId
-              ? { ...chapter, scenes: [...chapter.scenes, newScene] }
-              : chapter
-          ),
-        })),
-      })
-    } catch (error) {
-      console.error('Failed to create scene:', error)
-    }
+    // Открыть форму для создания новой сцены (не автосоздание)
+    setEditingItem({
+      type: 'scene',
+      id: 'new',
+      parentId: chapterId,
+      data: {
+        chapterId,
+        title: '',
+        status: 'DRAFT',
+        targetWordCount: null,
+      },
+    })
   }
+
 
   const handleUpdateSceneOrder = async (sceneId: string, newChapterId: string, newOrder: number) => {
     if (!project) return
@@ -210,59 +194,39 @@ export function App() {
     }
   }
 
-  const handleCreateBook = async () => {
+  const handleCreateBook = () => {
     if (!project) return
-    try {
-      const response = await fetch(`${API_BASE}/api/books`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId: project.id,
-          title: `Книга ${project.books.length + 1}`,
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
-      }
-      const newBook = await response.json()
-
-      setProject({
-        ...project,
-        books: [...project.books, newBook],
-      })
-    } catch (error) {
-      console.error('Failed to create book:', error)
-    }
+    // Открыть форму для создания новой книги (не автосоздание)
+    setEditingItem({
+      type: 'book',
+      id: 'new',
+      parentId: project.id,
+      data: {
+        projectId: project.id,
+        title: '',
+        series: '',
+        genre: '',
+        description: '',
+        synopsis: '',
+      },
+    })
   }
 
-  const handleCreateChapter = async (bookId: string) => {
+  const handleCreateChapter = (bookId: string) => {
     if (!project) return
-    try {
-      const book = project.books.find(b => b.id === bookId)
-      if (!book) return
+    // Открыть форму для создания новой главы (не автосоздание)
+    const book = project.books.find(b => b.id === bookId)
+    if (!book) return
 
-      const response = await fetch(`${API_BASE}/api/chapters`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookId,
-          title: `Глава ${book.chapters.length + 1}`,
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
-      }
-      const newChapter = await response.json()
-
-      setProject({
-        ...project,
-        books: project.books.map(b =>
-          b.id === bookId ? { ...b, chapters: [...b.chapters, newChapter] } : b
-        ),
-      })
-    } catch (error) {
-      console.error('Failed to create chapter:', error)
-    }
+    setEditingItem({
+      type: 'chapter',
+      id: 'new',
+      parentId: bookId,
+      data: {
+        bookId,
+        title: '',
+      },
+    })
   }
 
   const handleEdit = (type: 'chapter' | 'scene' | 'codexEntry', id: string, parentId: string | undefined, data: Record<string, any>) => {
@@ -272,21 +236,32 @@ export function App() {
   const handleSaveEdit = async () => {
     if (!editingItem || !project) return
     try {
-      const { type, id, data } = editingItem
+      const { type, id, data, parentId } = editingItem
       let endpoint: string
       let method: 'POST' | 'PUT' = 'PUT'
 
       if (type === 'project' && id === 'new') {
         endpoint = '/api/projects'
         method = 'POST'
+      } else if (type === 'project') {
+        endpoint = `/api/projects/${id}`
+      } else if (type === 'book' && id === 'new') {
+        endpoint = '/api/books'
+        method = 'POST'
+      } else if (type === 'book') {
+        endpoint = `/api/books/${id}`
+      } else if (type === 'chapter' && id === 'new') {
+        endpoint = '/api/chapters'
+        method = 'POST'
       } else if (type === 'chapter') {
         endpoint = `/api/chapters/${id}`
+      } else if (type === 'scene' && id === 'new') {
+        endpoint = '/api/scenes'
+        method = 'POST'
       } else if (type === 'scene') {
         endpoint = `/api/scenes/${id}`
       } else if (type === 'codexEntry') {
         endpoint = `/api/codex/${id}`
-      } else if (type === 'project') {
-        endpoint = `/api/projects/${id}`
       } else {
         return
       }
@@ -312,6 +287,26 @@ export function App() {
             setProject(projects[0])
           }
         }
+      } else if (type === 'book' && id === 'new') {
+        // After creating book, add to project
+        setProject({
+          ...project,
+          books: [...project.books, updated],
+        })
+      } else if (type === 'book') {
+        // Update existing book
+        setProject({
+          ...project,
+          books: project.books.map(b => (b.id === id ? updated : b)),
+        })
+      } else if (type === 'chapter' && id === 'new') {
+        // After creating chapter, add to book
+        setProject({
+          ...project,
+          books: project.books.map(b =>
+            b.id === parentId ? { ...b, chapters: [...b.chapters, updated] } : b
+          ),
+        })
       } else if (type === 'chapter') {
         setProject({
           ...project,
@@ -321,6 +316,18 @@ export function App() {
               : b
           ),
         })
+      } else if (type === 'scene' && id === 'new') {
+        // After creating scene, add to chapter
+        setProject({
+          ...project,
+          books: project.books.map(book => ({
+            ...book,
+            chapters: book.chapters.map(c =>
+              c.id === parentId ? { ...c, scenes: [...c.scenes, updated] } : c
+            ),
+          })),
+        })
+        setSelectedScene(updated)
       } else if (type === 'scene') {
         const updatedBooks = project.books.map(b => ({
           ...b,
@@ -720,9 +727,11 @@ export function App() {
               </div>
               <div className="head">
                 {editingItem.type === 'chapter' ? (
-                  <h2>Редактировать главу</h2>
+                  <h2>{editingItem.id === 'new' ? 'Создать главу' : 'Редактировать главу'}</h2>
                 ) : editingItem.type === 'scene' ? (
-                  <h2>Редактировать сцену</h2>
+                  <h2>{editingItem.id === 'new' ? 'Создать сцену' : 'Редактировать сцену'}</h2>
+                ) : editingItem.type === 'book' ? (
+                  <h2>{editingItem.id === 'new' ? 'Создать книгу' : 'Редактировать книгу'}</h2>
                 ) : editingItem.type === 'project' ? (
                   <h2>{editingItem.id === 'new' ? 'Создать серию' : 'Редактировать серию'}</h2>
                 ) : (
@@ -786,6 +795,62 @@ export function App() {
                       className="bc-input"
                       placeholder="Например: 5000"
                       min="0"
+                    />
+                  </div>
+                </>
+              )}
+
+              {editingItem.type === 'book' && (
+                <>
+                  <div className="field">
+                    <label>Название</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название книги"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Серия</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.series || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, series: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название серии"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Жанр</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.genre || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, genre: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Жанр"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Синопсис</label>
+                    <textarea
+                      value={editingItem.data.synopsis || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, synopsis: e.target.value } })}
+                      className="bc-textarea"
+                      placeholder="Краткое описание сюжета"
+                      rows={4}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Описание</label>
+                    <textarea
+                      value={editingItem.data.description || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, description: e.target.value } })}
+                      className="bc-textarea"
+                      placeholder="Полное описание для читателя"
+                      rows={4}
                     />
                   </div>
                 </>
