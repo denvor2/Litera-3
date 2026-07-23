@@ -16,11 +16,11 @@ interface ManuscriptFlowProps {
 export function ManuscriptFlow({
   book,
   selectedScene,
-  onSelectScene,
+  onSelectScene: _onSelectScene, // TODO: использовать для клика на сцену
   onStatusChange,
   onSaveScene,
-  onEditScene,
-  onMentionClick,
+  onEditScene: _onEditScene, // TODO: использовать для ✎ сцены
+  onMentionClick: _onMentionClick, // TODO: использовать для клика на упоминание
 }: ManuscriptFlowProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set())
@@ -124,7 +124,7 @@ export function ManuscriptFlow({
                         <SceneEditor
                           scene={scene}
                           onSave={onSaveScene}
-                          onMentionClick={onMentionClick}
+                          onMentionClick={_onMentionClick}
                         />
                       </div>
                     )}

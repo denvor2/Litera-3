@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
-import { SceneEditor } from './components/SceneEditor'
+import { ManuscriptFlow } from './components/ManuscriptFlow'
 import { ExportButton } from './components/ExportButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
@@ -15,18 +15,6 @@ interface EditingItem {
   data: Record<string, any>
 }
 
-type CenterViewType = 'manuscript' | 'codex-card' | 'book-card' | 'project-card' |
-                      'settings-scene' | 'settings-chapter' | 'settings-project' |
-                      'guide' | 'ai-settings'
-
-interface CenterViewContext {
-  codexEntryId?: string
-  bookId?: string
-  projectId?: string
-  sceneId?: string
-  chapterId?: string
-}
-
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
@@ -37,25 +25,8 @@ export function App() {
   const [zenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [centerView, setCenterView] = useState<CenterViewType>('manuscript')
-  const [centerViewContext, setCenterViewContext] = useState<CenterViewContext | null>(null)
-  const [viewStack, setViewStack] = useState<CenterViewType[]>([])
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const showCenterView = (view: CenterViewType, context?: CenterViewContext) => {
-    setViewStack([...viewStack, centerView])
-    setCenterView(view)
-    setCenterViewContext(context || null)
-  }
-
-  const goBackInCenter = () => {
-    if (viewStack.length > 0) {
-      const prev = viewStack[viewStack.length - 1]
-      setViewStack(viewStack.slice(0, -1))
-      setCenterView(prev)
-    }
-  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -349,10 +320,6 @@ export function App() {
     }
   }
 
-  const handleCancelEdit = () => {
-    setEditingItem(null)
-  }
-
   const handleNotesChange = async (notes: string) => {
     if (!selectedScene) return
     // Дебаунс 2 сек
@@ -552,10 +519,10 @@ export function App() {
               <div className="center-back">
                 <button
                   className="back-link"
-                  onClick={handleCancelEdit}
+                  onClick={() => setEditingItem(null)}
                   title="Назад"
                 >
-                  ← Назад к сцене
+                  ← Назад
                 </button>
               </div>
               <div className="head">
@@ -719,15 +686,26 @@ export function App() {
               )}
 
               <div className="bc-actions">
-                <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
+                <button className="bc-btn" onClick={() => setEditingItem(null)}>Отмена</button>
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
               </div>
             </div>
-          ) : selectedScene ? (
-            <SceneEditor
-              key={selectedScene.id}
-              scene={selectedScene}
-              onSave={handleSceneSave}
+          ) : currentBook ? (
+            <ManuscriptFlow
+              book={currentBook}
+              selectedScene={selectedScene}
+              onSelectScene={handleSceneSelect}
+              onStatusChange={(sceneId, newStatus) => {
+                const scene = currentBook.chapters
+                  .flatMap(c => c.scenes)
+                  .find(s => s.id === sceneId)
+                if (scene) {
+                  handleSceneSave({ ...scene, status: newStatus as any })
+                }
+              }}
+              onSaveScene={handleSceneSave}
+              onEditScene={() => {}}
+              onMentionClick={() => {}}
             />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ink-muted)' }}>
