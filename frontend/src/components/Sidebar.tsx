@@ -63,10 +63,10 @@ export function Sidebar({
   const currentBookId = selectedBookId || books[0]?.id
 
   useEffect(() => {
-    if (openSection === 'trash' && project && trashItems.length === 0) {
+    if (project && trashItems.length === 0) {
       loadTrash()
     }
-  }, [openSection, project])
+  }, [project])
 
   const loadTrash = async () => {
     if (!project) return
