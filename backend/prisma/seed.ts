@@ -19,8 +19,9 @@ async function main() {
     update: {},
     create: {
       id: 'default-project',
-      title: 'Моя рукопись',
+      title: 'Без серии',
       ownerId: defaultUser.id,
+      isDefault: true,
       books: {
         create: [
           {
