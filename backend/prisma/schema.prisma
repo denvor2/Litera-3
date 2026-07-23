@@ -40,6 +40,10 @@ model Book {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   title     String
+  series    String?  // Название серии
+  genre     String?  // Жанр
+  description String? // Описание / аннотация
+  synopsis  String?  // Синопсис
   chapters  Chapter[]
   order     Int
   deletedAt DateTime?

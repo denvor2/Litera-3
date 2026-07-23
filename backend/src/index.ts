@@ -183,12 +183,25 @@ fastify.post('/api/books', async (request, reply) => {
 
 fastify.put('/api/books/:bookId', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
-  const { title } = request.body as { title?: string }
+  const { title, series, genre, description, synopsis } = request.body as {
+    title?: string
+    series?: string
+    genre?: string
+    description?: string
+    synopsis?: string
+  }
 
   try {
+    const updateData: any = {}
+    if (title) updateData.title = title
+    if (series !== undefined) updateData.series = series || null
+    if (genre !== undefined) updateData.genre = genre || null
+    if (description !== undefined) updateData.description = description || null
+    if (synopsis !== undefined) updateData.synopsis = synopsis || null
+
     const book = await prisma.book.update({
       where: { id: bookId },
-      data: { ...(title && { title }) },
+      data: updateData,
     })
     return book
   } catch (error) {
@@ -476,6 +489,39 @@ fastify.delete('/api/codex/:entryId', async (request, reply) => {
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Failed to delete codex entry' })
+  }
+})
+
+fastify.get('/api/codex-entries/:entryId/mentions', async (request, reply) => {
+  const { entryId } = request.params as { entryId: string }
+
+  try {
+    const links = await prisma.sceneEntityLink.findMany({
+      where: { codexEntryId: entryId },
+      include: {
+        scene: {
+          include: {
+            chapter: {
+              include: {
+                book: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const mentions = links.map((link) => ({
+      sceneId: link.scene.id,
+      sceneTitle: link.scene.title,
+      chapterTitle: link.scene.chapter.title,
+      bookTitle: link.scene.chapter.book.title,
+    }))
+
+    return mentions
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to get mentions' })
   }
 })
 
