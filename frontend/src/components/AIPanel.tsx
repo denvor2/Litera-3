@@ -13,6 +13,8 @@ export interface AIRole {
   type: string
   icon: string
   quickPrompts: string[]
+  systemPrompt?: string
+  model?: string
 }
 
 export type AIScope = 'scene' | 'chapter' | 'dialogue' | 'selection' | 'idea' | 'codex-element' | 'field'
@@ -31,7 +33,7 @@ export interface AIPanelProps {
   contextInfo?: string
   isLoading?: boolean
   error?: string
-  onAddCustomRole?: () => void
+  onAddCustomRole?: (() => void) | undefined
 }
 
 export function AIPanel({

@@ -3,6 +3,7 @@ import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { ManuscriptFlow } from './components/ManuscriptFlow'
 import { AIPanel, AIMessage, AIRole, AIScope } from './components/AIPanel'
+import { AIRoleCard } from './components/AIRoleCard'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { CodexCard } from './components/CodexCard'
 import { BookCard } from './components/BookCard'
@@ -62,10 +63,11 @@ export function App() {
   // const [aiTokenLimit, setAITokenLimit] = useState(200000)
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
-  const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide'>('manuscript')
+  const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide' | 'ai-role-edit' | 'ai-role-new'>('manuscript')
   const [selectedCodexEntry, setSelectedCodexEntry] = useState<CodexEntry | null>(null)
   const [selectedBookForCard, setSelectedBookForCard] = useState<Book | null>(null)
   const [guideContent, setGuideContent] = useState<string>('')
+  const [selectedAIRole, setSelectedAIRole] = useState<AIRole | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -979,6 +981,27 @@ export function App() {
               onBack={handleBackToManuscript}
               title="Справка"
             />
+          ) : centerView === 'ai-role-edit' && selectedAIRole ? (
+            <AIRoleCard
+              role={selectedAIRole}
+              onClose={handleBackToManuscript}
+              onSave={(updatedRole) => {
+                setAIRoles(aiRoles.map(r => r.id === updatedRole.id ? updatedRole : r))
+                if (activeAIRole?.id === updatedRole.id) {
+                  setActiveAIRole(updatedRole)
+                }
+                handleBackToManuscript()
+              }}
+            />
+          ) : centerView === 'ai-role-new' && selectedAIRole ? (
+            <AIRoleCard
+              role={selectedAIRole}
+              onClose={handleBackToManuscript}
+              onSave={(newRole) => {
+                setAIRoles([...aiRoles, newRole])
+                handleBackToManuscript()
+              }}
+            />
           ) : editingItem ? (
             <div className="center-card">
               <div className="center-back">
@@ -1335,8 +1358,9 @@ export function App() {
                 activeRole={activeAIRole}
                 aiRoles={aiRoles}
                 onSelectRole={setActiveAIRole}
-                onOpenRoleSettings={() => {
-                  // TODO: открыть форму настроек роли в центре
+                onOpenRoleSettings={(role) => {
+                  setSelectedAIRole(role)
+                  setCenterView('ai-role-edit')
                 }}
                 scope={aiScope}
                 onScopeChange={setAIScope}
@@ -1347,7 +1371,15 @@ export function App() {
                 isLoading={aiLoading}
                 error={aiError || undefined}
                 onAddCustomRole={() => {
-                  // TODO: открыть форму нового помощника в центре
+                  const newRole: AIRole = {
+                    id: 'new-' + Date.now(),
+                    name: 'Новая роль',
+                    type: 'custom',
+                    icon: '🤖',
+                    quickPrompts: [],
+                  }
+                  setSelectedAIRole(newRole)
+                  setCenterView('ai-role-new')
                 }}
               />
             </div>
