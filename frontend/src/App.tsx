@@ -12,6 +12,25 @@ import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages }
 import { API_BASE } from './config'
 import type { Project, Scene, Book, CodexEntry } from './types'
 
+// Жанры литературы
+const GENRES = [
+  'Фантастика',
+  'Фэнтези',
+  'Детектив',
+  'Романс',
+  'Триллер',
+  'Драма',
+  'Научная фантастика',
+  'Исторический роман',
+  'Магический реализм',
+  'Young Adult',
+  'New Adult',
+  'Женская проза',
+  'Нон-фикшен',
+  'Автофикшен',
+  'Научно-популярная литература',
+]
+
 interface EditingItem {
   type: 'note' | 'book' | 'chapter' | 'scene' | 'codexEntry' | 'project'
   id: string
@@ -946,13 +965,18 @@ export function App() {
                   </div>
                   <div className="field">
                     <label>Жанр</label>
-                    <input
-                      type="text"
+                    <select
                       value={editingItem.data.genre || ''}
                       onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, genre: e.target.value } })}
-                      className="bc-input"
-                      placeholder="Жанр"
-                    />
+                      className="bc-select"
+                    >
+                      <option value="">Выберите жанр</option>
+                      {GENRES.map((genre) => (
+                        <option key={genre} value={genre}>
+                          {genre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="field">
                     <label>Синопсис</label>
@@ -972,6 +996,29 @@ export function App() {
                       className="bc-textarea"
                       placeholder="Полное описание для читателя"
                       rows={4}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Плановый объём (символы)</label>
+                    <input
+                      type="number"
+                      value={editingItem.data.plannedCharCount || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, plannedCharCount: e.target.value ? parseInt(e.target.value) : null } })}
+                      className="bc-input"
+                      placeholder="Например: 120000"
+                      min="0"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Плановый объём (авт. листы)</label>
+                    <input
+                      type="number"
+                      value={editingItem.data.plannedAuthorSheets || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, plannedAuthorSheets: e.target.value ? parseInt(e.target.value) : null } })}
+                      className="bc-input"
+                      placeholder="Например: 3 (= 120000 знаков)"
+                      min="0"
+                      step="0.25"
                     />
                   </div>
                 </>
