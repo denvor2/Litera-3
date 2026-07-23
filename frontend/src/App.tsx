@@ -57,8 +57,9 @@ export function App() {
   const [aiMessages, setAIMessages] = useState<AIMessage[]>([])
   const [aiLoading, setAILoading] = useState(false)
   const [aiError, setAIError] = useState<string | null>(null)
-  const [aiTokensUsed, setAITokensUsed] = useState(0)
-  const [aiTokenLimit, setAITokenLimit] = useState(8000)
+  // Token stats will be shown in bottom bar when implemented
+  // const [aiTokensUsed, setAITokensUsed] = useState(0)
+  // const [aiTokenLimit, setAITokenLimit] = useState(200000)
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide'>('manuscript')
@@ -172,9 +173,9 @@ export function App() {
       }
       setAIMessages(prev => [...prev, assistantMessage])
 
-      // Update token stats
-      if (result.tokensUsed) setAITokensUsed(result.tokensUsed)
-      if (result.tokenLimit) setAITokenLimit(result.tokenLimit)
+      // TODO: Show token stats in bottom bar
+      // if (result.tokensUsed) setAITokensUsed(result.tokensUsed)
+      // if (result.tokenLimit) setAITokenLimit(result.tokenLimit)
       if (result.warnings && result.warnings.length > 0) {
         setAIError(result.warnings[0])
       }
@@ -1342,10 +1343,8 @@ export function App() {
                 messages={aiMessages}
                 onSendMessage={handleAISendMessage}
                 onSendQuickPrompt={handleAISendQuickPrompt}
-                contextInfo={selectedScene ? 'текст сцены + Кодекс серии' : 'выберите сцену для работы'}
+                contextInfo={selectedScene ? 'текст этой книги + Кодекс всей серии' : 'выберите сцену для работы'}
                 isLoading={aiLoading}
-                tokensUsed={aiTokensUsed}
-                tokenLimit={aiTokenLimit}
                 error={aiError || undefined}
                 onAddCustomRole={() => {
                   // TODO: открыть форму нового помощника в центре

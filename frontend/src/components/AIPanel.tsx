@@ -30,8 +30,6 @@ export interface AIPanelProps {
   selectedText?: string
   contextInfo?: string
   isLoading?: boolean
-  tokensUsed?: number
-  tokenLimit?: number
   error?: string
   onAddCustomRole?: () => void
 }
@@ -47,10 +45,8 @@ export function AIPanel({
   onSendMessage,
   onSendQuickPrompt,
   selectedText,
-  contextInfo = 'текст этой сцены + Кодекс серии',
+  contextInfo = 'текст этой книги + Кодекс всей серии',
   isLoading = false,
-  tokensUsed = 0,
-  tokenLimit = 8000,
   error,
   onAddCustomRole,
 }: AIPanelProps) {
@@ -79,47 +75,49 @@ export function AIPanel({
     }
   }
 
-  const tokensPercent = Math.round((tokensUsed / tokenLimit) * 100)
-  const warningLevel = tokensPercent > 90 ? 'critical' : tokensPercent > 80 ? 'warning' : 'ok'
+  // Sort roles to match mockup order: Соавтор, Редактор, Критик, Читатель
+  const roleOrder = { 'coauthor': 0, 'editor': 1, 'critic': 2, 'reader': 3, 'custom': 4 }
+  const sortedRoles = [...aiRoles].sort((a, b) =>
+    (roleOrder[a.type as keyof typeof roleOrder] ?? 5) - (roleOrder[b.type as keyof typeof roleOrder] ?? 5)
+  )
 
   return (
-    <div className="ai-panel">
-      {/* Заголовок */}
+    <div className="ws-right">
+      {/* Заголовок (маленький, uppercase, как в мокапе) */}
       <div className="ws-right-head">
-        <h3>⚡ AI-помощники</h3>
-        <div className="ai-context-note">
-          Контекст: {contextInfo}
-        </div>
+        <h3>AI-помощники</h3>
       </div>
 
-      {/* Роли */}
+      {/* Контекст (мелкая строка без фона) */}
+      <div className="ai-context-note">
+        Контекст: {contextInfo}
+      </div>
+
+      {/* Роли (чипы в одну линию с переносом) */}
       <div className="ai-chips">
-        {aiRoles.map((role) => (
-          <div key={role.id} className="ai-chip-wrapper">
-            <button
-              className={`ai-chip ${activeRole?.id === role.id ? 'active' : ''}`}
-              onClick={() => onSelectRole(role)}
-              title={role.name}
-            >
-              <span className="ai-chip-icon">{role.icon}</span>
-              <span className="ai-chip-name">{role.name}</span>
-            </button>
+        {sortedRoles.map((role) => (
+          <div
+            key={role.id}
+            className={`ai-chip ${activeRole?.id === role.id ? 'active' : ''}`}
+            onClick={() => onSelectRole(role)}
+            title={role.name}
+          >
+            <span>{role.name}</span>
             <button
               className="ai-gear"
-              onClick={() => onOpenRoleSettings(role)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenRoleSettings(role)
+              }}
               title="Настройки"
             >
               ⚙
             </button>
           </div>
         ))}
-        <button
-          className="ai-chip ai-chip add"
-          onClick={onAddCustomRole}
-          title="Добавить помощника"
-        >
-          <span>+</span> свой
-        </button>
+        <div className="ai-chip add" onClick={onAddCustomRole} title="Добавить помощника">
+          + свой
+        </div>
       </div>
 
       {/* Масштаб запроса */}
@@ -150,7 +148,7 @@ export function AIPanel({
       {/* Типовые запросы */}
       {activeRole && (
         <div className="ai-quick">
-          <div className="ai-quick-label">Быстрые запросы:</div>
+          <div className="ai-quick-label">Типовые запросы:</div>
           {activeRole.quickPrompts.map((prompt, idx) => (
             <button
               key={idx}
@@ -167,15 +165,15 @@ export function AIPanel({
       {/* Ошибка */}
       {error && (
         <div className="ai-error">
-          <strong>⚠️ Ошибка:</strong> {error}
+          <strong>⚠️</strong> {error}
         </div>
       )}
 
       {/* Диалог */}
       <div className="ai-chat">
         {messages.length === 0 && !error ? (
-          <div style={{ textAlign: 'center', color: 'var(--ink-muted)', padding: '20px' }}>
-            Начните диалог или используйте быстрые запросы…
+          <div style={{ textAlign: 'center', color: 'var(--ink-muted)', fontSize: '12px', padding: '20px' }}>
+            Начните диалог или используйте типовые запросы…
           </div>
         ) : (
           messages.map((msg, idx) => (
@@ -194,14 +192,7 @@ export function AIPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Индикатор токенов */}
-      {tokenLimit > 0 && (
-        <div className={`ai-tokens ${warningLevel}`}>
-          Контекст: {tokensUsed} / {tokenLimit} токенов ({tokensPercent}%)
-        </div>
-      )}
-
-      {/* Форма ввода */}
+      {/* Форма ввода (внизу, прижата к краю) */}
       <div className="ai-input-row">
         <input
           type="text"
