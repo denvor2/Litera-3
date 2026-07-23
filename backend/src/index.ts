@@ -6,6 +6,7 @@ import { exportBookToFb2 } from './services/fbExport.js'
 import { exportBookToPdf } from './services/pdfExport.js'
 import { extractTextFromTipTap } from './utils/tiptap.js'
 import { getDispositionHeader } from './utils/httpHeaders.js'
+import { queryAI, initializeAIRolesForProject, initializeFieldPromptsForProject } from './services/aiService.js'
 
 const fastify = Fastify({
   logger: true,
@@ -103,6 +104,11 @@ fastify.post('/api/projects', async (request, reply) => {
         },
       },
     })
+
+    // Initialize AI roles and field prompts
+    await initializeAIRolesForProject(project.id)
+    await initializeFieldPromptsForProject(project.id)
+
     return project
   } catch (error) {
     fastify.log.error(error)
@@ -1060,6 +1066,239 @@ fastify.get('/api/search', async (request, reply) => {
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Search failed' })
+  }
+})
+
+// AI routes
+fastify.post('/api/ai-query', async (request, reply) => {
+  const {
+    bookId,
+    role,
+    scope,
+    scopeId,
+    scopeLabel,
+    scopeText,
+    userMessage,
+    customPrompt,
+  } = request.body as {
+    bookId: string
+    role: string
+    scope: string
+    scopeId?: string
+    scopeLabel?: string
+    scopeText: string
+    userMessage: string
+    customPrompt?: string
+  }
+
+  try {
+    const result = await queryAI({
+      bookId,
+      role,
+      scope: scope as any,
+      scopeId,
+      scopeLabel,
+      scopeText,
+      userMessage,
+      customPrompt,
+    })
+
+    if (!result.success) {
+      reply.code(400).send(result)
+      return
+    }
+
+    return result
+  } catch (error: any) {
+    fastify.log.error(error)
+    reply.code(500).send({ error: error.message || 'AI query failed' })
+  }
+})
+
+// Get AI roles for a project
+fastify.get('/api/ai-roles/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+
+  try {
+    let roles = await prisma.aIRole.findMany({
+      where: { projectId, isDeleted: false },
+    })
+
+    // If no roles exist, initialize them
+    if (roles.length === 0) {
+      await initializeAIRolesForProject(projectId)
+      await initializeFieldPromptsForProject(projectId)
+      roles = await prisma.aIRole.findMany({
+        where: { projectId, isDeleted: false },
+      })
+    }
+
+    return roles
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to fetch AI roles' })
+  }
+})
+
+// Create or update AI role
+fastify.put('/api/ai-roles/:roleId', async (request, reply) => {
+  const { roleId } = request.params as { roleId: string }
+  const { name, icon, systemPrompt, quickPrompts, model } = request.body as {
+    name?: string
+    icon?: string
+    systemPrompt?: string
+    quickPrompts?: string[]
+    model?: string
+  }
+
+  // Валидация
+  if (name !== undefined && (!name.trim())) {
+    return reply.code(400).send({ error: 'Имя роли не может быть пустым' })
+  }
+  if (systemPrompt !== undefined && (!systemPrompt.trim())) {
+    return reply.code(400).send({ error: 'Системный промпт не может быть пустым' })
+  }
+  if (quickPrompts !== undefined) {
+    if (!Array.isArray(quickPrompts)) {
+      return reply.code(400).send({ error: 'Типовые запросы должны быть массивом' })
+    }
+    if (quickPrompts.length > 6) {
+      return reply.code(400).send({ error: 'Максимум 6 типовых запросов' })
+    }
+    if (quickPrompts.some(p => !p.trim())) {
+      return reply.code(400).send({ error: 'Типовые запросы не могут быть пустыми' })
+    }
+  }
+
+  try {
+    const updateData: any = {}
+    if (name) updateData.name = name
+    if (icon) updateData.icon = icon
+    if (systemPrompt) updateData.systemPrompt = systemPrompt
+    if (quickPrompts) updateData.quickPrompts = quickPrompts
+    if (model) updateData.model = model
+
+    const role = await prisma.aIRole.update({
+      where: { id: roleId },
+      data: updateData,
+    })
+    return role
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update AI role' })
+  }
+})
+
+// Create custom AI role
+fastify.post('/api/ai-roles', async (request, reply) => {
+  const { projectId, name, icon, systemPrompt, quickPrompts } = request.body as {
+    projectId: string
+    name: string
+    icon?: string
+    systemPrompt: string
+    quickPrompts: string[]
+  }
+
+  // Валидация
+  if (!name || !name.trim()) {
+    return reply.code(400).send({ error: 'Имя роли не может быть пустым' })
+  }
+  if (!systemPrompt || !systemPrompt.trim()) {
+    return reply.code(400).send({ error: 'Системный промпт не может быть пустым' })
+  }
+  if (!Array.isArray(quickPrompts)) {
+    return reply.code(400).send({ error: 'Типовые запросы должны быть массивом' })
+  }
+  if (quickPrompts.length > 6) {
+    return reply.code(400).send({ error: 'Максимум 6 типовых запросов' })
+  }
+  if (quickPrompts.some(p => !p.trim())) {
+    return reply.code(400).send({ error: 'Типовые запросы не могут быть пустыми' })
+  }
+
+  try {
+    const role = await prisma.aIRole.create({
+      data: {
+        projectId,
+        name,
+        type: 'custom',
+        icon: icon || '⭐',
+        systemPrompt,
+        quickPrompts,
+      },
+    })
+    return role
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to create AI role' })
+  }
+})
+
+// Get field prompts for a project
+fastify.get('/api/ai-field-prompts/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+
+  try {
+    const prompts = await prisma.aIFieldPrompts.findMany({
+      where: { projectId },
+    })
+    return prompts
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to fetch field prompts' })
+  }
+})
+
+// Get user preferences
+fastify.get('/api/user-preferences/:sessionId', async (request, reply) => {
+  const { sessionId } = request.params as { sessionId: string }
+
+  try {
+    let prefs = await prisma.userPreferences.findFirst({
+      where: { sessionId },
+    })
+
+    if (!prefs) {
+      prefs = await prisma.userPreferences.create({
+        data: { sessionId },
+      })
+    }
+
+    return prefs
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to fetch preferences' })
+  }
+})
+
+// Update user preferences
+fastify.put('/api/user-preferences/:sessionId', async (request, reply) => {
+  const { sessionId } = request.params as { sessionId: string }
+  const { aiPanelWidth } = request.body as { aiPanelWidth?: number }
+
+  try {
+    // Check if exists first
+    let prefs = await prisma.userPreferences.findFirst({
+      where: { sessionId },
+    })
+
+    if (prefs) {
+      prefs = await prisma.userPreferences.update({
+        where: { id: prefs.id },
+        data: { ...(aiPanelWidth && { aiPanelWidth }) },
+      })
+    } else {
+      prefs = await prisma.userPreferences.create({
+        data: {
+          sessionId,
+          aiPanelWidth: aiPanelWidth || 280,
+        },
+      })
+    }
+    return prefs
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update preferences' })
   }
 })
 

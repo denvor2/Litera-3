@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { ManuscriptFlow } from './components/ManuscriptFlow'
-import { AIPanel } from './components/AIPanel'
+import { AIPanel, AIMessage, AIRole, AIScope } from './components/AIPanel'
+import { AIRoleCard } from './components/AIRoleCard'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { CodexCard } from './components/CodexCard'
 import { BookCard } from './components/BookCard'
@@ -49,23 +50,170 @@ export function App() {
   const [zenMode, setZenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeAIRole, setActiveAIRole] = useState('coauthor')
-  const [aiScope, setAIScope] = useState<'scene' | 'chapter' | 'dialog' | 'selection'>('scene')
-  const [aiMessages, setAIMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+
+  // AI state
+  const [aiRoles, setAIRoles] = useState<AIRole[]>([])
+  const [activeAIRole, setActiveAIRole] = useState<AIRole | null>(null)
+  const [aiScope, setAIScope] = useState<AIScope>('scene')
+  const [aiMessages, setAIMessages] = useState<AIMessage[]>([])
+  const [aiLoading, setAILoading] = useState(false)
+  const [aiError, setAIError] = useState<string | null>(null)
+  const [selectedAIText, setSelectedAIText] = useState<string>('')
+  // Token stats will be shown in bottom bar when implemented
+  // const [aiTokensUsed, setAITokensUsed] = useState(0)
+  // const [aiTokenLimit, setAITokenLimit] = useState(200000)
+
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
-  const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide'>('manuscript')
+  const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide' | 'ai-role-edit' | 'ai-role-new'>('manuscript')
   const [selectedCodexEntry, setSelectedCodexEntry] = useState<CodexEntry | null>(null)
   const [selectedBookForCard, setSelectedBookForCard] = useState<Book | null>(null)
   const [guideContent, setGuideContent] = useState<string>('')
+  const [selectedAIRole, setSelectedAIRole] = useState<AIRole | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Load AI roles when project loads
+  useEffect(() => {
+    if (project) {
+      loadAIRoles(project.id)
+    }
+  }, [project?.id])
+
+  // Handle text selection in manuscript for AI queries
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const selection = window.getSelection()
+      if (selection && selection.toString().length > 0) {
+        const selectedText = selection.toString()
+        const range = selection.getRangeAt(0)
+        const bodyTextElement = range.commonAncestorContainer.parentElement?.closest('.body-text')
+
+        if (bodyTextElement) {
+          // Auto-switch to 'selection' scope and save selected text
+          setAIScope('selection')
+          setSelectedAIText(selectedText)
+        }
+      }
+    }
+
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => document.removeEventListener('mouseup', handleMouseUp)
+  }, [])
+
+  const loadAIRoles = async (projectId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
+      if (!response.ok) throw new Error('Failed to load AI roles')
+      let roles: AIRole[] = await response.json()
+
+      // If no roles exist, try loading again (backend will initialize them)
+      if (roles.length === 0) {
+        console.log('No AI roles found, retrying...')
+        const retryResponse = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
+        if (retryResponse.ok) {
+          roles = await retryResponse.json()
+        }
+      }
+
+      setAIRoles(roles)
+      if (roles.length > 0 && !activeAIRole) {
+        setActiveAIRole(roles[0])
+      }
+    } catch (err) {
+      console.error('Failed to load AI roles:', err)
+      // Use default roles as fallback
+      const defaultRoles: AIRole[] = [
+        {
+          id: '1',
+          name: 'Соавтор',
+          type: 'coauthor',
+          icon: '🤖',
+          quickPrompts: ['Продолжи сцену на 3–4 абзаца', 'Переформулируй выразительнее', 'Что не хватает?']
+        },
+        {
+          id: '2',
+          name: 'Редактор',
+          type: 'editor',
+          icon: '✏️',
+          quickPrompts: ['Найди логические разрывы', 'Персонажи говорят натурально?', 'Что сократить?']
+        },
+        {
+          id: '3',
+          name: 'Критик',
+          type: 'critic',
+          icon: '🧐',
+          quickPrompts: ['Что не работает?', 'Какие стереотипы?', 'Насколько необходима?']
+        },
+        {
+          id: '4',
+          name: 'Читатель',
+          type: 'reader',
+          icon: '👁️',
+          quickPrompts: ['Что я почувствую?', 'Где запутался?', 'Убедительна ли мотивация?']
+        },
+      ]
+      setAIRoles(defaultRoles)
+      if (!activeAIRole) {
+        setActiveAIRole(defaultRoles[0])
+      }
+    }
+  }
+
   const handleAISendMessage = async (message: string) => {
-    setAIMessages([...aiMessages, { role: 'user', content: message }])
-    // TODO: отправить запрос на backend и получить ответ
-    setTimeout(() => {
-      setAIMessages(prev => [...prev, { role: 'assistant', content: 'Это ответ от AI (пока заглушка)' }])
-    }, 500)
+    if (!selectedScene || !activeAIRole || !project) return
+
+    // Add user message to history
+    const userMessage: AIMessage = { role: 'user', content: message }
+    setAIMessages([...aiMessages, userMessage])
+    setAILoading(true)
+    setAIError(null)
+
+    try {
+      // Call backend AI API
+      const response = await fetch(`${API_BASE}/api/ai-query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId: selectedBookId || project.books[0]?.id,
+          role: activeAIRole.name,
+          scope: aiScope,
+          sceneId: selectedScene.id,
+          scopeText: extractTextFromTipTap(selectedScene.body),
+          userMessage: message,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(error || 'AI request failed')
+      }
+
+      const result = await response.json()
+
+      // Add assistant message
+      const assistantMessage: AIMessage = {
+        role: 'assistant',
+        content: result.text,
+      }
+      setAIMessages(prev => [...prev, assistantMessage])
+
+      // TODO: Show token stats in bottom bar
+      // if (result.tokensUsed) setAITokensUsed(result.tokensUsed)
+      // if (result.tokenLimit) setAITokenLimit(result.tokenLimit)
+      if (result.warnings && result.warnings.length > 0) {
+        setAIError(result.warnings[0])
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setAIError(msg)
+      console.error('AI query error:', err)
+    } finally {
+      setAILoading(false)
+    }
+  }
+
+  const handleAISendQuickPrompt = async (prompt: string) => {
+    await handleAISendMessage(prompt)
   }
 
   useEffect(() => {
@@ -855,6 +1003,29 @@ export function App() {
               onBack={handleBackToManuscript}
               title="Справка"
             />
+          ) : centerView === 'ai-role-edit' && selectedAIRole && project ? (
+            <AIRoleCard
+              role={selectedAIRole}
+              projectId={project.id}
+              onClose={handleBackToManuscript}
+              onSave={(updatedRole) => {
+                setAIRoles(aiRoles.map(r => r.id === updatedRole.id ? updatedRole : r))
+                if (activeAIRole?.id === updatedRole.id) {
+                  setActiveAIRole(updatedRole)
+                }
+                handleBackToManuscript()
+              }}
+            />
+          ) : centerView === 'ai-role-new' && selectedAIRole && project ? (
+            <AIRoleCard
+              role={selectedAIRole}
+              projectId={project.id}
+              onClose={handleBackToManuscript}
+              onSave={(newRole) => {
+                setAIRoles([...aiRoles, newRole])
+                handleBackToManuscript()
+              }}
+            />
           ) : editingItem ? (
             <div className="center-card">
               <div className="center-back">
@@ -1207,15 +1378,34 @@ export function App() {
                   document.addEventListener('mouseup', handleMouseUp)
                 }}
               />
-              <div className="right-panel-header">🤖 AI-помощники</div>
               <AIPanel
                 activeRole={activeAIRole}
+                aiRoles={aiRoles}
                 onSelectRole={setActiveAIRole}
+                onOpenRoleSettings={(role) => {
+                  setSelectedAIRole(role)
+                  setCenterView('ai-role-edit')
+                }}
                 scope={aiScope}
                 onScopeChange={setAIScope}
                 messages={aiMessages}
                 onSendMessage={handleAISendMessage}
-                contextInfo="текст этой сцены + Кодекс серии"
+                onSendQuickPrompt={handleAISendQuickPrompt}
+                selectedText={selectedAIText}
+                contextInfo={project ? `текст этой книги + Кодекс серии + синопсисы других книг «${project.title}»` : 'контекст'}
+                isLoading={aiLoading}
+                error={aiError || undefined}
+                onAddCustomRole={() => {
+                  const newRole: AIRole = {
+                    id: 'new-' + Date.now(),
+                    name: 'Новая роль',
+                    type: 'custom',
+                    icon: '🤖',
+                    quickPrompts: [],
+                  }
+                  setSelectedAIRole(newRole)
+                  setCenterView('ai-role-new')
+                }}
               />
             </div>
           </>

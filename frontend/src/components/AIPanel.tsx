@@ -1,47 +1,58 @@
 import { useState, useRef, useEffect } from 'react'
 import './AIPanel.css'
 
-interface AIMessage {
+export interface AIMessage {
   role: 'user' | 'assistant'
   content: string
+  timestamp?: Date
 }
 
-interface AIRole {
+export interface AIRole {
   id: string
   name: string
-  description: string
+  type: string
+  icon: string
+  quickPrompts: string[]
+  systemPrompt?: string
+  model?: string
 }
 
-interface AIPanelProps {
-  activeRole: string
-  onSelectRole: (roleId: string) => void
-  scope: 'scene' | 'chapter' | 'dialog' | 'selection'
-  onScopeChange: (scope: 'scene' | 'chapter' | 'dialog' | 'selection') => void
+export type AIScope = 'scene' | 'chapter' | 'dialogue' | 'selection' | 'idea' | 'codex-element' | 'field'
+
+export interface AIPanelProps {
+  activeRole: AIRole | null
+  aiRoles: AIRole[]
+  onSelectRole: (role: AIRole) => void
+  onOpenRoleSettings: (role: AIRole) => void
+  scope: AIScope
+  onScopeChange: (scope: AIScope) => void
   messages: AIMessage[]
   onSendMessage: (message: string) => void
+  onSendQuickPrompt: (prompt: string) => void
   selectedText?: string
   contextInfo?: string
+  isLoading?: boolean
+  error?: string
+  onAddCustomRole?: (() => void) | undefined
 }
-
-const DEFAULT_ROLES: AIRole[] = [
-  { id: 'coauthor', name: 'Соавтор', description: 'Помогает писать' },
-  { id: 'editor', name: 'Редактор', description: 'Улучшает текст' },
-  { id: 'critic', name: 'Критик', description: 'Находит проблемы' },
-  { id: 'reader', name: 'Читатель', description: 'Дает обратную связь' },
-]
 
 export function AIPanel({
   activeRole,
+  aiRoles,
   onSelectRole,
+  onOpenRoleSettings,
   scope,
   onScopeChange,
   messages,
   onSendMessage,
+  onSendQuickPrompt,
   selectedText,
-  contextInfo = 'текст этой сцены + Кодекс серии',
+  contextInfo = 'текст этой книги + Кодекс всей серии',
+  isLoading = false,
+  error,
+  onAddCustomRole,
 }: AIPanelProps) {
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -56,9 +67,6 @@ export function AIPanel({
     if (input.trim()) {
       onSendMessage(input)
       setInput('')
-      setIsLoading(true)
-      // TODO: Получить ответ от backend
-      setTimeout(() => setIsLoading(false), 500)
     }
   }
 
@@ -69,109 +77,159 @@ export function AIPanel({
     }
   }
 
+  // Sort roles to match mockup order: Соавтор, Редактор, Критик, Читатель
+  const roleOrder = { 'coauthor': 0, 'editor': 1, 'critic': 2, 'reader': 3, 'custom': 4 }
+  const sortedRoles = [...aiRoles].sort((a, b) =>
+    (roleOrder[a.type as keyof typeof roleOrder] ?? 5) - (roleOrder[b.type as keyof typeof roleOrder] ?? 5)
+  )
+
   return (
-    <div className="ai-panel">
-      {/* Роли */}
-      <div className="ai-section ai-roles">
-        <div className="ai-roles-list">
-          {DEFAULT_ROLES.map(role => (
-            <button
-              key={role.id}
-              className={`ai-role-chip ${activeRole === role.id ? 'active' : ''}`}
-              onClick={() => onSelectRole(role.id)}
-              title={role.description}
-            >
-              <span className="ai-role-name">{role.name}</span>
-              <button
-                className="ai-role-settings"
-                onClick={(e) => {
+    <div className="ws-right">
+      {/* Заголовок (маленький, uppercase, как в мокапе) */}
+      <div className="ws-right-head">
+        <h3>AI-помощники</h3>
+      </div>
+
+      {/* Контекст (мелкая строка без фона) */}
+      <div className="ai-context-note">
+        Контекст: {contextInfo}
+      </div>
+
+      {/* Роли (чипы в одну линию с переносом) */}
+      <div className="ai-chips">
+        {sortedRoles.map((role) => (
+          <div
+            key={role.id}
+            className={`ai-chip ${activeRole?.id === role.id ? 'active' : ''}`}
+            onClick={() => onSelectRole(role)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onSelectRole(role)
+              }
+            }}
+            title={role.name}
+            role="button"
+            tabIndex={0}
+          >
+            {role.name}
+            <span
+              className="ai-gear"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenRoleSettings(role)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
                   e.stopPropagation()
-                  // TODO: открыть форму настроек в центре
-                }}
-                title="Настройки"
-              >
-                ⚙
-              </button>
-            </button>
-          ))}
-        </div>
-        <div className="ai-add-role">
-          <button className="ai-add-link" onClick={() => {
-            // TODO: открыть форму нового помощника в центре
-          }}>
-            + свой
-          </button>
+                  onOpenRoleSettings(role)
+                }
+              }}
+              title={`Настройки "${role.name}"`}
+              aria-label={`Настройки роли "${role.name}"`}
+              role="button"
+              tabIndex={0}
+            >
+              ⚙
+            </span>
+          </div>
+        ))}
+        <div className="ai-chip add" onClick={onAddCustomRole} title="Добавить помощника">
+          + свой
         </div>
       </div>
 
-      {/* Масштаб */}
-      <div className="ai-section ai-scope">
-        <div className="ai-scope-row">
-          {(['scene', 'chapter', 'dialog', 'selection'] as const).map(s => (
-            <button
-              key={s}
-              className={`ai-scope-btn ${scope === s ? 'active' : ''}`}
-              onClick={() => onScopeChange(s)}
-            >
-              {{
-                scene: 'Сцена',
-                chapter: 'Глава',
-                dialog: 'Диалог',
-                selection: 'Выделение',
-              }[s]}
-            </button>
-          ))}
-        </div>
+      {/* Масштаб запроса */}
+      <div className="ai-scope-row">
+        {(['scene', 'chapter', 'dialogue', 'selection'] as const).map((s) => (
+          <button
+            key={s}
+            className={`scope-chip ${scope === s ? 'active' : ''}`}
+            onClick={() => onScopeChange(s)}
+          >
+            {{
+              scene: 'Сцена',
+              chapter: 'Глава',
+              dialogue: 'Диалог',
+              selection: 'Выделение',
+            }[s]}
+          </button>
+        ))}
       </div>
 
       {/* Выделение (если есть) */}
       {selectedText && scope === 'selection' && (
-        <div className="ai-section ai-selection">
-          <div className="ai-selection-label">Выделено:</div>
-          <div className="ai-selection-text">{selectedText}</div>
+        <div className="ai-scope-hint">
+          «{selectedText.substring(0, 50)}{selectedText.length > 50 ? '…' : ''}»
         </div>
       )}
 
-      {/* Контекст */}
-      <div className="ai-context-note">
-        <small>Контекст: {contextInfo}</small>
-      </div>
+      {/* Типовые запросы (чипсы с переносом) */}
+      {activeRole && (
+        <div className="ai-quick">
+          <div className="ai-quick-label">Типовые запросы — {activeRole.name}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '-5px' }}>
+            {activeRole.quickPrompts.map((prompt, idx) => (
+              <button
+                key={idx}
+                className="quick-btn"
+                onClick={() => onSendQuickPrompt(prompt)}
+                disabled={isLoading}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Ошибка */}
+      {error && (
+        <div className="ai-error">
+          <strong>⚠️</strong> {error}
+        </div>
+      )}
 
       {/* Диалог */}
-      <div className="ai-section ai-messages">
-        {messages.length === 0 ? (
-          <div className="ai-empty">Начните диалог...</div>
+      <div className="ai-chat">
+        {messages.length === 0 && !error ? (
+          <div style={{ textAlign: 'center', color: 'var(--ink-muted)', fontSize: '12px', padding: '20px' }}>
+            Начните диалог или используйте типовые запросы…
+          </div>
         ) : (
           messages.map((msg, idx) => (
-            <div key={idx} className={`ai-message ai-message-${msg.role}`}>
-              <div className="ai-message-content">{msg.content}</div>
+            <div key={idx} className="ai-msg">
+              <div className="who">{msg.role === 'user' ? 'Вы' : activeRole?.name || 'Помощник'}</div>
+              <div>{msg.content}</div>
             </div>
           ))
         )}
         {isLoading && (
-          <div className="ai-message ai-message-assistant">
-            <div className="ai-message-content">⟳ Думаю...</div>
+          <div className="ai-msg">
+            <div className="who">Помощник</div>
+            <div>⟳ Думаю…</div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Ввод */}
-      <div className="ai-section ai-input-section">
-        <textarea
+      {/* Форма ввода (внизу, прижата к краю) */}
+      <div className="ai-input-row">
+        <input
+          type="text"
           className="ai-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Спроси ${DEFAULT_ROLES.find(r => r.id === activeRole)?.name || 'помощника'}...`}
-          rows={2}
+          placeholder="Спроси помощника…"
           disabled={isLoading}
         />
         <button
-          className="ai-send-btn"
           onClick={handleSend}
           disabled={!input.trim() || isLoading}
-          title="Отправить (Shift+Enter для новой строки)"
+          title="Отправить (Enter)"
+          style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-2)', fontSize: '12px', fontWeight: 'bold', lineHeight: 1, opacity: (!input.trim() || isLoading) ? 0.5 : 1 }}
         >
           {isLoading ? '⟳' : '→'}
         </button>
