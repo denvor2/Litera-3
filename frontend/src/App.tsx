@@ -961,7 +961,7 @@ export function App() {
                     if (!response.ok) throw new Error('Failed to delete project')
                     // Remove from allSeries
                     const updated = allSeries.filter(p => p.id !== projectId)
-                    // TODO: Update allSeries state if it's available
+                    setAllSeries(updated)
                     // Switch to another project if we deleted the current one
                     if (project?.id === projectId && updated.length > 0) {
                       setProject(updated[0])
