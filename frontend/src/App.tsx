@@ -40,6 +40,7 @@ interface EditingItem {
 
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
+  const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
@@ -88,6 +89,8 @@ export function App() {
         const text = await response.text()
         if (!text) throw new Error('Empty response')
         const projects = JSON.parse(text)
+        // Загрузить все серии для выпадающего списка
+        setAllSeries(projects)
         if (projects.length > 0) {
           const proj = projects[0]
           setProject(proj)
@@ -955,13 +958,18 @@ export function App() {
                   </div>
                   <div className="field">
                     <label>Серия</label>
-                    <input
-                      type="text"
-                      value={editingItem.data.series || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, series: e.target.value } })}
-                      className="bc-input"
-                      placeholder="Название серии"
-                    />
+                    <select
+                      value={editingItem.data.seriesId || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, seriesId: e.target.value || null } })}
+                      className="bc-select"
+                    >
+                      <option value="">Без серии (отдельная книга)</option>
+                      {allSeries.map((series) => (
+                        <option key={series.id} value={series.id}>
+                          {series.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="field">
                     <label>Жанр</label>
