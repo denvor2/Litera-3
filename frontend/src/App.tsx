@@ -13,9 +13,9 @@ import { API_BASE } from './config'
 import type { Project, Scene, Book, CodexEntry } from './types'
 
 interface EditingItem {
-  type: 'book' | 'chapter' | 'scene' | 'codexEntry' | 'project'
+  type: 'note' | 'book' | 'chapter' | 'scene' | 'codexEntry' | 'project'
   id: string
-  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry, projectId для book
+  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry, projectId для book/note
   data: Record<string, any>
 }
 
@@ -263,6 +263,11 @@ export function App() {
         method = 'POST'
       } else if (type === 'scene') {
         endpoint = `/api/scenes/${id}`
+      } else if (type === 'note' && id === 'new') {
+        endpoint = '/api/notes'
+        method = 'POST'
+      } else if (type === 'note') {
+        endpoint = `/api/notes/${id}`
       } else if (type === 'codexEntry') {
         endpoint = `/api/codex/${id}`
       } else {
@@ -342,6 +347,18 @@ export function App() {
         }))
         setProject({ ...project, books: updatedBooks })
         if (selectedScene?.id === id) setSelectedScene(updated)
+      } else if (type === 'note' && id === 'new') {
+        // After creating note, add to project
+        setProject({
+          ...project,
+          notes: [...(project.notes || []), updated],
+        })
+      } else if (type === 'note') {
+        // Update existing note
+        setProject({
+          ...project,
+          notes: project.notes?.map(n => (n.id === id ? updated : n)) || [],
+        })
       } else if (type === 'codexEntry') {
         setProject({
           ...project,
@@ -788,6 +805,8 @@ export function App() {
                   <h2>{editingItem.id === 'new' ? 'Создать сцену' : 'Редактировать сцену'}</h2>
                 ) : editingItem.type === 'book' ? (
                   <h2>{editingItem.id === 'new' ? 'Создать книгу' : 'Редактировать книгу'}</h2>
+                ) : editingItem.type === 'note' ? (
+                  <h2>{editingItem.id === 'new' ? 'Создать заметку' : 'Редактировать заметку'}</h2>
                 ) : editingItem.type === 'project' ? (
                   <h2>{editingItem.id === 'new' ? 'Создать серию' : 'Редактировать серию'}</h2>
                 ) : (
@@ -924,6 +943,32 @@ export function App() {
                     autoFocus
                   />
                 </div>
+              )}
+
+              {editingItem.type === 'note' && (
+                <>
+                  <div className="field">
+                    <label>Название</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название заметки"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Содержание</label>
+                    <textarea
+                      value={editingItem.data.content || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, content: e.target.value } })}
+                      className="bc-textarea"
+                      placeholder="Текст заметки"
+                      rows={10}
+                    />
+                  </div>
+                </>
               )}
 
               {editingItem.type === 'codexEntry' && (

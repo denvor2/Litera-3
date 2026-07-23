@@ -28,6 +28,7 @@ model Project {
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   books     Book[]
   codexEntries CodexEntry[]
+  notes     Note[]
   isDefault Boolean? @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,6 +126,19 @@ model Version {
   createdAt DateTime @default(now())
 
   @@map("versions")
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @default("")
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
 }
 
 enum SceneStatus {

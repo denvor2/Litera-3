@@ -565,6 +565,74 @@ fastify.delete('/api/scene-entity-links/:sceneId/:codexEntryId', async (request,
   }
 })
 
+// Notes routes
+fastify.get('/api/notes/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+  try {
+    const notes = await prisma.note.findMany({
+      where: { projectId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    })
+    return notes
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to fetch notes' })
+  }
+})
+
+fastify.post('/api/notes', async (request, reply) => {
+  const { projectId, title, content } = request.body as { projectId: string; title: string; content?: string }
+
+  try {
+    const note = await prisma.note.create({
+      data: {
+        projectId,
+        title,
+        content: content || '',
+      },
+    })
+    return note
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to create note' })
+  }
+})
+
+fastify.put('/api/notes/:noteId', async (request, reply) => {
+  const { noteId } = request.params as { noteId: string }
+  const { title, content } = request.body as { title?: string; content?: string }
+
+  try {
+    const updateData: any = {}
+    if (title) updateData.title = title
+    if (content !== undefined) updateData.content = content
+
+    const note = await prisma.note.update({
+      where: { id: noteId },
+      data: updateData,
+    })
+    return note
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update note' })
+  }
+})
+
+fastify.delete('/api/notes/:noteId', async (request, reply) => {
+  const { noteId } = request.params as { noteId: string }
+
+  try {
+    await prisma.note.update({
+      where: { id: noteId },
+      data: { deletedAt: new Date() },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete note' })
+  }
+})
+
 // Versions routes
 fastify.get('/api/scenes/:sceneId/versions', async (request, reply) => {
   const { sceneId } = request.params as { sceneId: string }

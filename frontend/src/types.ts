@@ -10,6 +10,7 @@ export interface Project {
   ownerId: string
   books: Book[]
   codexEntries?: CodexEntry[]
+  notes?: Note[]
   description?: string
   createdAt: string
   updatedAt: string
@@ -60,6 +61,15 @@ export interface CodexEntry {
   type: 'character' | 'location' | 'artifact' | 'organization'
   name: string
   attributes: unknown
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Note {
+  id: string
+  projectId: string
+  title: string
+  content: string
   createdAt: string
   updatedAt: string
 }
