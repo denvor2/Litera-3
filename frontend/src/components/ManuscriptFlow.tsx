@@ -26,18 +26,6 @@ export function ManuscriptFlow({
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set())
   const [allExpanded, setAllExpanded] = useState(false)
 
-  const toggleChapter = useCallback((chapterId: string) => {
-    setExpandedChapters(prev => {
-      const next = new Set(prev)
-      if (next.has(chapterId)) {
-        next.delete(chapterId)
-      } else {
-        next.add(chapterId)
-      }
-      return next
-    })
-  }, [])
-
   const toggleScene = useCallback((sceneId: string) => {
     setExpandedScenes(prev => {
       const next = new Set(prev)
@@ -68,6 +56,17 @@ export function ManuscriptFlow({
     setAllExpanded(false)
   }, [selectedScene])
 
+  const getStatusDot = (status: string) => {
+    switch (status) {
+      case 'done':
+        return 'done'
+      case 'editing':
+        return 'editing'
+      default:
+        return 'draft'
+    }
+  }
+
   return (
     <div className="manuscript-flow">
       <div className="flow-toolbar">
@@ -80,47 +79,67 @@ export function ManuscriptFlow({
       </div>
 
       <div className="flow-content">
-        {book.chapters.map(chapter => (
-          <div key={chapter.id} className="ms-chapter">
-            <div
-              className="ms-chapter-header"
-              onClick={() => toggleChapter(chapter.id)}
-            >
-              <span className="ms-chapter-toggle">
-                {expandedChapters.has(chapter.id) ? '▾' : '▸'}
-              </span>
-              <h2 className="ms-chapter-title">{chapter.title}</h2>
+        {book.chapters.map((chapter, chapterIndex) => (
+          <div key={chapter.id}>
+            <div className="ms-chapter-divider">
+              Глава {chapterIndex + 1}. {chapter.title}
             </div>
 
             {expandedChapters.has(chapter.id) && (
-              <div className="ms-chapter-content">
+              <>
                 {(chapter.scenes || []).map(scene => (
-                  <div key={scene.id} className={`ms-scene ${selectedScene?.id === scene.id ? 'selected' : ''}`}>
-                    <div className="ms-scene-header" onClick={() => toggleScene(scene.id)}>
+                  <div
+                    key={scene.id}
+                    className={`ms-scene ${expandedScenes.has(scene.id) ? 'expanded' : ''}`}
+                    id={`scene-${scene.id}`}
+                  >
+                    <div
+                      className="ms-scene-head"
+                      onClick={() => toggleScene(scene.id)}
+                    >
                       <span className="ms-scene-toggle">
                         {expandedScenes.has(scene.id) ? '▾' : '▸'}
                       </span>
-                      <div className="ms-scene-info">
-                        <span className="ms-scene-title">{scene.title}</span>
-                        <select
-                          className="ms-scene-status"
-                          value={scene.status || 'draft'}
-                          onChange={(e) => {
-                            e.stopPropagation()
-                            onStatusChange(scene.id, e.target.value)
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <option value="draft">Черновик</option>
-                          <option value="editing">Редактирование</option>
-                          <option value="done">Готово</option>
-                        </select>
-                        <span className="ms-scene-wc">{scene.wordCount} слов</span>
-                      </div>
+                      <span className={`dot ${getStatusDot(scene.status || 'draft')}`} />
+                      <span className="ms-scene-title">{scene.title}</span>
+                      <span className="ms-scene-wc">{scene.wordCount} слов</span>
                     </div>
 
                     {expandedScenes.has(scene.id) && (
-                      <div className="ms-scene-editor">
+                      <div className="ms-scene-body">
+                        <div className="meta-row">
+                          <span>
+                            <label>Статус</label>
+                            <select
+                              className="status-select"
+                              value={scene.status || 'draft'}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                onStatusChange(scene.id, e.target.value)
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="draft">Черновик</option>
+                              <option value="editing">Редактирование</option>
+                              <option value="done">Готово</option>
+                            </select>
+                          </span>
+                          <span>
+                            <label>POV</label>
+                            {scene.povCharacterId ? 'Персонаж' : 'Не выбран'}
+                          </span>
+                          <span>
+                            <label>Локация</label>
+                            Локация
+                          </span>
+                        </div>
+
+                        <div className="toolbar">
+                          <button title="Жирный"><b>Ж</b></button>
+                          <button title="Курсив"><i>К</i></button>
+                          <button title="Абзац">¶</button>
+                        </div>
+
                         <SceneEditor
                           scene={scene}
                           onSave={onSaveScene}
@@ -130,7 +149,7 @@ export function ManuscriptFlow({
                     )}
                   </div>
                 ))}
-              </div>
+              </>
             )}
           </div>
         ))}

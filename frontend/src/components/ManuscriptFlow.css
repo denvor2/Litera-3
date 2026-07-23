@@ -37,127 +37,180 @@
 .flow-content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
-  background-color: var(--bg);
-}
-
-.ms-chapter {
-  margin-bottom: 24px;
-}
-
-.ms-chapter-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 0;
-  user-select: none;
-}
-
-.ms-chapter-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  font-size: 14px;
-  color: var(--ink-2);
-  flex-shrink: 0;
-}
-
-.ms-chapter-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink);
-  font-family: var(--font-serif);
-}
-
-.ms-chapter-content {
-  margin-top: 12px;
-}
-
-.ms-scene {
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 18px 28px;
   background-color: var(--surface);
-  border: 0.5px solid var(--border);
-  transition: background-color 0.15s;
 }
 
-.ms-scene.selected {
-  background-color: var(--selected-bg);
+/* Chapter divider (из мокапа) */
+.ms-chapter-divider {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 18px 4px 8px;
+  margin-bottom: 6px;
+  border-bottom: 0.5px solid var(--border);
+  color: var(--ink-2);
+  /* NO фона, только текст с подчёркивающей линией */
 }
 
-.ms-scene-header {
+/* Scene (из мокапа) */
+.ms-scene {
+  margin-bottom: 2px;
+}
+
+.ms-scene-head {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 6px;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 8px 0;
-  user-select: none;
+  /* NO фонового заполнения в обычном состоянии — только на hover */
 }
 
-.ms-scene-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  font-size: 14px;
-  color: var(--ink-2);
-  flex-shrink: 0;
-}
-
-.ms-scene-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
+.ms-scene-head:hover {
+  background-color: var(--surface-2);
 }
 
 .ms-scene-title {
-  font-size: 14px;
+  font-family: var(--font-serif);
   font-weight: 600;
-  color: var(--ink);
-  flex: 1;
-}
-
-.ms-scene-status {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  padding: 4px 8px;
-  background-color: var(--surface-2);
-  border: 0.5px solid var(--border);
-  border-radius: 4px;
-  color: var(--ink);
-  cursor: pointer;
+  font-size: 15px;
 }
 
 .ms-scene-wc {
+  margin-left: auto;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-muted);
-  white-space: nowrap;
 }
 
-.ms-scene-editor {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 0.5px solid var(--border);
+.ms-scene-toggle {
+  font-size: 10px;
+  color: var(--ink-muted);
+  width: 12px;
+  text-align: center;
 }
 
-/* Упоминания */
-.mention {
-  background-color: var(--accent-soft);
-  color: var(--accent);
-  padding: 0 2px;
-  border-radius: 2px;
+.ms-scene-body {
+  display: none;
+  padding: 6px 6px 22px 24px;
+}
+
+.ms-scene.expanded .ms-scene-body {
+  display: block;
+}
+
+/* Meta information row */
+.meta-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.meta-row label {
+  color: var(--ink-muted);
+  margin-right: 4px;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+  border-bottom: 0.5px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.toolbar button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink-2);
   transition: background-color 0.15s;
 }
 
-.mention:hover {
-  background-color: var(--accent);
-  color: #fff;
+.toolbar button:hover {
+  background-color: var(--surface-2);
+}
+
+/* Body text editor */
+.body-text {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.75;
+  min-height: 340px;
+  outline: none;
+  color: var(--ink);
+}
+
+/* Status select */
+.status-select {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Статус точка */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.draft {
+  background: var(--draft);
+}
+
+.dot.editing {
+  background: var(--editing);
+}
+
+.dot.done {
+  background: var(--done);
+}
+
+/* SceneEditor in ManuscriptFlow context — скрыть nежелательные элементы */
+.ms-scene-body .scene-editor .scene-toolbar {
+  display: none;
+}
+
+.ms-scene-body .scene-editor .scene-notes {
+  display: none;
+}
+
+.ms-scene-body .scene-editor .scene-versions {
+  display: none;
+}
+
+.ms-scene-body .scene-editor {
+  height: auto;
+  overflow: visible;
+  flex-direction: row;
+}
+
+.ms-scene-body .scene-editor .editor-content {
+  flex: 1;
+  padding: 0;
+}
+
+.ms-scene-body .scene-editor .editor-content [contenteditable] {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+  outline: none;
 }
