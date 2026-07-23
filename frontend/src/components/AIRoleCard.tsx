@@ -4,11 +4,12 @@ import { API_BASE } from '../config'
 
 interface AIRoleCardProps {
   role: AIRole | null
+  projectId: string
   onClose: () => void
   onSave: (updatedRole: AIRole) => void
 }
 
-export function AIRoleCard({ role, onClose, onSave }: AIRoleCardProps) {
+export function AIRoleCard({ role, projectId, onClose, onSave }: AIRoleCardProps) {
   const [formData, setFormData] = useState<AIRole | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,16 +33,32 @@ export function AIRoleCard({ role, onClose, onSave }: AIRoleCardProps) {
       setSaving(true)
       setError(null)
 
-      const response = await fetch(`${API_BASE}/api/ai-roles/${formData.id}`, {
-        method: 'PUT',
+      const isNewRole = formData.id.startsWith('new-')
+      const method = isNewRole ? 'POST' : 'PUT'
+      const url = isNewRole
+        ? `${API_BASE}/api/ai-roles`
+        : `${API_BASE}/api/ai-roles/${formData.id}`
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          systemPrompt: formData.systemPrompt || '',
-          quickPrompts: formData.quickPrompts || [],
-          icon: formData.icon || '🤖',
-          model: formData.model || 'claude-3-5-sonnet',
-        }),
+        body: JSON.stringify(
+          isNewRole
+            ? {
+                projectId,
+                name: formData.name,
+                icon: formData.icon || '🤖',
+                systemPrompt: formData.systemPrompt || '',
+                quickPrompts: formData.quickPrompts || [],
+              }
+            : {
+                name: formData.name,
+                systemPrompt: formData.systemPrompt || '',
+                quickPrompts: formData.quickPrompts || [],
+                icon: formData.icon || '🤖',
+                model: formData.model || 'claude-3-5-sonnet',
+              }
+        ),
       })
 
       if (!response.ok) {

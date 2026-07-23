@@ -1003,9 +1003,10 @@ export function App() {
               onBack={handleBackToManuscript}
               title="Справка"
             />
-          ) : centerView === 'ai-role-edit' && selectedAIRole ? (
+          ) : centerView === 'ai-role-edit' && selectedAIRole && project ? (
             <AIRoleCard
               role={selectedAIRole}
+              projectId={project.id}
               onClose={handleBackToManuscript}
               onSave={(updatedRole) => {
                 setAIRoles(aiRoles.map(r => r.id === updatedRole.id ? updatedRole : r))
@@ -1015,9 +1016,10 @@ export function App() {
                 handleBackToManuscript()
               }}
             />
-          ) : centerView === 'ai-role-new' && selectedAIRole ? (
+          ) : centerView === 'ai-role-new' && selectedAIRole && project ? (
             <AIRoleCard
               role={selectedAIRole}
+              projectId={project.id}
               onClose={handleBackToManuscript}
               onSave={(newRole) => {
                 setAIRoles([...aiRoles, newRole])
