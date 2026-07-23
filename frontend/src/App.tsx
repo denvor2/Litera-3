@@ -9,7 +9,7 @@ import { API_BASE } from './config'
 import type { Project, Scene, Book } from './types'
 
 interface EditingItem {
-  type: 'chapter' | 'scene' | 'codexEntry'
+  type: 'chapter' | 'scene' | 'codexEntry' | 'project'
   id: string
   parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry
   data: Record<string, any>
@@ -248,15 +248,29 @@ export function App() {
   const handleSaveEdit = async () => {
     if (!editingItem || !project) return
     try {
-      const { type, id, parentId, data } = editingItem
-      const endpoint = type === 'chapter' ? `/api/chapters/${id}` :
-                       type === 'scene' ? `/api/scenes/${id}` :
-                       `/api/codex/${id}`
+      const { type, id, data } = editingItem
+      let endpoint: string
+      let method: 'POST' | 'PUT' = 'PUT'
+
+      if (type === 'project' && id === 'new') {
+        endpoint = '/api/projects'
+        method = 'POST'
+      } else if (type === 'chapter') {
+        endpoint = `/api/chapters/${id}`
+      } else if (type === 'scene') {
+        endpoint = `/api/scenes/${id}`
+      } else if (type === 'codexEntry') {
+        endpoint = `/api/codex/${id}`
+      } else if (type === 'project') {
+        endpoint = `/api/projects/${id}`
+      } else {
+        return
+      }
 
       // Remove type from data before sending (it's UI-only)
       const { type: _, ...dataToSend } = data
       const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'PUT',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend),
       })
@@ -265,20 +279,31 @@ export function App() {
       }
       const updated = await response.json()
 
-      if (type === 'chapter' && parentId) {
+      if (type === 'project' && id === 'new') {
+        // After creating project, reload projects list
+        const projectsResponse = await fetch(`${API_BASE}/api/projects`)
+        if (projectsResponse.ok) {
+          const projects = await projectsResponse.json()
+          if (projects.length > 0) {
+            setProject(projects[0])
+          }
+        }
+      } else if (type === 'chapter') {
         setProject({
           ...project,
           books: project.books.map(b =>
-            b.id === parentId
+            b.chapters?.find(c => c.id === id)
               ? { ...b, chapters: b.chapters.map(c => (c.id === id ? updated : c)) }
               : b
           ),
         })
-      } else if (type === 'scene' && parentId) {
+      } else if (type === 'scene') {
         const updatedBooks = project.books.map(b => ({
           ...b,
           chapters: b.chapters.map(c =>
-            c.id === parentId ? { ...c, scenes: c.scenes.map(s => (s.id === id ? updated : s)) } : c
+            c.scenes?.find(s => s.id === id)
+              ? { ...c, scenes: c.scenes.map(s => (s.id === id ? updated : s)) }
+              : c
           ),
         }))
         setProject({ ...project, books: updatedBooks })
@@ -415,6 +440,10 @@ export function App() {
     }
   }
 
+  const handleCreateProject = () => {
+    setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
+  }
+
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
   if (!project) return <div className="app-error">Проект не найден</div>
@@ -478,6 +507,7 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
+              onCreateProject={handleCreateProject}
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
@@ -504,6 +534,8 @@ export function App() {
                   <h2>Редактировать главу</h2>
                 ) : editingItem.type === 'scene' ? (
                   <h2>Редактировать сцену</h2>
+                ) : editingItem.type === 'project' ? (
+                  <h2>{editingItem.id === 'new' ? 'Создать серию' : 'Редактировать серию'}</h2>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <div className="avatar-lg">
@@ -557,6 +589,20 @@ export function App() {
                     </select>
                   </div>
                 </>
+              )}
+
+              {editingItem.type === 'project' && (
+                <div className="field">
+                  <label>Название серии</label>
+                  <input
+                    type="text"
+                    value={editingItem.data.title}
+                    onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                    className="bc-input"
+                    placeholder="Название новой серии"
+                    autoFocus
+                  />
+                </div>
               )}
 
               {editingItem.type === 'codexEntry' && (

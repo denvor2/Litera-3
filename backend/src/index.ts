@@ -107,6 +107,34 @@ fastify.post('/api/projects', async (request, reply) => {
   }
 })
 
+fastify.delete('/api/projects/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    })
+
+    if (!project) {
+      reply.code(404).send({ error: 'Project not found' })
+      return
+    }
+
+    if (project.isDefault) {
+      reply.code(403).send({ error: 'Cannot delete default project' })
+      return
+    }
+
+    await prisma.project.delete({
+      where: { id: projectId },
+    })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to delete project' })
+  }
+})
+
 // Books routes
 fastify.get('/api/books/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
