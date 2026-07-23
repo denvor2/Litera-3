@@ -952,6 +952,31 @@ export function App() {
                   setSelectedBookId(null)
                 }
               }}
+              onDeleteProject={(projectId) => {
+                const handleDelete = async () => {
+                  try {
+                    const response = await fetch(`${API_BASE}/api/projects/${projectId}`, {
+                      method: 'DELETE',
+                    })
+                    if (!response.ok) throw new Error('Failed to delete project')
+                    // Remove from allSeries
+                    const updated = allSeries.filter(p => p.id !== projectId)
+                    // TODO: Update allSeries state if it's available
+                    // Switch to another project if we deleted the current one
+                    if (project?.id === projectId && updated.length > 0) {
+                      setProject(updated[0])
+                      setSelectedScene(null)
+                      setSelectedBookId(null)
+                    }
+                  } catch (error) {
+                    console.error('Failed to delete project:', error)
+                  }
+                }
+                handleDelete()
+              }}
+              onEditProject={(proj) => {
+                setEditingItem({ type: 'project', id: proj.id, data: { title: proj.title, synopsis: proj.synopsis || '' } })
+              }}
               onCreateScene={handleCreateScene}
               onUpdateSceneOrder={handleUpdateSceneOrder}
               onCreateBook={handleCreateBook}

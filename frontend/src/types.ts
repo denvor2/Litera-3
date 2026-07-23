@@ -7,6 +7,7 @@ export interface User {
 export interface Project {
   id: string
   title: string
+  synopsis?: string
   ownerId: string
   books: Book[]
   codexEntries?: CodexEntry[]

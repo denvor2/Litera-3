@@ -19,6 +19,8 @@ interface SidebarProps {
   onSceneSelect?: (scene: Scene) => void
   onBookSelect?: (bookId: string) => void
   onSelectProject?: (projectId: string) => void
+  onDeleteProject?: (projectId: string) => void
+  onEditProject?: (project: Project) => void
   onCreateScene?: (chapterId: string) => void
   onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
   onCreateBook?: () => void
@@ -49,6 +51,8 @@ export function Sidebar({
   onSceneSelect,
   onBookSelect,
   onSelectProject,
+  onDeleteProject,
+  onEditProject,
   onCreateScene,
   onUpdateSceneOrder,
   onCreateBook,
@@ -202,18 +206,44 @@ export function Sidebar({
             +
           </button>
         </div>
-        <select
-          className="series-select"
-          value={project?.id || ''}
-          onChange={(e) => onSelectProject?.(e.target.value)}
-          style={{ marginBottom: '12px' }}
-        >
-          {allSeries.map(series => (
-            <option key={series.id} value={series.id}>
-              {series.title}
-            </option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'stretch', marginBottom: '12px' }}>
+          <select
+            className="series-select"
+            value={project?.id || ''}
+            onChange={(e) => onSelectProject?.(e.target.value)}
+            style={{ flex: 1 }}
+          >
+            {allSeries.map(series => (
+              <option key={series.id} value={series.id}>
+                {series.title}
+              </option>
+            ))}
+          </select>
+          <button
+            className="icon-btn"
+            onClick={() => {
+              if (project && window.confirm(`Удалить серию "${project.title}" в корзину? Это действие можно отменить.`)) {
+                onDeleteProject?.(project.id)
+              }
+            }}
+            title="Удалить серию в корзину"
+            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
+          >
+            🗑
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => {
+              if (project) {
+                onEditProject?.(project)
+              }
+            }}
+            title="Редактировать серию"
+            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
+          >
+            ✎
+          </button>
+        </div>
         <div className="books-list">
           {books.map(book => (
             <div
