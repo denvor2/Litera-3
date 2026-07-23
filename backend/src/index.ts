@@ -43,6 +43,9 @@ fastify.get('/api/projects', async (request, reply) => {
       codexEntries: {
         where: { deletedAt: null },
       },
+      notes: {
+        where: { deletedAt: null },
+      },
     },
   })
   return projects

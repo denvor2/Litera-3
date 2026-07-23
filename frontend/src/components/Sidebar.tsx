@@ -25,10 +25,13 @@ interface SidebarProps {
   onDeleteChapter?: (chapterId: string) => void
   onDeleteScene?: (sceneId: string) => void
   onCreateCodexEntry?: (type: 'character' | 'location') => void
-  onCreateProject?: () => void
   onEditChapter?: (chapterId: string, bookId: string, title: string) => void
   onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
   onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
+  onEditBook?: (bookId: string) => void
+  onCreateNote?: () => void
+  onEditNote?: (noteId: string, data: Record<string, any>) => void
+  onDeleteNote?: (noteId: string) => void
   onNotesChange?: (notes: string) => void
   selectedScene?: Scene
 }
@@ -49,10 +52,13 @@ export function Sidebar({
   onDeleteChapter,
   onDeleteScene,
   onCreateCodexEntry,
-  onCreateProject,
   onEditChapter,
   onEditScene,
   onEditCodexEntry,
+  onEditBook,
+  onCreateNote,
+  onEditNote,
+  onDeleteNote,
   onNotesChange,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
@@ -170,7 +176,7 @@ export function Sidebar({
             >
               <span>{book.title}</span>
               <div className="row-actions">
-                <button className="icon-btn" title="Редактировать">✎</button>
+                <button className="icon-btn" title="Редактировать" onClick={() => onEditBook?.(book.id)}>✎</button>
                 <button className="icon-btn" title="Удалить" onClick={() => onDeleteBook?.(book.id)}>🗑</button>
               </div>
             </div>
@@ -180,12 +186,6 @@ export function Sidebar({
               className="add-link"
               onClick={() => onCreateBook?.()}
             >+ добавить книгу</button>
-          </div>
-          <div className="add-item">
-            <button
-              className="add-link"
-              onClick={() => onCreateProject?.()}
-            >+ добавить серию</button>
           </div>
         </div>
       </div>
@@ -205,13 +205,6 @@ export function Sidebar({
             .filter(book => book.id === currentBookId)
             .map(book => (
             <div key={book.id} className="book-section">
-              <div className="book-row">
-                <span>{book.title}</span>
-                <div className="row-actions">
-                  <button className="icon-btn" title="Редактировать">✎</button>
-                  <button className="icon-btn" title="Удалить" onClick={() => onDeleteBook?.(book.id)}>🗑</button>
-                </div>
-              </div>
 
               <div className="chapters-list">
                 {book.chapters.map(chapter => (
@@ -409,12 +402,38 @@ export function Sidebar({
         </button>
         {openSection === 'notes' && (
         <div className="acc-body">
-          <textarea
-            className="notes-box"
-            placeholder="Заметки на полях..."
-            value={selectedScene?.notes || ''}
-            onChange={(e) => onNotesChange?.(e.target.value)}
-          ></textarea>
+          {selectedScene ? (
+            <div>
+              <textarea
+                className="notes-box"
+                placeholder="Заметки на полях..."
+                value={selectedScene?.notes || ''}
+                onChange={(e) => onNotesChange?.(e.target.value)}
+              ></textarea>
+            </div>
+          ) : (
+            <div>
+              {project?.notes && project.notes.length > 0 && (
+                <div className="notes-list">
+                  {project.notes.map(note => (
+                    <div key={note.id} className="note-item">
+                      <span className="note-title" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>{note.title}</span>
+                      <div className="row-actions">
+                        <button className="icon-btn" title="Редактировать" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>✎</button>
+                        <button className="icon-btn" title="Удалить" onClick={() => onDeleteNote?.(note.id)}>🗑</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="add-item">
+                <button
+                  className="add-link"
+                  onClick={() => onCreateNote?.()}
+                >+ добавить заметку</button>
+              </div>
+            </div>
+          )}
         </div>
         )}
       </div>
@@ -457,7 +476,7 @@ export function Sidebar({
                         }
                       }}
                       title="Окончательно удалить"
-                      style={{ fontSize: '14px', padding: '2px 6px', color: '#d32f2f' }}
+                      style={{ fontSize: '14px', padding: '2px 6px' }}
                     >
                       🗑️
                     </button>
@@ -477,12 +496,12 @@ function getStatusColor(status: string): string {
   const statusLower = status?.toLowerCase() || 'draft'
   switch (statusLower) {
     case 'draft':
-      return '#9C9891'
+      return 'var(--draft)'
     case 'editing':
-      return '#B9812E'
+      return 'var(--editing)'
     case 'done':
-      return '#4A7A54'
+      return 'var(--done)'
     default:
-      return '#9C9891'
+      return 'var(--draft)'
   }
 }

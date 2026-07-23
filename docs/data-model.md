@@ -19,10 +19,14 @@ BOOK
   id                uuid PK
   project_id        uuid FK -> PROJECT
   title             string
+  series            string (nullable)  -- название серии / подсерии (добавлено в спринте 8ф)
+  genre             string (nullable)  -- жанр (добавлено в спринте 8ф)
+  description       string (nullable)  -- описание / аннотация (добавлено в спринте 8ф)
+  synopsis          string (nullable)  -- синопсис (добавлено в спринте 8ф)
   order             int
   deleted_at        timestamp (nullable) -- мягкое удаление; null = активная книга, значение = в корзине
   -- Не реализовано в Фазе 0, отложено на Фазу 2+:
-  -- genre, synopsis, annotation, planned_volume, attributes
+  -- planned_volume, attributes
 
 CHAPTER
   id            uuid PK
@@ -38,12 +42,11 @@ SCENE
   status            string   -- enum: draft | editing | done
   pov_character_id  uuid FK -> CODEXENTRY (nullable)
   word_count        int      -- вычисляемое поле, пересчитывается при сохранении текста
+  target_word_count int (nullable)     -- целевой объём сцены (добавлено в спринте 8ф)
   body              json     -- TipTap документ, хранится как JSONB в PostgreSQL
   notes             string   -- текстовые заметки/комментарии к сцене
   order             int
   deleted_at        timestamp (nullable) -- мягкое удаление; null = активная сцена, значение = в корзине
-  -- Не реализовано в Фазе 0, отложено на Фазу 2+:
-  -- target_word_count
 
 CODEXENTRY
   id            uuid PK
@@ -65,6 +68,15 @@ VERSION
   scene_id      uuid FK -> SCENE
   snapshot      json     -- TipTap документ на момент версии, хранится как JSONB в PostgreSQL
   created_at    timestamp
+
+NOTE
+  id            uuid PK
+  project_id    uuid FK -> PROJECT
+  title         string
+  content       string   -- текст заметки (markdown или plain text)
+  deleted_at    timestamp (nullable) -- мягкое удаление; null = активная заметка, значение = в корзине
+  created_at    timestamp
+  updated_at    timestamp
 ```
 
 **Мягкое удаление (Корзина).** Реализовано в Фазе 0. BOOK, CHAPTER, SCENE, CODEXENTRY имеют `deleted_at DateTime?` для мягкого удаления. Удаление элементов (кнопка 🗑) выполняется UPDATE с установкой `deleted_at`, не DELETE. Восстановление из корзины — UPDATE с обнулением `deleted_at`. Все запросы READ фильтруют `deleted_at IS NULL` для исключения удалённых элементов.

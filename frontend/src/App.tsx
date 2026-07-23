@@ -232,7 +232,7 @@ export function App() {
     })
   }
 
-  const handleEdit = (type: 'chapter' | 'scene' | 'codexEntry', id: string, parentId: string | undefined, data: Record<string, any>) => {
+  const handleEdit = (type: 'chapter' | 'scene' | 'codexEntry' | 'book', id: string, parentId: string | undefined, data: Record<string, any>) => {
     setEditingItem({ type, id, parentId, data: { ...data } })
   }
 
@@ -455,6 +455,24 @@ export function App() {
     }
   }
 
+  const handleDeleteNote = async (noteId: string) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/notes/${noteId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        notes: (project.notes || []).filter(note => note.id !== noteId),
+      })
+    } catch (error) {
+      console.error('Failed to delete note:', error)
+    }
+  }
+
   const handleCreateCodexEntry = async (type: 'character' | 'location') => {
     if (!project) return
     const name = type === 'character' ? `Персонаж ${Math.random().toString(36).substr(2, 5)}` : `Локация ${Math.random().toString(36).substr(2, 5)}`
@@ -482,10 +500,6 @@ export function App() {
     } catch (error) {
       console.error(`Failed to create ${type}:`, error)
     }
-  }
-
-  const handleCreateProject = () => {
-    setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
   }
 
   const handleSaveCodexEntry = async (entry: CodexEntry) => {
@@ -740,10 +754,13 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
-              onCreateProject={handleCreateProject}
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
+              onEditBook={(bookId) => handleEdit('book', bookId, undefined, {})}
+              onCreateNote={() => setEditingItem({ type: 'note', id: '', data: { title: '', content: '' } })}
+              onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}
+              onDeleteNote={(noteId) => handleDeleteNote(noteId)}
               onNotesChange={handleNotesChange}
             />
           </ErrorBoundary>

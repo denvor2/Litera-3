@@ -34,6 +34,7 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
     genre: bookData.genre || '',
     description: bookData.description || '',
     synopsis: bookData.synopsis || '',
+    targetWordCount: bookData.targetWordCount || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -94,6 +95,17 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="form-group">
+          <label>Целевой объём (слова)</label>
+          <input
+            type="number"
+            value={formData.targetWordCount}
+            onChange={(e) => setFormData({ ...formData, targetWordCount: e.target.value ? parseInt(e.target.value) : '' })}
+            placeholder="Целевой объём книги в словах"
+            className="bc-input"
+          />
         </div>
 
         <div className="form-group">

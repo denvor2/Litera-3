@@ -214,9 +214,7 @@
 
 /* Resize Handle */
 .resize-handle {
-  position: absolute;
-  left: 0;
-  top: 0;
+  position: relative;
   width: 6px;
   height: 100%;
   cursor: col-resize;
