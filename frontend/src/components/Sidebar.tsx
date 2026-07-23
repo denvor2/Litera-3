@@ -220,12 +220,19 @@ export function Sidebar({
             }}
             style={{ flex: 1 }}
           >
-            <option value="no-series">Книги без серии</option>
             {allSeries.map(series => (
               <option key={series.id} value={series.id}>
                 {series.title}
               </option>
             ))}
+            {allSeries.length > 0 && (
+              <option value="" disabled style={{ backgroundColor: '#DEDAD0', height: '1px', padding: '0' }}>
+                ─────────────────
+              </option>
+            )}
+            <option value="no-series" style={{ fontStyle: 'italic', color: '#9C9891' }}>
+              📚 Книги без серии
+            </option>
           </select>
           <button
             className="icon-btn"
