@@ -29,6 +29,8 @@ model Project {
   books     Book[]
   codexEntries CodexEntry[]
   notes     Note[]
+  aiRoles   AIRole[]
+  aiFieldPrompts AIFieldPrompts[]
   isDefault Boolean? @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -141,6 +143,50 @@ model Note {
   updatedAt DateTime @updatedAt
 
   @@map("notes")
+}
+
+model AIRole {
+  id String @id @default(uuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name String
+  type String // 'coauthor' | 'editor' | 'critic' | 'reader' | 'custom'
+  icon String @default("🤖")
+  systemPrompt String
+  quickPrompts String[]
+  model String?
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("ai_roles")
+}
+
+model AIFieldPrompts {
+  id String @id @default(uuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scope String // 'book.title', 'book.annotation', ...
+  scopeLabel String
+  quickPrompts String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, scope])
+  @@index([projectId])
+  @@map("ai_field_prompts")
+}
+
+model UserPreferences {
+  id String @id @default(uuid())
+  sessionId String? @unique
+  aiPanelWidth Int @default(280)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
 }
 
 enum SceneStatus {
