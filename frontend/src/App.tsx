@@ -29,6 +29,7 @@ export function App() {
   const [activeAIRole, setActiveAIRole] = useState('coauthor')
   const [aiScope, setAIScope] = useState<'scene' | 'chapter' | 'dialog' | 'selection'>('scene')
   const [aiMessages, setAIMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -95,6 +96,7 @@ export function App() {
   const handleSceneSave = async (updatedScene: Scene) => {
     if (!project) return
     try {
+      setSaveStatus('saving')
       const response = await fetch(`${API_BASE}/api/scenes/${updatedScene.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -117,8 +119,10 @@ export function App() {
           })),
         })),
       })
+      setSaveStatus('saved')
     } catch (error) {
       console.error('Failed to save scene:', error)
+      setSaveStatus('error')
     }
   }
 
@@ -596,6 +600,17 @@ export function App() {
                       <option value="done">Готово</option>
                     </select>
                   </div>
+                  <div className="field">
+                    <label>Целевой объём (слов)</label>
+                    <input
+                      type="number"
+                      value={editingItem.data.targetWordCount || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, targetWordCount: e.target.value ? parseInt(e.target.value) : null } })}
+                      className="bc-input"
+                      placeholder="Например: 5000"
+                      min="0"
+                    />
+                  </div>
                 </>
               )}
 
@@ -771,9 +786,41 @@ export function App() {
           <span title="Авторские листы (1 а.л. = 40 000 знаков)">{authorSheets} а.л.</span>
           <span title="Страницы (1 стр. = 1800 знаков)">{pages} стр.</span>
         </div>
+
+        {/* Progress bar */}
+        {selectedScene && selectedScene.targetWordCount && (
+          <div className="progress-bar-container">
+            <div className="progress-bar">
+              <div
+                className="progress-bar-fill"
+                style={{
+                  width: `${Math.min(100, (wordCount / selectedScene.targetWordCount) * 100)}%`,
+                  backgroundColor: wordCount >= selectedScene.targetWordCount ? 'var(--done)' : 'var(--accent)'
+                }}
+              />
+            </div>
+            <span className="progress-text">
+              {wordCount} / {selectedScene.targetWordCount} слов
+            </span>
+          </div>
+        )}
+
         <div className="save-state">
-          <span className="save-dot" style={{ backgroundColor: 'var(--done)' }}></span>
-          <span>Сохранено</span>
+          <span
+            className="save-dot"
+            style={{
+              backgroundColor:
+                saveStatus === 'saved' ? 'var(--done)' :
+                saveStatus === 'saving' ? 'var(--accent)' :
+                'var(--error)'
+            }}
+            title={saveStatus}
+          />
+          <span>
+            {saveStatus === 'saved' ? 'Сохранено' :
+             saveStatus === 'saving' ? 'Сохраняется...' :
+             'Ошибка сохранения'}
+          </span>
         </div>
       </div>
     </div>
