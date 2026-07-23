@@ -70,6 +70,16 @@ export function Sidebar({
   const [trashLoading, setTrashLoading] = useState(false)
   const currentBookId = selectedBookId || books[0]?.id
 
+  // Auto-expand all chapters by default
+  useEffect(() => {
+    if (books.length > 0) {
+      const allChapterIds = new Set(
+        books.flatMap(book => book.chapters.map(ch => ch.id))
+      )
+      setExpandedChapters(allChapterIds)
+    }
+  }, [books])
+
   useEffect(() => {
     if (project && trashItems.length === 0) {
       loadTrash()
