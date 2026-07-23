@@ -157,7 +157,7 @@ export function AIPanel({
       {/* Типовые запросы (чипсы с переносом) */}
       {activeRole && (
         <div className="ai-quick">
-          <div className="ai-quick-label">Типовые запросы:</div>
+          <div className="ai-quick-label">Типовые запросы — {activeRole.name}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '-5px' }}>
             {activeRole.quickPrompts.map((prompt, idx) => (
               <button
