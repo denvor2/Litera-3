@@ -348,7 +348,12 @@ fastify.get('/api/scenes/:chapterId', async (request, reply) => {
 })
 
 fastify.post('/api/scenes', async (request, reply) => {
-  const { chapterId, title } = request.body as { chapterId: string; title: string }
+  const { chapterId, title, status, targetWordCount } = request.body as {
+    chapterId: string
+    title: string
+    status?: string
+    targetWordCount?: number | null
+  }
   const maxOrder = await prisma.scene.findFirst({
     where: { chapterId },
     orderBy: { order: 'desc' },
@@ -358,7 +363,8 @@ fastify.post('/api/scenes', async (request, reply) => {
     data: {
       chapterId,
       title,
-      status: 'DRAFT',
+      status: (status?.toUpperCase() as any) || 'DRAFT',
+      targetWordCount: targetWordCount || null,
       order: (maxOrder?.order ?? 0) + 1,
       wordCount: 0,
     },

@@ -276,6 +276,12 @@ export function App() {
 
       // Remove type from data before sending (it's UI-only)
       const { type: _, ...dataToSend } = data
+
+      // Convert status to uppercase for enum validation (DB expects DRAFT/EDITING/DONE)
+      if (dataToSend.status) {
+        dataToSend.status = dataToSend.status.toUpperCase()
+      }
+
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -507,7 +513,9 @@ export function App() {
   }
 
   const handleCreateProject = () => {
-    setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
+    // Use a fixed default owner ID (same as in backend)
+    const defaultOwnerId = 'default-user-id'
+    setEditingItem({ type: 'project', id: 'new', data: { title: '', ownerId: defaultOwnerId } })
   }
 
   const handleSaveCodexEntry = async (entry: CodexEntry) => {
