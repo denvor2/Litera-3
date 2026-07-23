@@ -938,11 +938,20 @@ export function App() {
             <Sidebar
               project={project}
               books={project.books}
+              allSeries={allSeries}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
               selectedScene={selectedScene || undefined}
               onSceneSelect={handleSceneSelect}
               onBookSelect={handleBookSelect}
+              onSelectProject={(projectId) => {
+                const selectedProj = allSeries.find(p => p.id === projectId)
+                if (selectedProj) {
+                  setProject(selectedProj)
+                  setSelectedScene(null)
+                  setSelectedBookId(null)
+                }
+              }}
               onCreateScene={handleCreateScene}
               onUpdateSceneOrder={handleUpdateSceneOrder}
               onCreateBook={handleCreateBook}

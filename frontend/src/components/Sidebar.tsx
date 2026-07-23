@@ -13,10 +13,12 @@ interface TrashItem {
 interface SidebarProps {
   books?: Book[]
   project?: Project
+  allSeries?: Project[]
   selectedSceneId?: string
   selectedBookId?: string
   onSceneSelect?: (scene: Scene) => void
   onBookSelect?: (bookId: string) => void
+  onSelectProject?: (projectId: string) => void
   onCreateScene?: (chapterId: string) => void
   onUpdateSceneOrder?: (sceneId: string, newChapterId: string, newOrder: number) => void
   onCreateBook?: () => void
@@ -40,11 +42,13 @@ interface SidebarProps {
 export function Sidebar({
   books = [],
   project,
+  allSeries = [],
   selectedSceneId,
   selectedBookId,
   selectedScene,
   onSceneSelect,
   onBookSelect,
+  onSelectProject,
   onCreateScene,
   onUpdateSceneOrder,
   onCreateBook,
@@ -198,7 +202,18 @@ export function Sidebar({
             +
           </button>
         </div>
-        <div className="series-name">{project?.title || 'Проект'}</div>
+        <select
+          className="series-select"
+          value={project?.id || ''}
+          onChange={(e) => onSelectProject?.(e.target.value)}
+          style={{ marginBottom: '12px' }}
+        >
+          {allSeries.map(series => (
+            <option key={series.id} value={series.id}>
+              {series.title}
+            </option>
+          ))}
+        </select>
         <div className="books-list">
           {books.map(book => (
             <div
