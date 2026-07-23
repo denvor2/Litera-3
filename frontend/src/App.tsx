@@ -685,7 +685,7 @@ export function App() {
   const handleCreateProject = () => {
     // Use a fixed default owner ID (same as in backend)
     const defaultOwnerId = 'default-user-id'
-    setEditingItem({ type: 'project', id: 'new', data: { title: '', ownerId: defaultOwnerId } })
+    setEditingItem({ type: 'project', id: 'new', data: { title: '', synopsis: '', ownerId: defaultOwnerId } })
   }
 
   const handleSaveCodexEntry = async (entry: CodexEntry) => {
@@ -1213,17 +1213,29 @@ export function App() {
               )}
 
               {editingItem.type === 'project' && (
-                <div className="field">
-                  <label>Название серии</label>
-                  <input
-                    type="text"
-                    value={editingItem.data.title}
-                    onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
-                    className="bc-input"
-                    placeholder="Название новой серии"
-                    autoFocus
-                  />
-                </div>
+                <>
+                  <div className="field">
+                    <label>Название серии</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название новой серии"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Синапсис серии</label>
+                    <textarea
+                      value={editingItem.data.synopsis || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, synopsis: e.target.value } })}
+                      className="bc-textarea"
+                      placeholder="Общее описание серии (используется в контексте AI запросов)"
+                      rows={5}
+                    />
+                  </div>
+                </>
               )}
 
               {editingItem.type === 'note' && (

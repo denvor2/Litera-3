@@ -27,6 +27,7 @@ fastify.get('/health', async (request, reply) => {
 // Projects routes
 fastify.get('/api/projects', async (request, reply) => {
   const projects = await prisma.project.findMany({
+    where: { deletedAt: null },
     include: {
       books: {
         where: { deletedAt: null },
@@ -53,7 +54,7 @@ fastify.get('/api/projects', async (request, reply) => {
 })
 
 fastify.post('/api/projects', async (request, reply) => {
-  const { title, ownerId } = request.body as { title: string; ownerId: string }
+  const { title, ownerId, synopsis } = request.body as { title: string; ownerId: string; synopsis?: string }
 
   try {
     const user = await prisma.user.findUnique({
@@ -74,6 +75,7 @@ fastify.post('/api/projects', async (request, reply) => {
     const project = await prisma.project.create({
       data: {
         title,
+        synopsis,
         ownerId,
         books: {
           create: [
@@ -118,13 +120,14 @@ fastify.post('/api/projects', async (request, reply) => {
 
 fastify.put('/api/projects/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
-  const { title } = request.body as { title?: string }
+  const { title, synopsis } = request.body as { title?: string; synopsis?: string }
 
   try {
     const project = await prisma.project.update({
       where: { id: projectId },
       data: {
         ...(title && { title }),
+        ...(synopsis !== undefined && { synopsis }),
       },
       include: {
         books: {
@@ -173,13 +176,52 @@ fastify.delete('/api/projects/:projectId', async (request, reply) => {
       return
     }
 
-    await prisma.project.delete({
+    // Soft delete: set deletedAt instead of removing
+    await prisma.project.update({
       where: { id: projectId },
+      data: { deletedAt: new Date() },
     })
     return { success: true }
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Failed to delete project' })
+  }
+})
+
+// Restore project from trash
+fastify.patch('/api/projects/:projectId/restore', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+
+  try {
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: { deletedAt: null },
+      include: {
+        books: {
+          where: { deletedAt: null },
+          include: {
+            chapters: {
+              where: { deletedAt: null },
+              include: {
+                scenes: {
+                  where: { deletedAt: null },
+                },
+              },
+            },
+          },
+        },
+        codexEntries: {
+          where: { deletedAt: null },
+        },
+        notes: {
+          where: { deletedAt: null },
+        },
+      },
+    })
+    return project
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore project' })
   }
 })
 

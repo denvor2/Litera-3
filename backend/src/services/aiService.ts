@@ -99,6 +99,12 @@ async function buildContext(bookId: string): Promise<string> {
 
   let contextParts: string[] = [];
 
+  // Синапсис серии
+  if (book.project.synopsis) {
+    contextParts.push('=== СИНАПСИС СЕРИИ ===\n');
+    contextParts.push(book.project.synopsis + '\n\n');
+  }
+
   // Кодекс
   contextParts.push('=== КОДЕКС ===\n');
   if (book.project.codexEntries.length > 0) {
