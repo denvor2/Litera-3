@@ -219,9 +219,10 @@ export function AIPanel({
         <button
           onClick={handleSend}
           disabled={!input.trim() || isLoading}
-          style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-2)' }}
+          title="Отправить (Enter)"
+          style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-2)', fontSize: '12px', fontWeight: 'bold', lineHeight: 1, opacity: (!input.trim() || isLoading) ? 0.5 : 1 }}
         >
-          {isLoading ? '⟳' : '📤'}
+          {isLoading ? '⟳' : '→'}
         </button>
       </div>
     </div>
