@@ -110,6 +110,45 @@ fastify.post('/api/projects', async (request, reply) => {
   }
 })
 
+fastify.put('/api/projects/:projectId', async (request, reply) => {
+  const { projectId } = request.params as { projectId: string }
+  const { title } = request.body as { title?: string }
+
+  try {
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        ...(title && { title }),
+      },
+      include: {
+        books: {
+          where: { deletedAt: null },
+          include: {
+            chapters: {
+              where: { deletedAt: null },
+              include: {
+                scenes: {
+                  where: { deletedAt: null },
+                },
+              },
+            },
+          },
+        },
+        codexEntries: {
+          where: { deletedAt: null },
+        },
+        notes: {
+          where: { deletedAt: null },
+        },
+      },
+    })
+    return project
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to update project' })
+  }
+})
+
 fastify.delete('/api/projects/:projectId', async (request, reply) => {
   const { projectId } = request.params as { projectId: string }
 
