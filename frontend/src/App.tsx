@@ -600,9 +600,10 @@ export function App() {
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
   if (!project) return <div className="app-error">Проект не найден</div>
 
-  const wordCount = selectedScene?.wordCount ?? 0
   const sceneBody = selectedScene?.body
   const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
+  // Пересчитываем статистику из текста в реальном времени
+  const wordCount = sceneText.split(/\s+/).filter(w => w.length > 0).length
   const charCount = countCharacters(sceneText, true)
   const authorSheets = countAuthorSheets(charCount).toFixed(2)
   const pages = countPages(charCount).toFixed(0)
