@@ -145,20 +145,22 @@ export function AIPanel({
         </div>
       )}
 
-      {/* Типовые запросы */}
+      {/* Типовые запросы (чипсы с переносом) */}
       {activeRole && (
         <div className="ai-quick">
           <div className="ai-quick-label">Типовые запросы:</div>
-          {activeRole.quickPrompts.map((prompt, idx) => (
-            <button
-              key={idx}
-              className="quick-btn"
-              onClick={() => onSendQuickPrompt(prompt)}
-              disabled={isLoading}
-            >
-              {prompt}
-            </button>
-          ))}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '-5px' }}>
+            {activeRole.quickPrompts.map((prompt, idx) => (
+              <button
+                key={idx}
+                className="quick-btn"
+                onClick={() => onSendQuickPrompt(prompt)}
+                disabled={isLoading}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

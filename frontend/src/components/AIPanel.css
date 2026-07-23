@@ -148,28 +148,26 @@
 }
 
 .quick-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
+  display: inline-flex;
+  align-items: center;
   font-size: 12px;
-  padding: 7px 9px;
+  padding: 6px 9px;
+  margin-right: 5px;
   margin-bottom: 5px;
   border: 0.5px solid var(--border);
-  border-radius: 6px;
+  border-radius: 14px;
   background: var(--surface);
   color: var(--ink-2);
   cursor: pointer;
   font-family: var(--font-sans);
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .quick-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
   background: var(--surface-2);
   color: var(--ink);
-}
-
-.quick-btn:last-child {
-  margin-bottom: 0;
 }
 
 .quick-btn:disabled {
