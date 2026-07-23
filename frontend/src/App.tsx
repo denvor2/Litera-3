@@ -411,6 +411,9 @@ export function App() {
           })),
         })),
       })
+      // Force trash refresh in Sidebar by setting a trigger
+      const trashRefreshKey = Date.now()
+      localStorage.setItem('trashRefreshTrigger', trashRefreshKey.toString())
     } catch (error) {
       console.error('Failed to delete scene:', error)
     }
@@ -432,6 +435,7 @@ export function App() {
           chapters: book.chapters.filter(chapter => chapter.id !== chapterId),
         })),
       })
+      localStorage.setItem('trashRefreshTrigger', Date.now().toString())
     } catch (error) {
       console.error('Failed to delete chapter:', error)
     }
@@ -638,6 +642,17 @@ export function App() {
               <div
                 className="hmenu-item"
                 onClick={() => {
+                  setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
+                  setMenuOpen(false)
+                }}
+                title="Создать новую серию"
+              >
+                ✨ Создать серию
+              </div>
+              <div className="hmenu-sep"></div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
                   if (project?.codexEntries?.[0]) {
                     handleCodexCardClick(project.codexEntries[0])
                   }
@@ -761,7 +776,7 @@ export function App() {
                 const book = project.books.find(b => b.id === bookId)
                 if (book) handleEdit('book', bookId, project.id, { title: book.title, series: book.series, genre: book.genre, synopsis: book.synopsis, description: book.description })
               }}
-              onCreateNote={() => setEditingItem({ type: 'note', id: '', data: { title: '', content: '' } })}
+              onCreateNote={() => setEditingItem({ type: 'note', id: 'new', data: { title: '', content: '' } })}
               onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}
               onDeleteNote={(noteId) => handleDeleteNote(noteId)}
               onNotesChange={handleNotesChange}
@@ -878,6 +893,17 @@ export function App() {
                       <option value="editing">Редактирование</option>
                       <option value="done">Готово</option>
                     </select>
+                  </div>
+                  <div className="field">
+                    <label>Целевой объём (слова)</label>
+                    <input
+                      type="number"
+                      value={editingItem.data.targetWordCount || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, targetWordCount: e.target.value ? parseInt(e.target.value) : null } })}
+                      className="bc-input"
+                      placeholder="Целевой объём в словах"
+                      min="0"
+                    />
                   </div>
                 </>
               )}

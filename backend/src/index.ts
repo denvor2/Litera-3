@@ -158,7 +158,14 @@ fastify.get('/api/books/:projectId', async (request, reply) => {
 })
 
 fastify.post('/api/books', async (request, reply) => {
-  const { projectId, title } = request.body as { projectId: string; title: string }
+  const { projectId, title, series, genre, description, synopsis } = request.body as {
+    projectId: string
+    title: string
+    series?: string
+    genre?: string
+    description?: string
+    synopsis?: string
+  }
   const maxOrder = await prisma.book.findFirst({
     where: { projectId, deletedAt: null },
     orderBy: { order: 'desc' },
@@ -168,6 +175,10 @@ fastify.post('/api/books', async (request, reply) => {
     data: {
       projectId,
       title,
+      series: series || null,
+      genre: genre || null,
+      description: description || null,
+      synopsis: synopsis || null,
       order: (maxOrder?.order ?? 0) + 1,
     },
     include: {
@@ -205,6 +216,16 @@ fastify.put('/api/books/:bookId', async (request, reply) => {
     const book = await prisma.book.update({
       where: { id: bookId },
       data: updateData,
+      include: {
+        chapters: {
+          where: { deletedAt: null },
+          include: {
+            scenes: {
+              where: { deletedAt: null },
+            },
+          },
+        },
+      },
     })
     return book
   } catch (error) {

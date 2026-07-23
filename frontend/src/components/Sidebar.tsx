@@ -74,6 +74,16 @@ export function Sidebar({
     }
   }, [project])
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (project) {
+        loadTrash()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [project])
+
   const loadTrash = async () => {
     if (!project) return
     setTrashLoading(true)
