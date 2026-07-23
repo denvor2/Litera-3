@@ -77,6 +77,35 @@ NOTE
   deleted_at    timestamp (nullable) -- мягкое удаление; null = активная заметка, значение = в корзине
   created_at    timestamp
   updated_at    timestamp
+
+AIROLE
+  id              uuid PK
+  project_id      uuid FK -> PROJECT
+  name            string          -- название роли (Соавтор, Редактор, Критик, Читатель, или пользовательская)
+  type            string          -- 'coauthor' | 'editor' | 'critic' | 'reader' | 'custom'
+  icon            string          -- эмодзи или иконка роли (🤖, ✏️, 👁️, 👤, ⭐)
+  system_prompt   string          -- инструкция для LLM (например: «Ты опытный редактор...»)
+  quick_prompts   string[]        -- до 6 типовых запросов (JSON-массив)
+  model           string (nullable) -- модель LLM для этой роли (claude-3-5-sonnet, gpt-4, и т.д.); если null — глобальная модель из .env
+  is_deleted      boolean (default false) -- мягкое удаление встроенных ролей; пользовательские роли удаляются HARD DELETE
+  created_at      timestamp
+  updated_at      timestamp
+
+AIFIELDPROMPTS
+  id              uuid PK
+  project_id      uuid FK -> PROJECT
+  scope           string          -- тип поля, для которого заготовлены типовые запросы (например, 'book.title', 'scene.body', 'character.personality')
+  scope_label     string          -- человеческое имя скоупа (например, 'Название книги', 'Тело сцены', 'Характер персонажа')
+  quick_prompts   string[]        -- типовые запросы для этого поля (JSON-массив, 3–5 запросов)
+  created_at      timestamp
+  updated_at      timestamp
+
+USERPREFERENCES
+  id              uuid PK
+  session_id      string (nullable) -- идентификатор сессии пользователя (для anonymous-работы); может быть null для полноценного auth в Фазе 3
+  ai_panel_width  int (default 280)  -- ширина правой AI-панели в пикселях (сохраняется между сессиями)
+  created_at      timestamp
+  updated_at      timestamp
 ```
 
 **Мягкое удаление (Корзина).** Реализовано в Фазе 0. BOOK, CHAPTER, SCENE, CODEXENTRY имеют `deleted_at DateTime?` для мягкого удаления. Удаление элементов (кнопка 🗑) выполняется UPDATE с установкой `deleted_at`, не DELETE. Восстановление из корзины — UPDATE с обнулением `deleted_at`. Все запросы READ фильтруют `deleted_at IS NULL` для исключения удалённых элементов.
@@ -101,9 +130,6 @@ TIMELINEEVENT       -- таймлайн
 
 GOAL                 -- цели и статистика
   id, project_id, type (daily|weekly|deadline), target_value, due_date
-
-AIEXPERTROLE          -- AI-эксперты
-  id, project_id, name, prompt_instruction, quick_queries (json)
 
 COMMENT               -- комментарии (от AI-эксперта или живого редактора)
   id, scene_id, author_id (nullable — если от AI, author_id null + expert_role_id), text
