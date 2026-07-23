@@ -5,9 +5,13 @@ import { ManuscriptFlow } from './components/ManuscriptFlow'
 import { AIPanel } from './components/AIPanel'
 import { ExportButton } from './components/ExportButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { CodexCard } from './components/CodexCard'
+import { BookCard } from './components/BookCard'
+import { ProjectCard } from './components/ProjectCard'
+import { Guide } from './components/Guide'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import { API_BASE } from './config'
-import type { Project, Scene, Book } from './types'
+import type { Project, Scene, Book, CodexEntry } from './types'
 
 interface EditingItem {
   type: 'chapter' | 'scene' | 'codexEntry' | 'project'
@@ -30,6 +34,10 @@ export function App() {
   const [aiScope, setAIScope] = useState<'scene' | 'chapter' | 'dialog' | 'selection'>('scene')
   const [aiMessages, setAIMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
+  const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide'>('manuscript')
+  const [selectedCodexEntry, setSelectedCodexEntry] = useState<CodexEntry | null>(null)
+  const [selectedBookForCard, setSelectedBookForCard] = useState<Book | null>(null)
+  const [guideContent, setGuideContent] = useState<string>('')
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -456,6 +464,85 @@ export function App() {
     setEditingItem({ type: 'project', id: 'new', data: { title: '' } })
   }
 
+  const handleSaveCodexEntry = async (entry: CodexEntry) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/codex/${entry.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        codexEntries: project.codexEntries?.map(e => (e.id === entry.id ? entry : e)) || [],
+      })
+    } catch (error) {
+      console.error('Failed to save codex entry:', error)
+    }
+  }
+
+  const handleSaveBook = async (book: Book) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/books/${book.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(book),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        books: project.books.map(b => (b.id === book.id ? book : b)),
+      })
+    } catch (error) {
+      console.error('Failed to save book:', error)
+    }
+  }
+
+  const handleSaveProject = async (proj: Project) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/projects/${proj.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(proj),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject(proj)
+    } catch (error) {
+      console.error('Failed to save project:', error)
+    }
+  }
+
+  const handleBackToManuscript = () => {
+    setCenterView('manuscript')
+  }
+
+  const handleCodexCardClick = (entry: CodexEntry) => {
+    setSelectedCodexEntry(entry)
+    setCenterView('codex-card')
+  }
+
+  const handleBookCardClick = (book: Book) => {
+    setSelectedBookForCard(book)
+    setCenterView('book-card')
+  }
+
+  const handleShowGuideClick = (content: string) => {
+    setGuideContent(content)
+    setCenterView('guide')
+  }
+
+  const handleProjectCardClick = () => {
+    setCenterView('project-card')
+  }
+
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
   if (!project) return <div className="app-error">Проект не найден</div>
@@ -483,11 +570,60 @@ export function App() {
           </button>
           {menuOpen && (
             <div className="hmenu" ref={menuRef}>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  if (project?.codexEntries?.[0]) {
+                    handleCodexCardClick(project.codexEntries[0])
+                  }
+                  setMenuOpen(false)
+                }}
+                title="Показать первую карточку Кодекса"
+              >
+                📖 Кодекс
+              </div>
+              <div className="hmenu-sep"></div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  if (currentBook) {
+                    handleBookCardClick(currentBook)
+                  }
+                  setMenuOpen(false)
+                }}
+                title="Показать карточку текущей книги"
+              >
+                📕 Книга
+              </div>
+              <div className="hmenu-sep"></div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  if (project) {
+                    handleProjectCardClick()
+                  }
+                  setMenuOpen(false)
+                }}
+                title="Показать карточку проекта"
+              >
+                📋 Проект
+              </div>
+              <div className="hmenu-sep"></div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  handleShowGuideClick('# Справка\n\nДобро пожаловать в LitStudio 2!')
+                  setMenuOpen(false)
+                }}
+                title="Показать справку"
+              >
+                ❓ Справка
+              </div>
+              <div className="hmenu-sep"></div>
               <div className="hmenu-item">📥 Импорт</div>
               <div className="hmenu-sep"></div>
               <div className="hmenu-item">📚 История версий</div>
               <div className="hmenu-sep"></div>
-              <div className="hmenu-item">❓ Руководство</div>
               <div className="hmenu-item">⚙️ Настройки</div>
             </div>
           )}
@@ -537,7 +673,41 @@ export function App() {
 
         {/* Center */}
         <div className="center">
-          {editingItem ? (
+          {centerView === 'codex-card' && selectedCodexEntry ? (
+            <CodexCard
+              entry={selectedCodexEntry}
+              onSave={handleSaveCodexEntry}
+              onBack={handleBackToManuscript}
+              onSceneClick={(sceneId) => {
+                const scene = project?.books
+                  .flatMap(b => b.chapters)
+                  .flatMap(c => c.scenes)
+                  .find(s => s.id === sceneId)
+                if (scene) {
+                  setSelectedScene(scene)
+                  setCenterView('manuscript')
+                }
+              }}
+            />
+          ) : centerView === 'book-card' && selectedBookForCard ? (
+            <BookCard
+              book={selectedBookForCard}
+              onSave={handleSaveBook}
+              onBack={handleBackToManuscript}
+            />
+          ) : centerView === 'project-card' ? (
+            <ProjectCard
+              project={project as Project}
+              onSave={handleSaveProject}
+              onBack={handleBackToManuscript}
+            />
+          ) : centerView === 'guide' ? (
+            <Guide
+              content={guideContent}
+              onBack={handleBackToManuscript}
+              title="Справка"
+            />
+          ) : editingItem ? (
             <div className="center-card">
               <div className="center-back">
                 <button
@@ -724,7 +894,7 @@ export function App() {
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
               </div>
             </div>
-          ) : currentBook ? (
+          ) : (centerView === 'manuscript' && currentBook) ? (
             <ManuscriptFlow
               book={currentBook}
               selectedScene={selectedScene}
