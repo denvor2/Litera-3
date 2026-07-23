@@ -222,18 +222,6 @@ export function Sidebar({
           <button
             className="icon-btn"
             onClick={() => {
-              if (project && window.confirm(`Удалить серию "${project.title}" в корзину? Это действие можно отменить.`)) {
-                onDeleteProject?.(project.id)
-              }
-            }}
-            title="Удалить серию в корзину"
-            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
-          >
-            🗑
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => {
               if (project) {
                 onEditProject?.(project)
               }
@@ -242,6 +230,18 @@ export function Sidebar({
             style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
           >
             ✎
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => {
+              if (project && window.confirm(`Удалить серию "${project.title}" в корзину? Это действие можно отменить.`)) {
+                onDeleteProject?.(project.id)
+              }
+            }}
+            title="Удалить серию в корзину"
+            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
+          >
+            🗑
           </button>
         </div>
         <div className="books-list">
