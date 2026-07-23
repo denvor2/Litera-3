@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
-import { SceneEditor } from './components/SceneEditor'
+import { ManuscriptFlow } from './components/ManuscriptFlow'
 import { ExportButton } from './components/ExportButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
@@ -320,10 +320,6 @@ export function App() {
     }
   }
 
-  const handleCancelEdit = () => {
-    setEditingItem(null)
-  }
-
   const handleNotesChange = async (notes: string) => {
     if (!selectedScene) return
     // Дебаунс 2 сек
@@ -523,10 +519,10 @@ export function App() {
               <div className="center-back">
                 <button
                   className="back-link"
-                  onClick={handleCancelEdit}
+                  onClick={() => setEditingItem(null)}
                   title="Назад"
                 >
-                  ← Назад к сцене
+                  ← Назад
                 </button>
               </div>
               <div className="head">
@@ -690,15 +686,26 @@ export function App() {
               )}
 
               <div className="bc-actions">
-                <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
+                <button className="bc-btn" onClick={() => setEditingItem(null)}>Отмена</button>
                 <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
               </div>
             </div>
-          ) : selectedScene ? (
-            <SceneEditor
-              key={selectedScene.id}
-              scene={selectedScene}
-              onSave={handleSceneSave}
+          ) : currentBook ? (
+            <ManuscriptFlow
+              book={currentBook}
+              selectedScene={selectedScene}
+              onSelectScene={handleSceneSelect}
+              onStatusChange={(sceneId, newStatus) => {
+                const scene = currentBook.chapters
+                  .flatMap(c => c.scenes)
+                  .find(s => s.id === sceneId)
+                if (scene) {
+                  handleSceneSave({ ...scene, status: newStatus as any })
+                }
+              }}
+              onSaveScene={handleSceneSave}
+              onEditScene={() => {}}
+              onMentionClick={() => {}}
             />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ink-muted)' }}>
