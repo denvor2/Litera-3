@@ -8,16 +8,25 @@ import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages }
 import { API_BASE } from './config'
 import type { Project, Scene, Book } from './types'
 
+interface EditingItem {
+  type: 'chapter' | 'scene' | 'codexEntry'
+  id: string
+  parentId?: string // bookId для chapter, chapterId для scene, projectId для codexEntry
+  data: Record<string, any>
+}
+
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [zenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -232,6 +241,84 @@ export function App() {
     }
   }
 
+  const handleEdit = (type: 'chapter' | 'scene' | 'codexEntry', id: string, parentId: string | undefined, data: Record<string, any>) => {
+    setEditingItem({ type, id, parentId, data: { ...data } })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingItem || !project) return
+    try {
+      const { type, id, parentId, data } = editingItem
+      const endpoint = type === 'chapter' ? `/api/chapters/${id}` :
+                       type === 'scene' ? `/api/scenes/${id}` :
+                       `/api/codex/${id}`
+
+      // Remove type from data before sending (it's UI-only)
+      const { type: _, ...dataToSend } = data
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const updated = await response.json()
+
+      if (type === 'chapter' && parentId) {
+        setProject({
+          ...project,
+          books: project.books.map(b =>
+            b.id === parentId
+              ? { ...b, chapters: b.chapters.map(c => (c.id === id ? updated : c)) }
+              : b
+          ),
+        })
+      } else if (type === 'scene' && parentId) {
+        const updatedBooks = project.books.map(b => ({
+          ...b,
+          chapters: b.chapters.map(c =>
+            c.id === parentId ? { ...c, scenes: c.scenes.map(s => (s.id === id ? updated : s)) } : c
+          ),
+        }))
+        setProject({ ...project, books: updatedBooks })
+        if (selectedScene?.id === id) setSelectedScene(updated)
+      } else if (type === 'codexEntry') {
+        setProject({
+          ...project,
+          codexEntries: project.codexEntries?.map(e => (e.id === id ? updated : e)) || [],
+        })
+      }
+      setEditingItem(null)
+    } catch (error) {
+      console.error('Failed to save:', error)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingItem(null)
+  }
+
+  const handleNotesChange = async (notes: string) => {
+    if (!selectedScene) return
+    // Дебаунс 2 сек
+    if (noteSaveTimeoutRef.current) clearTimeout(noteSaveTimeoutRef.current)
+    noteSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/scenes/${selectedScene.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes }),
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const updated = await response.json()
+        setSelectedScene(updated)
+      } catch (error) {
+        console.error('Failed to save notes:', error)
+      }
+    }, 2000)
+  }
+
   const handleDeleteScene = async (sceneId: string) => {
     if (!project) return
     try {
@@ -380,6 +467,7 @@ export function App() {
               books={project.books}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
+              selectedScene={selectedScene || undefined}
               onSceneSelect={handleSceneSelect}
               onBookSelect={handleBookSelect}
               onCreateScene={handleCreateScene}
@@ -390,13 +478,177 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
+              onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
+              onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
+              onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
+              onNotesChange={handleNotesChange}
             />
           </ErrorBoundary>
         )}
 
         {/* Center */}
         <div className="center">
-          {selectedScene ? (
+          {editingItem ? (
+            <div className="center-card">
+              <div className="center-back">
+                <button
+                  className="back-link"
+                  onClick={handleCancelEdit}
+                  title="Назад"
+                >
+                  ← Назад к сцене
+                </button>
+              </div>
+              <div className="head">
+                {editingItem.type === 'chapter' ? (
+                  <h2>Редактировать главу</h2>
+                ) : editingItem.type === 'scene' ? (
+                  <h2>Редактировать сцену</h2>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div className="avatar-lg">
+                      {editingItem.data.name?.split(' ').slice(0, 2).map((w: string) => w.charAt(0).toUpperCase()).join('')}
+                    </div>
+                    <div>
+                      <h2>{editingItem.data.name}</h2>
+                      <div className="subtitle">
+                        {editingItem.data.type === 'character' ? 'персонаж' : 'локация'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {editingItem.type === 'chapter' && (
+                <div className="field">
+                  <label>Название</label>
+                  <input
+                    type="text"
+                    value={editingItem.data.title}
+                    onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                    className="bc-input"
+                    placeholder="Название главы"
+                  />
+                </div>
+              )}
+
+              {editingItem.type === 'scene' && (
+                <>
+                  <div className="field">
+                    <label>Название</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название сцены"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Статус</label>
+                    <select
+                      value={editingItem.data.status || 'draft'}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, status: e.target.value } })}
+                      className="bc-select"
+                    >
+                      <option value="draft">Черновик</option>
+                      <option value="editing">Редактирование</option>
+                      <option value="done">Готово</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {editingItem.type === 'codexEntry' && (
+                <>
+                  <div className="field">
+                    <label>Название</label>
+                    <input
+                      type="text"
+                      value={editingItem.data.name}
+                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                      className="bc-input"
+                      placeholder="Название записи"
+                    />
+                  </div>
+                  {editingItem.data.type === 'character' ? (
+                    <>
+                      <div className="field">
+                        <label>Внешность</label>
+                        <textarea
+                          value={editingItem.data.attributes?.appearance || ''}
+                          onChange={(e) => setEditingItem({
+                            ...editingItem,
+                            data: {
+                              ...editingItem.data,
+                              attributes: { ...editingItem.data.attributes, appearance: e.target.value }
+                            }
+                          })}
+                          className="bc-textarea"
+                          placeholder="Описание внешности"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="field">
+                        <label>Характер</label>
+                        <textarea
+                          value={editingItem.data.attributes?.personality || ''}
+                          onChange={(e) => setEditingItem({
+                            ...editingItem,
+                            data: {
+                              ...editingItem.data,
+                              attributes: { ...editingItem.data.attributes, personality: e.target.value }
+                            }
+                          })}
+                          className="bc-textarea"
+                          placeholder="Черты характера и поведение"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="field">
+                        <label>Цель / конфликт</label>
+                        <textarea
+                          value={editingItem.data.attributes?.goal_conflict || ''}
+                          onChange={(e) => setEditingItem({
+                            ...editingItem,
+                            data: {
+                              ...editingItem.data,
+                              attributes: { ...editingItem.data.attributes, goal_conflict: e.target.value }
+                            }
+                          })}
+                          className="bc-textarea"
+                          placeholder="Цель персонажа и основной конфликт"
+                          rows={4}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="field">
+                      <label>Описание</label>
+                      <textarea
+                        value={editingItem.data.attributes?.description || ''}
+                        onChange={(e) => setEditingItem({
+                          ...editingItem,
+                          data: {
+                            ...editingItem.data,
+                            attributes: { ...editingItem.data.attributes, description: e.target.value }
+                          }
+                        })}
+                        className="bc-textarea"
+                        placeholder="Описание локации"
+                        rows={6}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="bc-actions">
+                <button className="bc-btn" onClick={handleCancelEdit}>Отмена</button>
+                <button className="bc-btn primary" onClick={handleSaveEdit}>Сохранить</button>
+              </div>
+            </div>
+          ) : selectedScene ? (
             <SceneEditor
               key={selectedScene.id}
               scene={selectedScene}

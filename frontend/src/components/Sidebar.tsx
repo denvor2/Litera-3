@@ -25,6 +25,11 @@ interface SidebarProps {
   onDeleteChapter?: (chapterId: string) => void
   onDeleteScene?: (sceneId: string) => void
   onCreateCodexEntry?: (type: 'character' | 'location') => void
+  onEditChapter?: (chapterId: string, bookId: string, title: string) => void
+  onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
+  onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
+  onNotesChange?: (notes: string) => void
+  selectedScene?: Scene
 }
 
 export function Sidebar({
@@ -32,6 +37,7 @@ export function Sidebar({
   project,
   selectedSceneId,
   selectedBookId,
+  selectedScene,
   onSceneSelect,
   onBookSelect,
   onCreateScene,
@@ -42,6 +48,10 @@ export function Sidebar({
   onDeleteChapter,
   onDeleteScene,
   onCreateCodexEntry,
+  onEditChapter,
+  onEditScene,
+  onEditCodexEntry,
+  onNotesChange,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
@@ -201,7 +211,10 @@ export function Sidebar({
                         <button
                           className="icon-btn"
                           title="Редактировать"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onEditChapter?.(chapter.id, book.id, chapter.title)
+                          }}
                         >
                           ✎
                         </button>
@@ -248,7 +261,10 @@ export function Sidebar({
                               <span className="scene-wc">{scene.wordCount}</span>
                             </button>
                             <div className="row-actions">
-                              <button className="icon-btn" title="Редактировать" onClick={(e) => e.stopPropagation()}>✎</button>
+                              <button className="icon-btn" title="Редактировать" onClick={(e) => {
+                                e.stopPropagation()
+                                onEditScene?.(scene.id, chapter.id, { title: scene.title, status: scene.status })
+                              }}>✎</button>
                               <button className="icon-btn" title="Удалить" onClick={(e) => {
                                 e.stopPropagation()
                                 onDeleteScene?.(scene.id)
@@ -312,7 +328,9 @@ export function Sidebar({
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div className="chip-type">перс.</div>
                     <div className="row-actions">
-                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Редактировать" onClick={() => {
+                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
+                      }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
                   </div>
@@ -341,7 +359,9 @@ export function Sidebar({
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div className="chip-type">лок.</div>
                     <div className="row-actions">
-                      <button className="icon-btn" title="Редактировать">✎</button>
+                      <button className="icon-btn" title="Редактировать" onClick={() => {
+                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
+                      }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
                   </div>
@@ -369,7 +389,12 @@ export function Sidebar({
         </button>
         {openSection === 'notes' && (
         <div className="acc-body">
-          <textarea className="notes-box" placeholder="Заметки на полях..."></textarea>
+          <textarea
+            className="notes-box"
+            placeholder="Заметки на полях..."
+            value={selectedScene?.notes || ''}
+            onChange={(e) => onNotesChange?.(e.target.value)}
+          ></textarea>
         </div>
         )}
       </div>
@@ -382,6 +407,7 @@ export function Sidebar({
         >
           <span className="acc-arrow">{openSection === 'trash' ? '▾' : '▸'}</span>
           КОРЗИНА
+          {trashItems.length > 0 && <span className="badge">{trashItems.length}</span>}
         </button>
         {openSection === 'trash' && (
         <div className="acc-body">
