@@ -209,10 +209,18 @@ export function Sidebar({
         <div style={{ display: 'flex', gap: '6px', alignItems: 'stretch', marginBottom: '12px' }}>
           <select
             className="series-select"
-            value={project?.id || ''}
-            onChange={(e) => onSelectProject?.(e.target.value)}
+            value={project?.id || 'no-series'}
+            onChange={(e) => {
+              if (e.target.value === 'no-series') {
+                // Show all books without series filtering
+                onSelectProject?.('no-series')
+              } else {
+                onSelectProject?.(e.target.value)
+              }
+            }}
             style={{ flex: 1 }}
           >
+            <option value="no-series">Книги без серии</option>
             {allSeries.map(series => (
               <option key={series.id} value={series.id}>
                 {series.title}

@@ -945,11 +945,17 @@ export function App() {
               onSceneSelect={handleSceneSelect}
               onBookSelect={handleBookSelect}
               onSelectProject={(projectId) => {
-                const selectedProj = allSeries.find(p => p.id === projectId)
-                if (selectedProj) {
-                  setProject(selectedProj)
+                if (projectId === 'no-series') {
+                  // Show all books - keep current project but reset selections
                   setSelectedScene(null)
                   setSelectedBookId(null)
+                } else {
+                  const selectedProj = allSeries.find(p => p.id === projectId)
+                  if (selectedProj) {
+                    setProject(selectedProj)
+                    setSelectedScene(null)
+                    setSelectedBookId(null)
+                  }
                 }
               }}
               onDeleteProject={(projectId) => {
