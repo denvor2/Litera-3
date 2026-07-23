@@ -49,6 +49,7 @@
   color: var(--ink-2);
   background: var(--surface);
   transition: all 0.15s;
+  position: relative;
 }
 
 .ai-chip:hover {
@@ -73,21 +74,27 @@
 }
 
 .ai-gear {
-  width: 16px;
-  height: 16px;
+  /* 22px icon + 32x32px click area (5px padding) positioned at bottom-right corner */
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 22px;
+  height: 22px;
   border: none;
-  background: none;
-  color: inherit;
-  opacity: 0.55;
+  background: transparent;
+  color: var(--ink-muted);
   cursor: pointer;
-  font-size: 10px;
-  padding: 0;
+  font-size: 11px;
+  padding: 5px;
   line-height: 1;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ai-gear:hover {
-  opacity: 1;
+  color: var(--ink-2);
 }
 
 /* Масштаб запроса */
