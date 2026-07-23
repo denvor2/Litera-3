@@ -3,7 +3,6 @@ import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { ManuscriptFlow } from './components/ManuscriptFlow'
 import { AIPanel } from './components/AIPanel'
-import { ExportButton } from './components/ExportButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { CodexCard } from './components/CodexCard'
 import { BookCard } from './components/BookCard'
@@ -535,6 +534,32 @@ export function App() {
     setCenterView('manuscript')
   }
 
+  const handleExport = async (format: 'docx' | 'fb2' | 'pdf') => {
+    if (!currentBook) return
+    try {
+      const url = format === 'docx'
+        ? `${API_BASE}/api/books/${currentBook.id}/export`
+        : `${API_BASE}/api/books/${currentBook.id}/export?format=${format}`
+
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`Ошибка экспорта: ${response.status}`)
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = `${currentBook.title}.${format}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      console.error('Export failed:', error)
+    }
+  }
+
   const handleCodexCardClick = (entry: CodexEntry) => {
     setSelectedCodexEntry(entry)
     setCenterView('codex-card')
@@ -631,6 +656,34 @@ export function App() {
                 ❓ Справка
               </div>
               <div className="hmenu-sep"></div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  handleExport('docx')
+                  setMenuOpen(false)
+                }}
+              >
+                📄 Экспорт (Word)
+              </div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  handleExport('fb2')
+                  setMenuOpen(false)
+                }}
+              >
+                📖 Экспорт (FictionBook)
+              </div>
+              <div
+                className="hmenu-item"
+                onClick={() => {
+                  handleExport('pdf')
+                  setMenuOpen(false)
+                }}
+              >
+                📕 Экспорт (PDF)
+              </div>
+              <div className="hmenu-sep"></div>
               <div className="hmenu-item">📥 Импорт</div>
               <div className="hmenu-sep"></div>
               <div className="hmenu-item">📚 История версий</div>
@@ -648,7 +701,6 @@ export function App() {
           >
             {zenMode ? '⛔' : '⛺'}
           </button>
-          {currentBook && <ExportButton book={currentBook as Book} />}
         </div>
       </div>
 
