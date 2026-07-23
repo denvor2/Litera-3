@@ -113,17 +113,26 @@ export function AIPanel({
             tabIndex={0}
           >
             {role.name}
-            <button
+            <span
               className="ai-gear"
               onClick={(e) => {
                 e.stopPropagation()
                 onOpenRoleSettings(role)
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onOpenRoleSettings(role)
+                }
+              }}
               title={`Настройки "${role.name}"`}
               aria-label={`Настройки роли "${role.name}"`}
+              role="button"
+              tabIndex={0}
             >
               ⚙
-            </button>
+            </span>
           </div>
         ))}
         <div className="ai-chip add" onClick={onAddCustomRole} title="Добавить помощника">
