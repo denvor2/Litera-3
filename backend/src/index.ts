@@ -1151,6 +1151,25 @@ fastify.put('/api/ai-roles/:roleId', async (request, reply) => {
     model?: string
   }
 
+  // Валидация
+  if (name !== undefined && (!name.trim())) {
+    return reply.code(400).send({ error: 'Имя роли не может быть пустым' })
+  }
+  if (systemPrompt !== undefined && (!systemPrompt.trim())) {
+    return reply.code(400).send({ error: 'Системный промпт не может быть пустым' })
+  }
+  if (quickPrompts !== undefined) {
+    if (!Array.isArray(quickPrompts)) {
+      return reply.code(400).send({ error: 'Типовые запросы должны быть массивом' })
+    }
+    if (quickPrompts.length > 6) {
+      return reply.code(400).send({ error: 'Максимум 6 типовых запросов' })
+    }
+    if (quickPrompts.some(p => !p.trim())) {
+      return reply.code(400).send({ error: 'Типовые запросы не могут быть пустыми' })
+    }
+  }
+
   try {
     const updateData: any = {}
     if (name) updateData.name = name
@@ -1178,6 +1197,23 @@ fastify.post('/api/ai-roles', async (request, reply) => {
     icon?: string
     systemPrompt: string
     quickPrompts: string[]
+  }
+
+  // Валидация
+  if (!name || !name.trim()) {
+    return reply.code(400).send({ error: 'Имя роли не может быть пустым' })
+  }
+  if (!systemPrompt || !systemPrompt.trim()) {
+    return reply.code(400).send({ error: 'Системный промпт не может быть пустым' })
+  }
+  if (!Array.isArray(quickPrompts)) {
+    return reply.code(400).send({ error: 'Типовые запросы должны быть массивом' })
+  }
+  if (quickPrompts.length > 6) {
+    return reply.code(400).send({ error: 'Максимум 6 типовых запросов' })
+  }
+  if (quickPrompts.some(p => !p.trim())) {
+    return reply.code(400).send({ error: 'Типовые запросы не могут быть пустыми' })
   }
 
   try {

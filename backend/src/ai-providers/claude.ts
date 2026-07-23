@@ -35,18 +35,13 @@ export class ClaudeProvider implements LLMProvider {
     );
 
     let warnings: string[] = [];
-    let truncatedContext = context;
 
-    // If too large, truncate context
+    // Context size validation: don't truncate silently (defer to Phase 2 for smart truncation)
     if (estimatedTokens > this.contextLimit - 2000) {
-      warnings.push('Контекст обрезан: используются последние сцены');
-      // Keep last N% of context
-      const keepRatio = 0.7;
-      const keepLength = Math.floor(context.length * keepRatio);
-      truncatedContext = context.substring(context.length - keepLength);
+      warnings.push(`Контекст слишком большой (≈${estimatedTokens} токенов, лимит ${this.contextLimit}). Сцены могут быть урезаны. (Phase 2: implement smart context windowing)`);
     }
 
-    const fullPromptFinal = `${truncatedContext}\n\n---\n\n${userMessage}`;
+    const fullPromptFinal = `${context}\n\n---\n\n${userMessage}`;
 
     try {
       const message = await this.client.messages.create({

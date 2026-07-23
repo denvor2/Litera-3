@@ -146,29 +146,59 @@ async function buildContext(bookId: string): Promise<string> {
   return contextParts.join('');
 }
 
-// Simple text extraction from TipTap JSON
+// Extract text from TipTap JSON (all node types: paragraph, heading, lists, blockquotes, etc.)
 function extractTextFromTipTap(tiptapJson: any): string {
   if (!tiptapJson || !tiptapJson.content) return '';
 
   let text = '';
-  for (const node of tiptapJson.content) {
-    if (node.type === 'paragraph' && node.content) {
+
+  function extractTextFromNode(node: any): string {
+    let nodeText = '';
+    const nodeType = node.type;
+
+    if ((nodeType === 'paragraph' || nodeType === 'paragraph_node') && node.content) {
       for (const child of node.content) {
-        if (child.type === 'text') {
-          text += child.text;
+        if (child.type === 'text') nodeText += child.text;
+        else if (child.type === 'mention') nodeText += child.attrs?.label || '@mention';
+      }
+      nodeText += '\n';
+    } else if ((nodeType === 'heading' || nodeType === 'heading_node') && node.content) {
+      for (const child of node.content) {
+        if (child.type === 'text') nodeText += child.text;
+      }
+      nodeText += '\n';
+    } else if ((nodeType === 'bulletList' || nodeType === 'bullet_list') && node.content) {
+      for (const item of node.content) {
+        if ((item.type === 'listItem' || item.type === 'list_item') && item.content) {
+          nodeText += '• ';
+          for (const child of item.content) nodeText += extractTextFromNode(child);
         }
       }
-      text += '\n';
-    } else if (node.type === 'heading' && node.content) {
-      for (const child of node.content) {
-        if (child.type === 'text') {
-          text += child.text;
+    } else if ((nodeType === 'orderedList' || nodeType === 'ordered_list') && node.content) {
+      let idx = 1;
+      for (const item of node.content) {
+        if ((item.type === 'listItem' || item.type === 'list_item') && item.content) {
+          nodeText += `${idx}. `;
+          for (const child of item.content) nodeText += extractTextFromNode(child);
+          idx++;
         }
       }
-      text += '\n';
+    } else if ((nodeType === 'blockquote' || nodeType === 'block_quote') && node.content) {
+      for (const child of node.content) {
+        nodeText += '> ' + extractTextFromNode(child);
+      }
+    } else if ((nodeType === 'codeBlock' || nodeType === 'code_block') && node.content) {
+      for (const child of node.content) {
+        if (child.type === 'text') nodeText += '```\n' + child.text + '\n```\n';
+      }
+    } else if (nodeType === 'hardBreak' || nodeType === 'hard_break') {
+      nodeText += '\n';
     }
+    return nodeText;
   }
-  return text;
+
+  for (const node of tiptapJson.content) text += extractTextFromNode(node);
+  return text.trim();
 }
 
 export async function queryAI(request: AIQueryRequest): Promise<AIQueryResponse> {
