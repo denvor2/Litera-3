@@ -41,6 +41,7 @@ export interface Scene {
   status: 'DRAFT' | 'EDITING' | 'DONE'
   povCharacterId: string | null
   wordCount: number
+  targetWordCount?: number | null
   body: unknown // TipTap JSON
   notes: string
   order: number
