@@ -157,6 +157,13 @@
   cursor: pointer;
 }
 
+.status-select:focus {
+  outline: 2px solid var(--border);
+  outline-offset: 2px;
+  border-color: var(--border);
+  box-shadow: 0 0 0 2px var(--surface-2);
+}
+
 /* Статус точка */
 .dot {
   width: 6px;

@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import type { Book, Scene } from '../types'
-import { SceneEditor } from './SceneEditor'
+import { SceneEditor, type SceneEditorHandle } from './SceneEditor'
 import './ManuscriptFlow.css'
 
 interface ManuscriptFlowProps {
@@ -24,6 +24,7 @@ export function ManuscriptFlow({
 }: ManuscriptFlowProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set())
+  const sceneEditorRef = useRef<SceneEditorHandle>(null)
 
   const toggleScene = useCallback((sceneId: string) => {
     setExpandedScenes(prev => {
@@ -142,17 +143,33 @@ export function ManuscriptFlow({
                           </span>
                           <span>
                             <label>Локация</label>
-                            Локация
+                            {scene.locationId ? 'Локация' : 'Не выбрана'}
                           </span>
                         </div>
 
                         <div className="toolbar">
-                          <button title="Жирный"><b>Ж</b></button>
-                          <button title="Курсив"><i>К</i></button>
-                          <button title="Абзац">¶</button>
+                          <button
+                            title="Жирный"
+                            onClick={() => sceneEditorRef.current?.toggleBold()}
+                          >
+                            <b>Ж</b>
+                          </button>
+                          <button
+                            title="Курсив"
+                            onClick={() => sceneEditorRef.current?.toggleItalic()}
+                          >
+                            <i>К</i>
+                          </button>
+                          <button
+                            title="Новый абзац"
+                            onClick={() => sceneEditorRef.current?.toggleBreak()}
+                          >
+                            ¶
+                          </button>
                         </div>
 
                         <SceneEditor
+                          ref={sceneEditorRef}
                           scene={scene}
                           onSave={onSaveScene}
                           onMentionClick={_onMentionClick}

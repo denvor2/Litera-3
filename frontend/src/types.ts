@@ -47,6 +47,7 @@ export interface Scene {
   title: string
   status: 'DRAFT' | 'EDITING' | 'DONE'
   povCharacterId: string | null
+  locationId?: string | null
   wordCount: number
   targetWordCount?: number | null
   body: unknown // TipTap JSON

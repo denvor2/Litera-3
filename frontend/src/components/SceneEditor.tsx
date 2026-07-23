@@ -1,6 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import type { Scene } from '../types'
 import { countWords } from '../utils/wordCount'
 import { VersionHistory } from './VersionHistory'
@@ -15,15 +15,21 @@ interface SceneEditorProps {
   onMentionClick?: (entryId: string) => void
 }
 
+export interface SceneEditorHandle {
+  toggleBold: () => void
+  toggleItalic: () => void
+  toggleBreak: () => void
+}
+
 const AUTOSAVE_DELAY = 2000 // 2 seconds
 
-export function SceneEditor({
+export const SceneEditor = forwardRef<SceneEditorHandle, SceneEditorProps>(function SceneEditor({
   scene,
   onSave,
   writeMode = false,
   onToggleWriteMode = () => {},
   onToggleCodex,
-}: SceneEditorProps) {
+}: SceneEditorProps, ref) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
 
@@ -96,6 +102,13 @@ export function SceneEditor({
     },
     [scene, onSave, autoSaveTimer]
   )
+
+  // Export formatting methods
+  useImperativeHandle(ref, () => ({
+    toggleBold: () => editor?.chain().focus().toggleBold().run(),
+    toggleItalic: () => editor?.chain().focus().toggleItalic().run(),
+    toggleBreak: () => editor?.chain().focus().splitBlock().run(),
+  }), [editor])
 
   if (!editor) return null
 
@@ -181,4 +194,4 @@ export function SceneEditor({
       </div>
     </div>
   )
-}
+})
