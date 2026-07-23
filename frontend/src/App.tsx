@@ -1367,7 +1367,7 @@ export function App() {
                 messages={aiMessages}
                 onSendMessage={handleAISendMessage}
                 onSendQuickPrompt={handleAISendQuickPrompt}
-                contextInfo={selectedScene ? 'текст этой книги + Кодекс всей серии' : 'выберите сцену для работы'}
+                contextInfo={project ? `текст этой книги + Кодекс серии${selectedBookForCard?.projectId ? ` + синопсисы других книг «${project.title}»` : ''}` : 'контекст'}
                 isLoading={aiLoading}
                 error={aiError || undefined}
                 onAddCustomRole={() => {
