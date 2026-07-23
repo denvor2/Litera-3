@@ -70,6 +70,25 @@
   background-color: var(--surface-2);
 }
 
+.topbar-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.topbar-btn:hover {
+  background-color: var(--surface-2);
+}
+
 .hmenu {
   position: absolute;
   top: 52px;

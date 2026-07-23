@@ -23,7 +23,7 @@ export function App() {
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [zenMode] = useState(false)
+  const [zenMode, setZenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeAIRole, setActiveAIRole] = useState('coauthor')
@@ -494,6 +494,13 @@ export function App() {
           <h1 className="topbar-title">LitStudio 2</h1>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            className="topbar-btn"
+            onClick={() => setZenMode(!zenMode)}
+            title={zenMode ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
+          >
+            {zenMode ? '⛔' : '⛺'}
+          </button>
           {currentBook && <ExportButton book={currentBook as Book} />}
         </div>
       </div>
