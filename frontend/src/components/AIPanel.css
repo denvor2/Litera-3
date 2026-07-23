@@ -78,18 +78,17 @@
   height: 16px;
   border: none;
   background: none;
-  color: var(--ink-muted);
+  color: inherit;
   opacity: 0.55;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   padding: 0;
   line-height: 1;
-  transition: opacity 0.15s, color 0.15s;
+  transition: opacity 0.15s;
 }
 
 .ai-gear:hover {
   opacity: 1;
-  color: var(--ink);
 }
 
 /* Масштаб запроса */
