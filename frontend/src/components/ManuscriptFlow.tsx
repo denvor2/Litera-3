@@ -52,7 +52,7 @@ export function ManuscriptFlow({
 
   const expandAll = useCallback(() => {
     const allChapters = new Set(book.chapters.map(c => c.id))
-    const allScenes = new Set(book.chapters.flatMap(c => c.scenes.map(s => s.id)))
+    const allScenes = new Set(book.chapters.flatMap(c => (c.scenes || []).map(s => s.id)))
     setExpandedChapters(allChapters)
     setExpandedScenes(allScenes)
     setAllExpanded(true)
@@ -94,7 +94,7 @@ export function ManuscriptFlow({
 
             {expandedChapters.has(chapter.id) && (
               <div className="ms-chapter-content">
-                {chapter.scenes.map(scene => (
+                {(chapter.scenes || []).map(scene => (
                   <div key={scene.id} className={`ms-scene ${selectedScene?.id === scene.id ? 'selected' : ''}`}>
                     <div className="ms-scene-header" onClick={() => toggleScene(scene.id)}>
                       <span className="ms-scene-toggle">
