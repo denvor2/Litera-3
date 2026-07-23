@@ -235,7 +235,8 @@ export function Sidebar({
               }
             }}
             title="Редактировать серию"
-            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
+            disabled={!project}
+            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0, opacity: !project ? 0.5 : 1, cursor: !project ? 'not-allowed' : 'pointer' }}
           >
             ✎
           </button>
@@ -247,7 +248,8 @@ export function Sidebar({
               }
             }}
             title="Удалить серию в корзину"
-            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0 }}
+            disabled={!project}
+            style={{ padding: '6px 8px', fontSize: '14px', flexShrink: 0, opacity: !project ? 0.5 : 1, cursor: !project ? 'not-allowed' : 'pointer' }}
           >
             🗑
           </button>
