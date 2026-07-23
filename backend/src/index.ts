@@ -327,13 +327,14 @@ fastify.get('/api/scenes/detail/:sceneId', async (request, reply) => {
 
 fastify.put('/api/scenes/:sceneId', async (request, reply) => {
   const { sceneId } = request.params as { sceneId: string }
-  const { title, status, povCharacterId, body, notes, wordCount } = request.body as {
+  const { title, status, povCharacterId, body, notes, wordCount, targetWordCount } = request.body as {
     title?: string
     status?: string
     povCharacterId?: string | null
     body?: unknown
     notes?: string
     wordCount?: number
+    targetWordCount?: number | null
   }
 
   try {
@@ -361,6 +362,7 @@ fastify.put('/api/scenes/:sceneId', async (request, reply) => {
     if (body) updateData.body = body as any
     if (notes !== undefined) updateData.notes = notes
     if (wordCount !== undefined) updateData.wordCount = wordCount
+    if (targetWordCount !== undefined) updateData.targetWordCount = targetWordCount
 
     const updatedScene = await prisma.scene.update({
       where: { id: sceneId },

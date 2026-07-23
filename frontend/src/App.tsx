@@ -757,7 +757,10 @@ export function App() {
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
-              onEditBook={(bookId) => handleEdit('book', bookId, undefined, {})}
+              onEditBook={(bookId) => {
+                const book = project.books.find(b => b.id === bookId)
+                if (book) handleEdit('book', bookId, project.id, { title: book.title, series: book.series, genre: book.genre, synopsis: book.synopsis, description: book.description })
+              }}
               onCreateNote={() => setEditingItem({ type: 'note', id: '', data: { title: '', content: '' } })}
               onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}
               onDeleteNote={(noteId) => handleDeleteNote(noteId)}
@@ -876,17 +879,6 @@ export function App() {
                       <option value="done">Готово</option>
                     </select>
                   </div>
-                  <div className="field">
-                    <label>Целевой объём (слов)</label>
-                    <input
-                      type="number"
-                      value={editingItem.data.targetWordCount || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, targetWordCount: e.target.value ? parseInt(e.target.value) : null } })}
-                      className="bc-input"
-                      placeholder="Например: 5000"
-                      min="0"
-                    />
-                  </div>
                 </>
               )}
 
@@ -941,17 +933,6 @@ export function App() {
                       className="bc-textarea"
                       placeholder="Полное описание для читателя"
                       rows={4}
-                    />
-                  </div>
-                  <div className="field">
-                    <label>Целевой объём (слов)</label>
-                    <input
-                      type="number"
-                      value={editingItem.data.targetWordCount || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, targetWordCount: e.target.value ? parseInt(e.target.value) : null } })}
-                      className="bc-input"
-                      placeholder="Например: 80000"
-                      min="0"
                     />
                   </div>
                 </>
@@ -1113,25 +1094,25 @@ export function App() {
         {/* Right Panel */}
         {!zenMode && (
           <>
-            <div
-              className="resize-handle"
-              onMouseDown={(e) => {
-                const startX = e.clientX
-                const startWidth = rightWidth
-                const handleMouseMove = (moveEvent: MouseEvent) => {
-                  const delta = moveEvent.clientX - startX
-                  const newWidth = Math.max(200, Math.min(460, startWidth - delta))
-                  setRightWidth(newWidth)
-                }
-                const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove)
-                  document.removeEventListener('mouseup', handleMouseUp)
-                }
-                document.addEventListener('mousemove', handleMouseMove)
-                document.addEventListener('mouseup', handleMouseUp)
-              }}
-            />
             <div className="right-panel">
+              <div
+                className="resize-handle"
+                onMouseDown={(e) => {
+                  const startX = e.clientX
+                  const startWidth = rightWidth
+                  const handleMouseMove = (moveEvent: MouseEvent) => {
+                    const delta = moveEvent.clientX - startX
+                    const newWidth = Math.max(200, Math.min(460, startWidth - delta))
+                    setRightWidth(newWidth)
+                  }
+                  const handleMouseUp = () => {
+                    document.removeEventListener('mousemove', handleMouseMove)
+                    document.removeEventListener('mouseup', handleMouseUp)
+                  }
+                  document.addEventListener('mousemove', handleMouseMove)
+                  document.addEventListener('mouseup', handleMouseUp)
+                }}
+              />
               <div className="right-panel-header">🤖 AI-помощники</div>
               <AIPanel
                 activeRole={activeAIRole}

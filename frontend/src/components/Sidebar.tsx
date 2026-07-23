@@ -304,12 +304,6 @@ export function Sidebar({
               </div>
             </div>
           ))}
-          <div className="add-item">
-            <button
-              className="add-link"
-              onClick={() => onCreateBook?.()}
-            >+ добавить книгу</button>
-          </div>
         </div>
         )}
       </div>
@@ -402,36 +396,38 @@ export function Sidebar({
         </button>
         {openSection === 'notes' && (
         <div className="acc-body">
-          {selectedScene ? (
+          <div style={{ marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--ink-2)' }}>Заметки проекта</h4>
+            {project?.notes && project.notes.length > 0 && (
+              <div className="notes-list">
+                {project.notes.map(note => (
+                  <div key={note.id} className="note-item">
+                    <span className="note-title" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>{note.title}</span>
+                    <div className="row-actions">
+                      <button className="icon-btn" title="Редактировать" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>✎</button>
+                      <button className="icon-btn" title="Удалить" onClick={() => onDeleteNote?.(note.id)}>🗑</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!project?.notes || project.notes.length === 0 && <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>Нет заметок</div>}
+            <div className="add-item">
+              <button
+                className="add-link"
+                onClick={() => onCreateNote?.()}
+              >+ добавить заметку</button>
+            </div>
+          </div>
+          {selectedScene && (
             <div>
+              <h4 style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--ink-2)' }}>Заметки сцены</h4>
               <textarea
                 className="notes-box"
                 placeholder="Заметки на полях..."
                 value={selectedScene?.notes || ''}
                 onChange={(e) => onNotesChange?.(e.target.value)}
               ></textarea>
-            </div>
-          ) : (
-            <div>
-              {project?.notes && project.notes.length > 0 && (
-                <div className="notes-list">
-                  {project.notes.map(note => (
-                    <div key={note.id} className="note-item">
-                      <span className="note-title" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>{note.title}</span>
-                      <div className="row-actions">
-                        <button className="icon-btn" title="Редактировать" onClick={() => onEditNote?.(note.id, { title: note.title, content: note.content })}>✎</button>
-                        <button className="icon-btn" title="Удалить" onClick={() => onDeleteNote?.(note.id)}>🗑</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="add-item">
-                <button
-                  className="add-link"
-                  onClick={() => onCreateNote?.()}
-                >+ добавить заметку</button>
-              </div>
             </div>
           )}
         </div>
