@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Sidebar } from './components/Sidebar'
 import { ManuscriptFlow } from './components/ManuscriptFlow'
+import { AIPanel } from './components/AIPanel'
 import { ExportButton } from './components/ExportButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
@@ -25,8 +26,19 @@ export function App() {
   const [zenMode] = useState(false)
   const [rightWidth, setRightWidth] = useState(280)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeAIRole, setActiveAIRole] = useState('coauthor')
+  const [aiScope, setAIScope] = useState<'scene' | 'chapter' | 'dialog' | 'selection'>('scene')
+  const [aiMessages, setAIMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleAISendMessage = async (message: string) => {
+    setAIMessages([...aiMessages, { role: 'user', content: message }])
+    // TODO: отправить запрос на backend и получить ответ
+    setTimeout(() => {
+      setAIMessages(prev => [...prev, { role: 'assistant', content: 'Это ответ от AI (пока заглушка)' }])
+    }, 500)
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -737,40 +749,15 @@ export function App() {
             />
             <div className="right-panel">
               <div className="right-panel-header">🤖 AI-помощники</div>
-              <div className="right-panel-content">
-                <div className="expert-roles">
-                  <div className="expert-chip">
-                    <button className="chip-select" title="Активировать Соавтор">
-                      <span className="chip-name">Соавтор</span>
-                    </button>
-                    <button className="chip-settings" title="Настройки">⚙</button>
-                  </div>
-                  <div className="expert-chip">
-                    <button className="chip-select" title="Активировать Редактор">
-                      <span className="chip-name">Редактор</span>
-                    </button>
-                    <button className="chip-settings" title="Настройки">⚙</button>
-                  </div>
-                  <div className="expert-chip">
-                    <button className="chip-select" title="Активировать Критик">
-                      <span className="chip-name">Критик</span>
-                    </button>
-                    <button className="chip-settings" title="Настройки">⚙</button>
-                  </div>
-                  <div className="expert-chip">
-                    <button className="chip-select" title="Активировать Читатель">
-                      <span className="chip-name">Читатель</span>
-                    </button>
-                    <button className="chip-settings" title="Настройки">⚙</button>
-                  </div>
-                </div>
-                <button className="add-expert" title="Добавить помощника">+ свой</button>
-                <div className="expert-note">
-                  <p style={{ fontSize: '11px', color: 'var(--ink-muted)', margin: '8px 0' }}>
-                    ℹ️ Настройка AI-помощников будет доступна в следующей версии.
-                  </p>
-                </div>
-              </div>
+              <AIPanel
+                activeRole={activeAIRole}
+                onSelectRole={setActiveAIRole}
+                scope={aiScope}
+                onScopeChange={setAIScope}
+                messages={aiMessages}
+                onSendMessage={handleAISendMessage}
+                contextInfo="текст этой сцены + Кодекс серии"
+              />
             </div>
           </>
         )}
