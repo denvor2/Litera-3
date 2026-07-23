@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Book, Scene } from '../types'
 import { SceneEditor } from './SceneEditor'
 import './ManuscriptFlow.css'
@@ -24,7 +24,6 @@ export function ManuscriptFlow({
 }: ManuscriptFlowProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set())
-  const [allExpanded, setAllExpanded] = useState(false)
 
   const toggleScene = useCallback((sceneId: string) => {
     setExpandedScenes(prev => {
@@ -43,7 +42,6 @@ export function ManuscriptFlow({
     const allScenes = new Set(book.chapters.flatMap(c => (c.scenes || []).map(s => s.id)))
     setExpandedChapters(allChapters)
     setExpandedScenes(allScenes)
-    setAllExpanded(true)
   }, [book])
 
   const collapseAll = useCallback(() => {
@@ -53,7 +51,6 @@ export function ManuscriptFlow({
     } else {
       setExpandedScenes(new Set())
     }
-    setAllExpanded(false)
   }, [selectedScene])
 
   const getStatusDot = (status: string) => {
@@ -67,22 +64,37 @@ export function ManuscriptFlow({
     }
   }
 
+  // Auto-expand chapter containing selected scene
+  useEffect(() => {
+    if (selectedScene) {
+      for (const chapter of book.chapters) {
+        if (chapter.scenes?.some(s => s.id === selectedScene.id)) {
+          setExpandedChapters(prev => new Set([...prev, chapter.id]))
+          setExpandedScenes(prev => new Set([...prev, selectedScene.id]))
+          break
+        }
+      }
+    }
+  }, [selectedScene, book.chapters])
+
   return (
     <div className="manuscript-flow">
       <div className="flow-toolbar">
-        <button className="flow-toggle-btn" onClick={expandAll} disabled={allExpanded}>
-          Развернуть всю книгу
-        </button>
-        <button className="flow-toggle-btn" onClick={collapseAll} disabled={!allExpanded && expandedScenes.size <= 1}>
-          Свернуть до одной
-        </button>
+        <div>
+          <a onClick={expandAll} style={{ cursor: 'pointer', marginRight: '16px', color: 'var(--ink)' }}>
+            Развернуть всю книгу
+          </a>
+          <a onClick={collapseAll} style={{ cursor: 'pointer', color: 'var(--ink)' }}>
+            Свернуть до одной
+          </a>
+        </div>
       </div>
 
       <div className="flow-content">
-        {book.chapters.map((chapter, chapterIndex) => (
+        {book.chapters.map(chapter => (
           <div key={chapter.id}>
             <div className="ms-chapter-divider">
-              Глава {chapterIndex + 1}. {chapter.title}
+              {chapter.title}
             </div>
 
             {expandedChapters.has(chapter.id) && (

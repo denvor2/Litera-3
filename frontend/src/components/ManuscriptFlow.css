@@ -7,31 +7,25 @@
 
 .flow-toolbar {
   display: flex;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 16px;
   padding: 12px 20px;
   border-bottom: 0.5px solid var(--border);
   background-color: var(--surface);
+  align-items: center;
 }
 
-.flow-toggle-btn {
+.flow-toolbar a {
   font-family: var(--font-sans);
   font-size: 12px;
-  padding: 6px 12px;
-  background-color: var(--surface-2);
-  border: 0.5px solid var(--border);
-  border-radius: 6px;
   color: var(--ink);
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: color 0.15s;
 }
 
-.flow-toggle-btn:hover:not(:disabled) {
-  background-color: var(--surface-3);
-}
-
-.flow-toggle-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.flow-toolbar a:hover {
+  color: var(--ink-2);
 }
 
 .flow-content {
