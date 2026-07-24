@@ -28,7 +28,9 @@ export function CodexCard({ entry, onSave, onBack, onSceneClick }: CodexCardProp
     const loadMentions = async () => {
       setMentionsLoading(true)
       try {
-        const response = await fetch(`${API_BASE}/api/codex-entries/${entry.id}/mentions`)
+        const response = await fetch(`${API_BASE}/api/codex-entries/${entry.id}/mentions`, {
+          credentials: 'include',
+        })
         if (response.ok) {
           const data = await response.json()
           setMentions(data || [])

@@ -27,7 +27,9 @@ export function VersionHistory({ scene, onRestore }: VersionHistoryProps) {
     const loadVersions = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`${API_BASE}/api/scenes/${scene.id}/versions`)
+        const response = await fetch(`${API_BASE}/api/scenes/${scene.id}/versions`, {
+          credentials: 'include',
+        })
         const data = await response.json()
         setVersions(data)
       } catch (error) {
@@ -49,6 +51,7 @@ export function VersionHistory({ scene, onRestore }: VersionHistoryProps) {
       await fetch(`${API_BASE}/api/versions/restore`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ versionId: version.id, sceneId: scene.id }),
       })
 
