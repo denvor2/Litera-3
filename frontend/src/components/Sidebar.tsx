@@ -236,7 +236,7 @@ export function Sidebar({
               </option>
             )}
             <option value="no-series" style={{ fontStyle: 'italic', color: '#9C9891' }}>
-              📚 Книги без серии
+              📚 Книги без серии ({allSeries.flatMap(s => s.books).filter(b => b.isInSeries === false).length})
             </option>
           </select>
           <button
