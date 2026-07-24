@@ -733,6 +733,29 @@ export function App() {
     }
   }
 
+  const handleDeleteCodexEntry = async (entryId: string) => {
+    if (!project) return
+    try {
+      const response = await fetch(`${API_BASE}/api/codex/${entryId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      setProject({
+        ...project,
+        codexEntries: (project.codexEntries || []).filter(e => e.id !== entryId),
+      })
+      if (selectedCodexEntry?.id === entryId) {
+        setSelectedCodexEntry(null)
+        setCenterView('manuscript')
+      }
+    } catch (error) {
+      console.error('Failed to delete codex entry:', error)
+    }
+  }
+
   const handleCreateCodexEntry = async (type: 'character' | 'location') => {
     if (!project) return
     const name = type === 'character' ? `Персонаж ${Math.random().toString(36).substr(2, 5)}` : `Локация ${Math.random().toString(36).substr(2, 5)}`
@@ -1172,6 +1195,7 @@ export function App() {
               onDeleteChapter={handleDeleteChapter}
               onDeleteScene={handleDeleteScene}
               onCreateCodexEntry={handleCreateCodexEntry}
+              onDeleteCodexEntry={handleDeleteCodexEntry}
               onCreateProject={handleCreateProject}
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
