@@ -12,8 +12,8 @@
 }
 
 .admin-modal {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
@@ -24,7 +24,7 @@
 
 .admin-header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -41,7 +41,7 @@
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--ink-2);
   padding: 0;
   width: 32px;
   height: 32px;
@@ -53,13 +53,13 @@
 }
 
 .close-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--surface-2);
 }
 
 .admin-content {
   padding: 20px;
   flex: 1;
-  color: var(--text-primary);
+  color: var(--ink);
 }
 
 .admin-content p {
@@ -68,7 +68,7 @@
 
 .admin-footer {
   padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -95,11 +95,12 @@
 }
 
 .btn-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
-  background: var(--bg-tertiary);
+  background: var(--surface-2);
+  border-color: var(--border-strong);
 }

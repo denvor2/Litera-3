@@ -5,7 +5,15 @@ import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable must be set in production')
+  }
+  console.warn('⚠️  JWT_SECRET not set, using insecure default for development only')
+}
+
+const secureJwtSecret = JWT_SECRET || 'dev-secret-key-development-only'
 const JWT_EXPIRES_IN = '7d'
 
 export interface AuthPayload {
@@ -29,7 +37,7 @@ export async function login(email: string, password: string) {
 
   const token = jwt.sign(
     { userId: user.id, email: user.email } as AuthPayload,
-    JWT_SECRET,
+    secureJwtSecret,
     { expiresIn: JWT_EXPIRES_IN }
   )
 
@@ -81,7 +89,7 @@ export async function register(email: string, password: string, name: string, in
 
   const token = jwt.sign(
     { userId: user.id, email: user.email } as AuthPayload,
-    JWT_SECRET,
+    secureJwtSecret,
     { expiresIn: JWT_EXPIRES_IN }
   )
 

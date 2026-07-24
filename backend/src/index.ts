@@ -17,8 +17,15 @@ const fastify = Fastify({
 const prisma = new PrismaClient()
 
 // Register plugins
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+]
+
 fastify.register(cors, {
-  origin: true,
+  origin: allowedOrigins,
   credentials: true,
 })
 
@@ -132,7 +139,21 @@ fastify.post('/auth/invite', async (request, reply) => {
   const { email } = request.body as { email: string }
 
   try {
-    // TODO: verify admin role
+    // Verify admin role (only admin can create invitations)
+    const token = request.cookies.auth_token
+    if (!token) {
+      reply.code(401).send({ error: 'Not authenticated' })
+      return
+    }
+
+    // TODO: implement role-based access control (currently all authenticated users can invite)
+    // For now, only authenticated users can invite
+    const payload = await verifyToken(token)
+    if (!payload.userId) {
+      reply.code(401).send({ error: 'Invalid token' })
+      return
+    }
+
     const invitation = await createInvitation(email)
 
     return {

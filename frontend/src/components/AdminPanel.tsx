@@ -1,4 +1,3 @@
-import React from 'react'
 import './AdminPanel.css'
 
 interface AdminPanelProps {
@@ -12,7 +11,7 @@ export function AdminPanel({ onClose, onLogout }: AdminPanelProps) {
       <div className="admin-modal">
         <div className="admin-header">
           <h2>Админ-панель</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose} aria-label="Закрыть">✕</button>
         </div>
         <div className="admin-content">
           <p>Админ-панель разработана для управления системой</p>
