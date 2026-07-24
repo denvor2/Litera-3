@@ -65,16 +65,18 @@ fastify.post('/auth/login', async (request, reply) => {
   try {
     const { token, user } = await login(email, password)
 
+    // Set cookie для persistence
     reply.setCookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      httpOnly: false,  // Разрешить JavaScript доступ для debug
+      secure: false,    // Не требовать HTTPS на localhost
+      sameSite: 'none',  // Разрешить cross-site
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
     })
 
     return {
       success: true,
+      token, // Также вернуть token в теле для fallback
       user: {
         id: user.id,
         email: user.email,
@@ -98,16 +100,18 @@ fastify.post('/auth/register', async (request, reply) => {
   try {
     const { token, user } = await register(email, password, name, invitationToken)
 
+    // Set cookie для persistence
     reply.setCookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      httpOnly: false,  // Разрешить JavaScript доступ для debug
+      secure: false,    // Не требовать HTTPS на localhost
+      sameSite: 'none',  // Разрешить cross-site
       maxAge: 7 * 24 * 60 * 60,
       path: '/',
     })
 
     return {
       success: true,
+      token, // Также вернуть token в теле для fallback
       user: {
         id: user.id,
         email: user.email,
