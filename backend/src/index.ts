@@ -264,6 +264,12 @@ fastify.post('/api/projects', async (request, reply) => {
             },
           },
         },
+        codexEntries: {
+          where: { deletedAt: null },
+        },
+        notes: {
+          where: { deletedAt: null },
+        },
       },
     })
 
