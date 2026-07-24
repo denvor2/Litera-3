@@ -798,7 +798,7 @@ export function App() {
 
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
-  if (!project) return <div className="app-error">Проект не найден</div>
+  if (!project && !showBooksWithoutSeries) return <div className="app-error">Проект не найден</div>
 
   const sceneBody = selectedScene?.body
   const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
@@ -939,7 +939,7 @@ export function App() {
         {!zenMode && (
           <ErrorBoundary>
             <Sidebar
-              project={project}
+              project={project || undefined}
               books={showBooksWithoutSeries
                 ? allSeries.flatMap(s => s.books).filter(b => b.isInSeries === false)
                 : project?.books.filter(b => b.isInSeries !== false) || []
@@ -1013,6 +1013,7 @@ export function App() {
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
               onEditBook={(bookId) => {
+                if (!project) return
                 const book = project.books.find(b => b.id === bookId)
                 if (book) handleEdit('book', bookId, project.id, { title: book.title, genre: book.genre, synopsis: book.synopsis, description: book.description, plannedCharCount: book.plannedCharCount, plannedAuthorSheets: book.plannedAuthorSheets, isInSeries: book.isInSeries })
               }}
