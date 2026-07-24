@@ -955,6 +955,7 @@ export function App() {
               onSelectProject={(projectId) => {
                 if (projectId === 'no-series') {
                   // Show books without series
+                  setProject(null)
                   setShowBooksWithoutSeries(true)
                   setSelectedScene(null)
                   setSelectedBookId(null)
