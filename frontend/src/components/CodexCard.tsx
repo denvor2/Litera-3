@@ -18,11 +18,11 @@ interface Attributes {
 }
 
 export function CodexCard({ entry, onSave, onBack, onSceneClick }: CodexCardProps) {
-  const attrs = (entry.attributes as Attributes) || {}
   const [formData, setFormData] = useState<CodexEntry>(entry)
   const [mentions, setMentions] = useState<Array<{ sceneId: string; chapterTitle: string; sceneTitle: string }>>([])
   const [mentionsLoading, setMentionsLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const attrs = (formData.attributes as Attributes) || {}
 
   useEffect(() => {
     const loadMentions = async () => {
