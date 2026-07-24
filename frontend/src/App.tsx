@@ -9,6 +9,7 @@ import { CodexCard } from './components/CodexCard'
 import { BookCard } from './components/BookCard'
 import { ProjectCard } from './components/ProjectCard'
 import { Guide } from './components/Guide'
+import { Login } from './components/Login'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import { API_BASE } from './config'
 import type { Project, Scene, Book, CodexEntry } from './types'
@@ -40,6 +41,8 @@ interface EditingItem {
 }
 
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
@@ -71,6 +74,27 @@ export function App() {
   const [selectedAIRole, setSelectedAIRole] = useState<AIRole | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Check authentication on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          credentials: 'include',
+        })
+        if (response.ok) {
+          setIsAuthenticated(true)
+        } else {
+          setIsAuthenticated(false)
+        }
+      } catch (err) {
+        setIsAuthenticated(false)
+      } finally {
+        setAuthLoading(false)
+      }
+    }
+    checkAuth()
+  }, [])
 
   // Load AI roles when project loads
   useEffect(() => {
@@ -811,6 +835,20 @@ export function App() {
     setCenterView('project-card')
   }
 
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      setIsAuthenticated(false)
+    } catch (err) {
+      console.error('Logout failed:', err)
+    }
+  }
+
+  if (authLoading) return <div className="app-loading">Загрузка...</div>
+  if (!isAuthenticated) return <Login onLoginSuccess={() => setIsAuthenticated(true)} />
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
   if (!project && !showBooksWithoutSeries) return <div className="app-error">Проект не найден</div>
@@ -944,6 +982,13 @@ export function App() {
             title={zenMode ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
           >
             {zenMode ? '⊟' : '⊞'}
+          </button>
+          <button
+            className="topbar-btn"
+            onClick={handleLogout}
+            title="Выход"
+          >
+            🚪
           </button>
         </div>
       </div>
