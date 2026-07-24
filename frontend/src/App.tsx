@@ -43,6 +43,7 @@ interface EditingItem {
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
@@ -848,10 +849,9 @@ export function App() {
   }
 
   if (authLoading) return <div className="app-loading">Загрузка...</div>
-  if (!isAuthenticated) return <Login onLoginSuccess={() => setIsAuthenticated(true)} />
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
-  if (!project && !showBooksWithoutSeries) return <div className="app-error">Проект не найден</div>
+  if (!isAuthenticated && !project) return <div className="app-error">Требуется вход</div>
 
   const sceneBody = selectedScene?.body
   const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
@@ -983,13 +983,23 @@ export function App() {
           >
             {zenMode ? '⊟' : '⊞'}
           </button>
-          <button
-            className="topbar-btn"
-            onClick={handleLogout}
-            title="Выход"
-          >
-            🚪
-          </button>
+          {isAuthenticated ? (
+            <button
+              className="topbar-btn"
+              onClick={handleLogout}
+              title="Выход"
+            >
+              🚪
+            </button>
+          ) : (
+            <button
+              className="topbar-btn"
+              onClick={() => setShowLoginModal(true)}
+              title="Вход"
+            >
+              🔑
+            </button>
+          )}
         </div>
       </div>
 
@@ -1584,6 +1594,17 @@ export function App() {
           </span>
         </div>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <Login
+          onLoginSuccess={() => {
+            setIsAuthenticated(true)
+            setShowLoginModal(false)
+          }}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
     </div>
   )
 }
