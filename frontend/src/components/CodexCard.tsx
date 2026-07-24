@@ -49,6 +49,10 @@ export function CodexCard({ entry, onSave, onBack, onSceneClick }: CodexCardProp
     setFormData({ ...formData, attributes: updatedAttrs })
   }
 
+  const handleNameChange = (value: string) => {
+    setFormData({ ...formData, name: value })
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -69,7 +73,7 @@ export function CodexCard({ entry, onSave, onBack, onSceneClick }: CodexCardProp
     return typeMap[type] || type
   }
 
-  const initials = entry.name
+  const initials = formData.name
     .split(' ')
     .slice(0, 2)
     .map(w => w.charAt(0).toUpperCase())
@@ -84,8 +88,22 @@ export function CodexCard({ entry, onSave, onBack, onSceneClick }: CodexCardProp
       <div className="card-content">
         <div className="head" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
           <div className="avatar-lg">{initials}</div>
-          <div>
-            <h2>{entry.name}</h2>
+          <div style={{ flex: 1 }}>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                border: 'none',
+                background: 'transparent',
+                width: '100%',
+                padding: '0',
+                marginBottom: '4px',
+                fontFamily: 'inherit'
+              }}
+            />
             <div className="subtitle">{getTypeLabel(entry.type)}</div>
           </div>
         </div>
