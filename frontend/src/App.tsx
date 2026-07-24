@@ -868,6 +868,15 @@ export function App() {
     setCenterView('codex-card')
   }
 
+  const handleOpenCodexEntry = (entryId: string) => {
+    if (!project) return
+    const entry = project.codexEntries?.find(e => e.id === entryId)
+    if (entry) {
+      setSelectedCodexEntry(entry)
+      setCenterView('codex-card')
+    }
+  }
+
   const handleBookCardClick = (book: Book) => {
     setSelectedBookForCard(book)
     setCenterView('book-card')
@@ -1166,7 +1175,7 @@ export function App() {
               onCreateProject={handleCreateProject}
               onEditChapter={(chapterId, bookId, title) => handleEdit('chapter', chapterId, bookId, { title })}
               onEditScene={(sceneId, chapterId, data) => handleEdit('scene', sceneId, chapterId, data)}
-              onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
+              onEditCodexEntry={(entryId) => handleOpenCodexEntry(entryId)}
               onEditBook={(bookId) => {
                 if (!project) return
                 const book = project.books.find(b => b.id === bookId)

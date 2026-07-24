@@ -34,7 +34,7 @@ interface SidebarProps {
   onCreateProject?: () => void
   onEditChapter?: (chapterId: string, bookId: string, title: string) => void
   onEditScene?: (sceneId: string, chapterId: string, data: Record<string, any>) => void
-  onEditCodexEntry?: (entryId: string, data: Record<string, any>) => void
+  onEditCodexEntry?: (entryId: string) => void
   onEditBook?: (bookId: string) => void
   onCreateNote?: () => void
   onEditNote?: (noteId: string, data: Record<string, any>) => void
@@ -444,7 +444,7 @@ export function Sidebar({
                     <div className="chip-type">перс.</div>
                     <div className="row-actions">
                       <button className="icon-btn" title="Редактировать" onClick={() => {
-                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
+                        onEditCodexEntry?.(entry.id)
                       }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
@@ -475,7 +475,7 @@ export function Sidebar({
                     <div className="chip-type">лок.</div>
                     <div className="row-actions">
                       <button className="icon-btn" title="Редактировать" onClick={() => {
-                        onEditCodexEntry?.(entry.id, { name: entry.name, attributes: entry.attributes, type: entry.type })
+                        onEditCodexEntry?.(entry.id)
                       }}>✎</button>
                       <button className="icon-btn" title="Удалить">🗑</button>
                     </div>
