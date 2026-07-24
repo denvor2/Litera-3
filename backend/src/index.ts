@@ -907,11 +907,16 @@ fastify.get('/api/trash/:projectId', async (request, reply) => {
       where: { projectId, deletedAt: { not: null } },
     })
 
+    const deletedNotes = await prisma.note.findMany({
+      where: { projectId, deletedAt: { not: null } },
+    })
+
     return {
       books: deletedBooks,
       chapters: deletedChapters,
       scenes: deletedScenes,
       codexEntries: deletedCodexEntries,
+      notes: deletedNotes,
     }
   } catch (error) {
     fastify.log.error(error)
@@ -923,10 +928,26 @@ fastify.put('/api/trash/book/:bookId/restore', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
 
   try {
+    // Restore book
     const book = await prisma.book.update({
       where: { id: bookId },
       data: { deletedAt: null },
     })
+
+    // Restore all chapters in this book
+    await prisma.chapter.updateMany({
+      where: { bookId },
+      data: { deletedAt: null },
+    })
+
+    // Restore all scenes in all chapters of this book
+    await prisma.scene.updateMany({
+      where: {
+        chapter: { bookId },
+      },
+      data: { deletedAt: null },
+    })
+
     return book
   } catch (error) {
     fastify.log.error(error)
@@ -938,10 +959,18 @@ fastify.put('/api/trash/chapter/:chapterId/restore', async (request, reply) => {
   const { chapterId } = request.params as { chapterId: string }
 
   try {
+    // Restore chapter
     const chapter = await prisma.chapter.update({
       where: { id: chapterId },
       data: { deletedAt: null },
     })
+
+    // Restore all scenes in this chapter
+    await prisma.scene.updateMany({
+      where: { chapterId },
+      data: { deletedAt: null },
+    })
+
     return chapter
   } catch (error) {
     fastify.log.error(error)
@@ -976,6 +1005,21 @@ fastify.put('/api/trash/codexentry/:entryId/restore', async (request, reply) => 
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Failed to restore codex entry' })
+  }
+})
+
+fastify.put('/api/trash/note/:noteId/restore', async (request, reply) => {
+  const { noteId } = request.params as { noteId: string }
+
+  try {
+    const note = await prisma.note.update({
+      where: { id: noteId },
+      data: { deletedAt: null },
+    })
+    return note
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to restore note' })
   }
 })
 
@@ -1025,6 +1069,18 @@ fastify.delete('/api/trash/codexentry/:entryId/permanent', async (request, reply
   } catch (error) {
     fastify.log.error(error)
     reply.code(400).send({ error: 'Failed to permanently delete codex entry' })
+  }
+})
+
+fastify.delete('/api/trash/note/:noteId/permanent', async (request, reply) => {
+  const { noteId } = request.params as { noteId: string }
+
+  try {
+    await prisma.note.delete({ where: { id: noteId } })
+    return { success: true }
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: 'Failed to permanently delete note' })
   }
 })
 

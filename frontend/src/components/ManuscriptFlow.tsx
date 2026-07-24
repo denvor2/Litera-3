@@ -125,10 +125,10 @@ export function ManuscriptFlow({
                             <label>Статус</label>
                             <select
                               className="status-select"
-                              value={scene.status || 'draft'}
+                              value={(scene.status || 'DRAFT').toLowerCase()}
                               onChange={(e) => {
                                 e.stopPropagation()
-                                onStatusChange(scene.id, e.target.value)
+                                onStatusChange(scene.id, e.target.value.toUpperCase())
                               }}
                               onClick={(e) => e.stopPropagation()}
                             >

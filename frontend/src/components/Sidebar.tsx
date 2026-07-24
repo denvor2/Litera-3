@@ -4,7 +4,7 @@ import { API_BASE } from '../config'
 import './Sidebar.css'
 
 interface TrashItem {
-  type: 'book' | 'chapter' | 'scene' | 'codexentry'
+  type: 'book' | 'chapter' | 'scene' | 'codexentry' | 'note'
   id: string
   title: string
   bookId?: string
@@ -94,7 +94,8 @@ export function Sidebar({
           ...(data.books || []).map((b: any) => ({ type: 'book' as const, id: b.id, title: b.title })),
           ...(data.chapters || []).map((c: any) => ({ type: 'chapter' as const, id: c.id, title: c.title })),
           ...(data.scenes || []).map((s: any) => ({ type: 'scene' as const, id: s.id, title: s.title })),
-          ...(data.codexEntries || []).map((e: any) => ({ type: 'codexentry' as const, id: e.id, title: e.name }))
+          ...(data.codexEntries || []).map((e: any) => ({ type: 'codexentry' as const, id: e.id, title: e.name })),
+          ...(data.notes || []).map((n: any) => ({ type: 'note' as const, id: n.id, title: n.title || 'Заметка без названия' }))
         ]
         setTrashItems(items)
       }
