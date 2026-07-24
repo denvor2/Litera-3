@@ -16,6 +16,15 @@ const fastify = Fastify({
 
 const prisma = new PrismaClient()
 
+// Cookie configuration for auth_token
+const AUTH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: false, // Не требовать HTTPS на localhost
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60, // 7 days
+  path: '/',
+}
+
 // Auth middleware for API routes
 const requireAuth = async (request: any, reply: any) => {
   try {
@@ -66,13 +75,7 @@ fastify.post('/auth/login', async (request, reply) => {
     const { token, user } = await login(email, password)
 
     // Set cookie для persistence
-    reply.setCookie('auth_token', token, {
-      httpOnly: true,
-      secure: false,    // Не требовать HTTPS на localhost
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
-    })
+    reply.setCookie('auth_token', token, AUTH_COOKIE_OPTIONS)
 
     return {
       success: true,
@@ -101,13 +104,7 @@ fastify.post('/auth/register', async (request, reply) => {
     const { token, user } = await register(email, password, name, invitationToken)
 
     // Set cookie для persistence
-    reply.setCookie('auth_token', token, {
-      httpOnly: false,  // Разрешить JavaScript доступ для debug
-      secure: false,    // Не требовать HTTPS на localhost
-      sameSite: 'none',  // Разрешить cross-site
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    })
+    reply.setCookie('auth_token', token, AUTH_COOKIE_OPTIONS)
 
     return {
       success: true,
@@ -151,13 +148,7 @@ fastify.get('/auth/me', async (request, reply) => {
 })
 
 fastify.post('/auth/logout', async (request, reply) => {
-  reply.clearCookie('auth_token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  })
-
+  reply.clearCookie('auth_token', AUTH_COOKIE_OPTIONS)
   return { success: true }
 })
 
@@ -172,8 +163,8 @@ fastify.post('/auth/invite', async (request, reply) => {
       return
     }
 
-    // TODO: implement role-based access control (currently all authenticated users can invite)
-    // For now, only authenticated users can invite
+    // Role-based access control not yet implemented - see docs/DECISIONS.md Sprint 11
+    // Currently all authenticated users can create invitations (should be admin-only in Фаза 1)
     const payload = await verifyToken(token)
     if (!payload.userId) {
       reply.code(401).send({ error: 'Invalid token' })
@@ -240,14 +231,8 @@ fastify.post('/api/projects', async (request, reply) => {
     })
 
     if (!user) {
-      // Create default user if not exists
-      await prisma.user.create({
-        data: {
-          id: actualOwnerId,
-          email: `${actualOwnerId}@litstudio.local`,
-          name: 'Default User',
-        },
-      })
+      reply.code(401).send({ error: 'User not found. You must be authenticated to create projects.' })
+      return
     }
 
     const project = await prisma.project.create({

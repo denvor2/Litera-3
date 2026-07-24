@@ -88,8 +88,13 @@ export function App() {
         })
         if (response.ok) {
           const data = await response.json()
-          setIsAuthenticated(true)
-          setCurrentUserId(data.user.id)
+          if (data?.user?.id) {
+            setIsAuthenticated(true)
+            setCurrentUserId(data.user.id)
+          } else {
+            setIsAuthenticated(false)
+            setCurrentUserId(null)
+          }
         } else {
           setIsAuthenticated(false)
           setCurrentUserId(null)
