@@ -127,13 +127,17 @@ export function App() {
 
   const loadAIRoles = async (projectId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
+      const response = await fetch(`${API_BASE}/api/ai-roles/${projectId}`, {
+        credentials: 'include',
+      })
       if (!response.ok) throw new Error('Failed to load AI roles')
       let roles: AIRole[] = await response.json()
 
       // If no roles exist, try loading again (backend will initialize them)
       if (roles.length === 0) {
-        const retryResponse = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
+        const retryResponse = await fetch(`${API_BASE}/api/ai-roles/${projectId}`, {
+          credentials: 'include',
+        })
         if (retryResponse.ok) {
           roles = await retryResponse.json()
         }
@@ -197,6 +201,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/ai-query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           bookId: selectedBookId || project.books[0]?.id,
           role: activeAIRole.name,
@@ -253,7 +258,9 @@ export function App() {
     const initProject = async () => {
       try {
         const apiUrl = `${API_BASE}/api/projects`
-        const response = await fetch(apiUrl)
+        const response = await fetch(apiUrl, {
+          credentials: 'include',
+        })
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`)
         const text = await response.text()
         if (!text) throw new Error('Empty response')
@@ -302,6 +309,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/scenes/${updatedScene.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updatedScene),
       })
       if (!response.ok) {
@@ -361,6 +369,7 @@ export function App() {
       await fetch(`${API_BASE}/api/scenes/order`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           updates: [{ id: sceneId, chapterId: newChapterId, order: newOrder }],
         }),
@@ -487,6 +496,7 @@ export function App() {
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(dataToSend),
       })
       if (!response.ok) {
@@ -587,6 +597,7 @@ export function App() {
         const response = await fetch(`${API_BASE}/api/scenes/${selectedScene.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ notes }),
         })
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -603,6 +614,7 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/api/scenes/${sceneId}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -632,6 +644,7 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/api/chapters/${chapterId}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -653,6 +666,7 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/api/books/${bookId}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -682,6 +696,7 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/api/notes/${noteId}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -737,6 +752,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/codex/${entry.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(entry),
       })
       if (!response.ok) {
@@ -757,6 +773,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/books/${book.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(book),
       })
       if (!response.ok) {
@@ -776,6 +793,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/projects/${proj.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(proj),
       })
       if (!response.ok) {
@@ -849,9 +867,18 @@ export function App() {
   }
 
   if (authLoading) return <div className="app-loading">Загрузка...</div>
+
+  // Если не авторизован - показать только экран входа
+  if (!isAuthenticated) {
+    return (
+      <div className="app">
+        <Login onLoginSuccess={() => window.location.reload()} />
+      </div>
+    )
+  }
+
   if (loading) return <div className="app-loading">Загрузка...</div>
   if (error) return <div className="app-error"><h2>Ошибка</h2><p>{error}</p></div>
-  if (!isAuthenticated && !project) return <div className="app-error">Требуется вход</div>
 
   const sceneBody = selectedScene?.body
   const sceneText = selectedScene && sceneBody ? extractTextFromTipTap(sceneBody) : ''
@@ -1044,6 +1071,7 @@ export function App() {
                   try {
                     const response = await fetch(`${API_BASE}/api/projects/${projectId}`, {
                       method: 'DELETE',
+                      credentials: 'include',
                     })
                     if (!response.ok) throw new Error('Failed to delete project')
                     // Remove from allSeries
