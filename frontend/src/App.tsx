@@ -468,9 +468,11 @@ export function App() {
       if (type === 'project' && id === 'new') {
         // After creating project, update to the newly created project
         setProject(updated)
+        setAllSeries([...allSeries, updated])
       } else if (type === 'project') {
         // Update existing project
         setProject(updated)
+        setAllSeries(allSeries.map(p => (p.id === id ? updated : p)))
       } else if (type === 'book' && id === 'new') {
         // After creating book, add to project
         setProject({
