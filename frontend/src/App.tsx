@@ -875,11 +875,31 @@ export function App() {
 
   if (authLoading) return <div className="app-loading">Загрузка...</div>
 
-  // Если не авторизован - показать только экран входа
+  // Если не авторизован - показать иконку входа и пустую страницу
   if (!isAuthenticated) {
     return (
       <div className="app">
-        <Login onLoginSuccess={() => window.location.reload()} />
+        <div className="topbar">
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginLeft: 'auto' }}>
+            <button
+              className="topbar-btn"
+              onClick={() => setShowLoginModal(true)}
+              title="Вход"
+            >
+              🔑
+            </button>
+          </div>
+        </div>
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ink-2)' }}>
+          <h2>Добро пожаловать в LitStudio</h2>
+          <p>Нажми иконку 🔑 чтобы войти</p>
+        </div>
+        {showLoginModal && (
+          <Login
+            onLoginSuccess={() => window.location.reload()}
+            onClose={() => setShowLoginModal(false)}
+          />
+        )}
       </div>
     )
   }
