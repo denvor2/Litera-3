@@ -176,10 +176,47 @@ fastify.delete('/api/projects/:projectId', async (request, reply) => {
       return
     }
 
-    // Soft delete: set deletedAt instead of removing
+    // Soft delete: mark project and all related entities as deleted
+    const now = new Date()
+    // Delete scenes
+    await prisma.scene.updateMany({
+      where: {
+        chapter: {
+          book: {
+            projectId,
+          },
+        },
+      },
+      data: { deletedAt: now },
+    })
+    // Delete chapters
+    await prisma.chapter.updateMany({
+      where: {
+        book: {
+          projectId,
+        },
+      },
+      data: { deletedAt: now },
+    })
+    // Delete books
+    await prisma.book.updateMany({
+      where: { projectId },
+      data: { deletedAt: now },
+    })
+    // Delete codex entries
+    await prisma.codexEntry.updateMany({
+      where: { projectId },
+      data: { deletedAt: now },
+    })
+    // Delete notes
+    await prisma.note.updateMany({
+      where: { projectId },
+      data: { deletedAt: now },
+    })
+    // Delete project
     await prisma.project.update({
       where: { id: projectId },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: now },
     })
     return { success: true }
   } catch (error) {
@@ -333,9 +370,23 @@ fastify.delete('/api/books/:bookId', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
 
   try {
+    const now = new Date()
+    // Soft delete: mark book, chapters, and scenes as deleted
+    await prisma.scene.updateMany({
+      where: {
+        chapter: {
+          bookId,
+        },
+      },
+      data: { deletedAt: now },
+    })
+    await prisma.chapter.updateMany({
+      where: { bookId },
+      data: { deletedAt: now },
+    })
     await prisma.book.update({
       where: { id: bookId },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: now },
     })
     return { success: true }
   } catch (error) {
@@ -382,9 +433,15 @@ fastify.delete('/api/chapters/:chapterId', async (request, reply) => {
   const { chapterId } = request.params as { chapterId: string }
 
   try {
+    const now = new Date()
+    // Soft delete: mark scenes and chapter as deleted
+    await prisma.scene.updateMany({
+      where: { chapterId },
+      data: { deletedAt: now },
+    })
     await prisma.chapter.update({
       where: { id: chapterId },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: now },
     })
     return { success: true }
   } catch (error) {
