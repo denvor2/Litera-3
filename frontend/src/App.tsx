@@ -619,7 +619,6 @@ export function App() {
   }
 
   const handleDeleteBook = async (bookId: string) => {
-    if (!project) return
     try {
       const response = await fetch(`${API_BASE}/api/books/${bookId}`, {
         method: 'DELETE',
@@ -627,10 +626,20 @@ export function App() {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
-      setProject({
-        ...project,
-        books: project.books.filter(book => book.id !== bookId),
-      })
+      // Update project if in series mode
+      if (project) {
+        setProject({
+          ...project,
+          books: project.books.filter(book => book.id !== bookId),
+        })
+      }
+      // In "Книги без серии" mode, update allSeries
+      if (showBooksWithoutSeries) {
+        setAllSeries(allSeries.map(series => ({
+          ...series,
+          books: series.books.filter(book => book.id !== bookId),
+        })))
+      }
       setTrashRefreshVersion(v => v + 1)
     } catch (error) {
       console.error('Failed to delete book:', error)
