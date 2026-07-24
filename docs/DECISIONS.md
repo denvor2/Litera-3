@@ -334,3 +334,140 @@
 
 **Файлы:** 
 - `frontend/src/App.css:1025-1035` (текущее адаптивное скрытие)
+
+## 2026-07-24 Спринт 11 — Auth Integration
+
+### JWT в httpOnly cookies вместо localStorage
+
+**Решение:** JWT token передается в httpOnly cookie, не хранится в localStorage.
+
+**Почему:** httpOnly защищает от XSS атак (JavaScript не может украсть cookie). 7-день expiry в cookie и JWT payload.
+
+**Как:** 
+- Backend: `fastify.register(cookiePlugin)`, `reply.setCookie('auth_token', token, { httpOnly: true, secure: NODE_ENV==='production', sameSite: 'lax' })`
+- Frontend: `fetch(..., { credentials: 'include' })` передаёт cookie автоматически
+- Backend: `verifyToken(request.cookies.auth_token)` проверяет JWT
+
+**Файлы:**
+- `backend/src/services/authService.ts` (login, register, verifyToken)
+- `backend/src/index.ts` (auth endpoints + cookie setup)
+- `frontend/src/App.tsx` (checkAuth, handleLogout)
+
+### CORS с явным allowlist вместо origin: true
+
+**Решение:** CORS настроен на explicit allowlist origins вместо отражения Origin header.
+
+**Почему:** Предотвращает CSRF/cross-origin атаки. `origin: true` с `credentials: true` позволял любому сайту делать credentialed запросы.
+
+**Как:** 
+```javascript
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'
+]
+fastify.register(cors, { origin: allowedOrigins, credentials: true })
+```
+
+**Файлы:** `backend/src/index.ts:19-29`
+
+### JWT_SECRET: fail-fast в production без hardcoded fallback
+
+**Решение:** Если JWT_SECRET не задан в окружении и NODE_ENV==='production', приложение падает при старте.
+
+**Почему:** Hardcoded fallback 'dev-secret-key-change-in-production' позволял бы кому-то подделать токен в production. Лучше упасть явно, чем молча использовать небезопасный дефолт.
+
+**Как:**
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET environment variable must be set in production')
+}
+```
+
+**Файлы:** `backend/src/services/authService.ts:8-17`
+
+### Auth guard на все /api/* routes
+
+**Решение:** Глобальный `addHook('preHandler')` требует валидный JWT token для всех /api/* endpoints.
+
+**Почему:** Защита данных от неавторизованного доступа. Без этого API был открыт для любого, кто знает URL.
+
+**Как:**
+```javascript
+const requireAuth = async (request, reply) => {
+  const token = request.cookies.auth_token
+  if (!token) reply.code(401).send({ error: 'Not authenticated' })
+  const payload = await verifyToken(token)
+  request.userId = payload.userId
+}
+
+fastify.addHook('preHandler', async (request, reply) => {
+  if (request.url.startsWith('/api/')) await requireAuth(request, reply)
+})
+```
+
+**Файлы:** `backend/src/index.ts:38-52`
+
+### /auth/invite требует authentication
+
+**Решение:** Только авторизованные пользователи могут создавать приглашения.
+
+**Почему:** Предотвращает открытую регистрацию и spam-атаки.
+
+**TODO:** реализовать role-based access control (сейчас только authenticated users, но должны только админы).
+
+**Файлы:** `backend/src/index.ts:145-166`
+
+### Login modal в top-right (иконка 🔑)
+
+**Решение:** Модальная форма входа в top-right corner, не fullscreen.
+
+**Почему:** Не занимает весь экран, позволяет смотреть остальной UI.
+
+**Как:** React useState для видимости, fixed positioning top: 60px right: 12px.
+
+**Файлы:**
+- `frontend/src/components/Login.tsx`
+- `frontend/src/components/Login.css`
+- `frontend/src/App.tsx:876` (Login modal render)
+
+### AdminPanel компонент (пустая для будущих функций)
+
+**Решение:** Пустая админ-панель в модальном окне, доступна авторизованным пользователям (иконка ⚙️).
+
+**Почему:** Подготовка для управления пользователями, сеттингами, приглашениями в будущих спринтах.
+
+**TODO:** 
+- Role-based gate (сейчас любой авторизованный пользователь, должны только админы)
+- Функциональность: создание приглашений, управление пользователями
+
+**Файлы:**
+- `frontend/src/components/AdminPanel.tsx`
+- `frontend/src/components/AdminPanel.css`
+- `frontend/src/App.tsx:1015-1023` (gear icon)
+
+### Неавторизованные пользователи видят только Login
+
+**Решение:** Если `isAuthenticated === false`, рендерится только Login компонент, остальной интерфейс скрыт.
+
+**Почему:** Не нужно показывать интерфейс, если нет данных (пользователь не может взаимодействовать).
+
+**Как:**
+```javascript
+if (!isAuthenticated) {
+  return <div className="app"><Login onLoginSuccess={() => window.location.reload()} /></div>
+}
+```
+
+**Файлы:** `frontend/src/App.tsx:876-881`
+
+### credentials: 'include' для всех fetch запросов к /api/*
+
+**Решение:** Все fetch запросы содержат `credentials: 'include'` для передачи httpOnly cookies.
+
+**Почему:** Требуется для отправки auth cookie вместе с запросом (по умолчанию cookies не отправляются cross-origin).
+
+**Статус:** Добавлено для основных fetch'ей в App.tsx. TODO: добавить в все компоненты (CodexForm, AIRoleCard, etc.) которые делают API запросы.
+
+**Файлы:**
+- `frontend/src/App.tsx` (все fetch вызовы)
+- TODO: `frontend/src/components/*.tsx` (остальные компоненты)
