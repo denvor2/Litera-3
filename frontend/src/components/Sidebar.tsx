@@ -358,7 +358,7 @@ export function Sidebar({
                         onDragOver={handleChapterDragOver}
                         onDrop={(e) => handleChapterDrop(chapter.id, e)}
                       >
-                        {chapter.scenes.map(scene => (
+                        {(chapter.scenes || []).map(scene => (
                           <div
                             key={scene.id}
                             draggable

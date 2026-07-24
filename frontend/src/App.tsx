@@ -494,6 +494,8 @@ export function App() {
       } else if (type === 'note' && id === 'new') {
         endpoint = '/api/notes'
         method = 'POST'
+        // Add projectId for new notes
+        dataToSend.projectId = project.id
       } else if (type === 'note') {
         endpoint = `/api/notes/${id}`
       } else if (type === 'codexEntry') {
