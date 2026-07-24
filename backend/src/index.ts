@@ -55,6 +55,11 @@ fastify.register(cors, {
 
 fastify.register(cookiePlugin)
 
+// Set proper Content-Type with UTF-8 charset for all JSON responses
+fastify.addHook('onSend', async (request, reply) => {
+  reply.header('Content-Type', 'application/json; charset=utf-8')
+})
+
 // Global preHandler for all /api/* routes - require auth
 fastify.addHook('preHandler', async (request, reply) => {
   if (request.url.startsWith('/api/')) {
