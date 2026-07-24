@@ -937,12 +937,13 @@ export function App() {
         {!zenMode && (
           <ErrorBoundary>
             <Sidebar
-              project={project || (allSeries.length > 0 ? allSeries[0] : undefined)}
+              project={project}
               books={showBooksWithoutSeries
                 ? allSeries.flatMap(s => s.books).filter(b => !b.isInSeries)
                 : project?.books.filter(b => b.isInSeries) || []
               }
               allSeries={allSeries}
+              trashProjectId={project?.id || allSeries[0]?.id}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
               selectedScene={selectedScene || undefined}

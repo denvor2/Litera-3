@@ -14,6 +14,7 @@ interface SidebarProps {
   books?: Book[]
   project?: Project
   allSeries?: Project[]
+  trashProjectId?: string  // ProjectId for loading trash (can be different from project)
   selectedSceneId?: string
   selectedBookId?: string
   onSceneSelect?: (scene: Scene) => void
@@ -45,6 +46,7 @@ export function Sidebar({
   books = [],
   project,
   allSeries = [],
+  trashProjectId,
   selectedSceneId,
   selectedBookId,
   selectedScene,
@@ -89,10 +91,11 @@ export function Sidebar({
   }, [books])
 
   useEffect(() => {
-    if (project && trashItems.length === 0) {
+    // Load trash using trashProjectId (can be different from displayed project)
+    if (trashProjectId && trashItems.length === 0) {
       loadTrash()
     }
-  }, [project])
+  }, [trashProjectId])
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -105,10 +108,10 @@ export function Sidebar({
   }, [project])
 
   const loadTrash = async () => {
-    if (!project) return
+    if (!trashProjectId) return
     setTrashLoading(true)
     try {
-      const response = await fetch(`${API_BASE}/api/trash/${project.id}`)
+      const response = await fetch(`${API_BASE}/api/trash/${trashProjectId}`)
       if (response.ok) {
         const data = await response.json()
         // API returns grouped object, convert to flat array
