@@ -257,6 +257,11 @@ export function App() {
   }, [menuOpen])
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false)
+      return
+    }
+
     const initProject = async () => {
       try {
         const apiUrl = `${API_BASE}/api/projects`
@@ -288,7 +293,7 @@ export function App() {
     }
 
     initProject()
-  }, [])
+  }, [isAuthenticated])
 
   const handleSceneSelect = (scene: Scene) => {
     setSelectedScene(scene)
