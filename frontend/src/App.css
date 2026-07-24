@@ -573,7 +573,8 @@
 .scene-row:hover .row-actions,
 .chapter-row:hover .row-actions,
 .book-row:hover .row-actions,
-.chip:hover .row-actions {
+.chip:hover .row-actions,
+.note-item:hover .row-actions {
   opacity: 1;
 }
 
