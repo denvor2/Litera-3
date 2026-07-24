@@ -199,4 +199,58 @@ describe('Regression Tests - Auth & Data Integrity', () => {
     // Cleanup
     await prisma.invitation.delete({ where: { id: invitation.id } })
   })
+
+  it('should create and retrieve notes for a project', async () => {
+    const note = await prisma.note.create({
+      data: {
+        projectId: testProjectId,
+        title: 'Тестовая заметка',
+        content: 'Содержание с кириллицей: абвгд',
+      },
+    })
+
+    expect(note).toBeDefined()
+    expect(note.id).toBeDefined()
+    expect(note.title).toBe('Тестовая заметка')
+    expect(note.content).toContain('кириллицей')
+
+    // Retrieve it
+    const retrieved = await prisma.note.findUnique({
+      where: { id: note.id },
+    })
+    expect(retrieved).toBeDefined()
+    expect(retrieved?.title).toBe('Тестовая заметка')
+
+    // Cleanup
+    await prisma.note.delete({ where: { id: note.id } })
+  })
+
+  it('should create and retrieve AI roles for a project', async () => {
+    const role = await prisma.aIRole.create({
+      data: {
+        projectId: testProjectId,
+        name: 'Тестовая роль',
+        type: 'custom',
+        icon: '🧪',
+        systemPrompt: 'Ты тестовый AI помощник',
+        quickPrompts: ['Первый запрос', 'Второй запрос'],
+      },
+    })
+
+    expect(role).toBeDefined()
+    expect(role.id).toBeDefined()
+    expect(role.name).toBe('Тестовая роль')
+    expect(role.type).toBe('custom')
+    expect(role.quickPrompts).toHaveLength(2)
+
+    // Retrieve it
+    const retrieved = await prisma.aIRole.findUnique({
+      where: { id: role.id },
+    })
+    expect(retrieved).toBeDefined()
+    expect(retrieved?.name).toBe('Тестовая роль')
+
+    // Cleanup
+    await prisma.aIRole.delete({ where: { id: role.id } })
+  })
 })
