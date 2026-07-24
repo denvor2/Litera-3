@@ -16,6 +16,21 @@ const fastify = Fastify({
 
 const prisma = new PrismaClient()
 
+// Auth middleware for API routes
+const requireAuth = async (request: any, reply: any) => {
+  try {
+    const token = request.cookies.auth_token
+    if (!token) {
+      reply.code(401).send({ error: 'Not authenticated' })
+      return
+    }
+    const payload = await verifyToken(token)
+    request.userId = payload.userId
+  } catch (error: any) {
+    reply.code(401).send({ error: error.message || 'Authentication failed' })
+  }
+}
+
 // Register plugins
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:5173',
@@ -30,6 +45,13 @@ fastify.register(cors, {
 })
 
 fastify.register(cookiePlugin)
+
+// Global preHandler for all /api/* routes - require auth
+fastify.addHook('preHandler', async (request, reply) => {
+  if (request.url.startsWith('/api/')) {
+    await requireAuth(request, reply)
+  }
+})
 
 // Health check
 fastify.get('/health', async (request, reply) => {
