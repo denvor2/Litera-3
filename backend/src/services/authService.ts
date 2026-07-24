@@ -113,7 +113,7 @@ export async function createInvitation(email: string) {
 
 export async function verifyToken(token: string): Promise<AuthPayload> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, secureJwtSecret) as any
     if (!decoded.userId) {
       throw new Error('Invalid token payload')
     }
