@@ -66,6 +66,7 @@ export function Sidebar({
   onDeleteChapter,
   onDeleteScene,
   onCreateCodexEntry,
+  onDeleteCodexEntry,
   onCreateProject,
   onEditChapter,
   onEditScene,
