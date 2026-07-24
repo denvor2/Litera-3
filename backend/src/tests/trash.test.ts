@@ -20,6 +20,15 @@ describe('Soft-delete и Корзина', () => {
   })
 
   afterEach(async () => {
+    // Soft-delete test projects
+    await prisma.project.updateMany({
+      where: { title: { in: ['Проект корзины', 'Test Project'] }, ownerId: testUserId },
+      data: { deletedAt: new Date() }
+    })
+    // Hard-delete test user
+    await prisma.user.deleteMany({
+      where: { email: 'test-trash@example.com' }
+    })
     await prisma.$disconnect()
   })
 

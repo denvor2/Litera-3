@@ -21,6 +21,15 @@ describe('Export Service', () => {
   })
 
   afterEach(async () => {
+    // Soft-delete test projects
+    await prisma.project.updateMany({
+      where: { title: 'Test Project', ownerId: testUserId },
+      data: { deletedAt: new Date() }
+    })
+    // Hard-delete test user
+    await prisma.user.deleteMany({
+      where: { email: 'test-export@example.com' }
+    })
     await prisma.$disconnect()
   })
 

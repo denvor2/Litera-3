@@ -32,6 +32,15 @@ describe('FB2 и PDF экспорт', () => {
   })
 
   afterEach(async () => {
+    // Soft-delete test projects
+    await prisma.project.updateMany({
+      where: { title: { in: ['Проект экспорта', 'Test Project'] }, ownerId: testUserId },
+      data: { deletedAt: new Date() }
+    })
+    // Hard-delete test user
+    await prisma.user.deleteMany({
+      where: { email: 'test-formats@example.com' }
+    })
     await prisma.$disconnect()
   })
 

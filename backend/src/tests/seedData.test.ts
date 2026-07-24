@@ -25,6 +25,15 @@ describe('Seed / тестовые данные (JSONB body)', () => {
   })
 
   afterEach(async () => {
+    // Soft-delete test projects
+    await prisma.project.updateMany({
+      where: { title: 'Сид-проект', ownerId: testUserId },
+      data: { deletedAt: new Date() }
+    })
+    // Hard-delete test user
+    await prisma.user.deleteMany({
+      where: { email: 'test-seed@example.com' }
+    })
     await prisma.$disconnect()
   })
 
