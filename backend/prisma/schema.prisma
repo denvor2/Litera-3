@@ -45,6 +45,7 @@ model Book {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   title     String
+  isInSeries Boolean @default(true) // Является ли книга частью этой серии (true) или без серии (false)
   genre     String?  // Жанр (из фиксированного списка)
   description String? // Описание / аннотация
   synopsis  String?  // Синопсис

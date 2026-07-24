@@ -42,6 +42,7 @@ interface EditingItem {
 export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
+  const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
@@ -936,8 +937,11 @@ export function App() {
         {!zenMode && (
           <ErrorBoundary>
             <Sidebar
-              project={project}
-              books={project.books}
+              project={showBooksWithoutSeries ? undefined : project || undefined}
+              books={showBooksWithoutSeries
+                ? allSeries.flatMap(s => s.books).filter(b => !b.isInSeries)
+                : project?.books.filter(b => b.isInSeries) || []
+              }
               allSeries={allSeries}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
@@ -946,13 +950,15 @@ export function App() {
               onBookSelect={handleBookSelect}
               onSelectProject={(projectId) => {
                 if (projectId === 'no-series') {
-                  // Show all books - keep current project but reset selections
+                  // Show books without series
+                  setShowBooksWithoutSeries(true)
                   setSelectedScene(null)
                   setSelectedBookId(null)
                 } else {
                   const selectedProj = allSeries.find(p => p.id === projectId)
                   if (selectedProj) {
                     setProject(selectedProj)
+                    setShowBooksWithoutSeries(false)
                     setSelectedScene(null)
                     setSelectedBookId(null)
                   }

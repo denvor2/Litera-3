@@ -21,6 +21,7 @@ export interface Book {
   id: string
   projectId: string
   title: string
+  isInSeries?: boolean
   genre?: string
   description?: string
   synopsis?: string
