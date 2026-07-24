@@ -737,6 +737,7 @@ export function App() {
       const response = await fetch(`${API_BASE}/api/codex`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           projectId: project.id,
           type,
