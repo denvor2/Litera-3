@@ -937,7 +937,7 @@ export function App() {
         {!zenMode && (
           <ErrorBoundary>
             <Sidebar
-              project={showBooksWithoutSeries ? undefined : project || undefined}
+              project={project || (allSeries.length > 0 ? allSeries[0] : undefined)}
               books={showBooksWithoutSeries
                 ? allSeries.flatMap(s => s.books).filter(b => !b.isInSeries)
                 : project?.books.filter(b => b.isInSeries) || []
