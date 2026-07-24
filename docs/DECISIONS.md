@@ -504,3 +504,14 @@ fastify.addHook('onSend', async (request, reply) => {
 
 **Файлы:**
 - `frontend/src/App.css:369-377` (улучшен .badge стиль)
+
+### Регрессия заметки (notes) не в ответе POST /api/projects
+
+**Проблема:** При создании нового проекта через POST /api/projects, в ответе отсутствовали notes и codexEntries, хотя они были в GET /api/projects и PUT /api/projects.
+
+**Решение:** Добавлены `notes` и `codexEntries` в include при создании проекта (строки 268-273 в index.ts).
+
+**Почему:** Инконсистентность структуры ответа - frontend ожидает, что новый проект содержит notes/codexEntries (пусто, но присутствует). Без этого UI не может правильно инициализировать state для заметок.
+
+**Файлы:**
+- `backend/src/index.ts:268-273` (добавлены notes и codexEntries в POST /api/projects include)
