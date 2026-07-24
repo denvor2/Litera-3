@@ -86,7 +86,9 @@ export function Sidebar({
     if (!trashProjectId) return
     setTrashLoading(true)
     try {
-      const response = await fetch(`${API_BASE}/api/trash/${trashProjectId}`)
+      const response = await fetch(`${API_BASE}/api/trash/${trashProjectId}`, {
+        credentials: 'include',
+      })
       if (response.ok) {
         const data = await response.json()
         // API returns grouped object, convert to flat array
@@ -136,7 +138,10 @@ export function Sidebar({
   const handleRestore = async (item: TrashItem) => {
     try {
       const endpoint = `${API_BASE}/api/trash/${item.type}/${item.id}/restore`
-      const response = await fetch(endpoint, { method: 'PUT' })
+      const response = await fetch(endpoint, {
+        method: 'PUT',
+        credentials: 'include',
+      })
       if (response.ok) {
         setTrashItems(trashItems.filter(t => t.id !== item.id))
       }
@@ -148,7 +153,10 @@ export function Sidebar({
   const handlePermanentDelete = async (item: TrashItem) => {
     try {
       const endpoint = `${API_BASE}/api/trash/${item.type}/${item.id}/permanent`
-      const response = await fetch(endpoint, { method: 'DELETE' })
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
       if (response.ok) {
         setTrashItems(trashItems.filter(t => t.id !== item.id))
       }
