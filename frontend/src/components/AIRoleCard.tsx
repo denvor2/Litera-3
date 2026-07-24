@@ -42,6 +42,7 @@ export function AIRoleCard({ role, projectId, onClose, onSave }: AIRoleCardProps
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(
           isNewRole
             ? {
