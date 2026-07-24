@@ -68,7 +68,7 @@ describe('Auth API', () => {
       method: 'POST',
       url: '/auth/login',
       payload: {
-        email: 'den@litstudio.local',
+        email: 'denvor2@gmail.com',
         password: 'Denvor127',
       },
     })
@@ -76,7 +76,7 @@ describe('Auth API', () => {
     expect(response.statusCode).toBe(200)
     const body = JSON.parse(response.body)
     expect(body.success).toBe(true)
-    expect(body.user.email).toBe('den@litstudio.local')
+    expect(body.user.email).toBe('denvor2@gmail.com')
   })
 
   it('should reject invalid credentials', async () => {
@@ -84,7 +84,7 @@ describe('Auth API', () => {
       method: 'POST',
       url: '/auth/login',
       payload: {
-        email: 'den@litstudio.local',
+        email: 'denvor2@gmail.com',
         password: 'wrongpassword',
       },
     })
