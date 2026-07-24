@@ -77,29 +77,17 @@ fastify.post('/api/projects', async (request, reply) => {
         title,
         synopsis,
         ownerId,
-        books: {
-          create: [
-            {
-              title: 'Первая книга',
-              order: 1,
-              chapters: {
-                create: [
-                  {
-                    title: 'Первая глава',
-                    order: 1,
-                  },
-                ],
-              },
-            },
-          ],
-        },
       },
       include: {
         books: {
+          where: { deletedAt: null },
           include: {
             chapters: {
+              where: { deletedAt: null },
               include: {
-                scenes: true,
+                scenes: {
+                  where: { deletedAt: null },
+                },
               },
             },
           },
