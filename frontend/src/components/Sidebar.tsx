@@ -227,7 +227,7 @@ export function Sidebar({
           >
             {allSeries.map(series => (
               <option key={series.id} value={series.id}>
-                {series.title}
+                {series.title} ({series.books?.length || 0})
               </option>
             ))}
             {allSeries.length > 0 && (
