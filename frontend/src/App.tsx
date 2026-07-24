@@ -10,6 +10,7 @@ import { BookCard } from './components/BookCard'
 import { ProjectCard } from './components/ProjectCard'
 import { Guide } from './components/Guide'
 import { Login } from './components/Login'
+import { AdminPanel } from './components/AdminPanel'
 import { extractTextFromTipTap, countCharacters, countAuthorSheets, countPages } from './utils/wordCount'
 import { API_BASE } from './config'
 import type { Project, Scene, Book, CodexEntry } from './types'
@@ -44,6 +45,7 @@ export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
@@ -1011,13 +1013,22 @@ export function App() {
             {zenMode ? '⊟' : '⊞'}
           </button>
           {isAuthenticated ? (
-            <button
-              className="topbar-btn"
-              onClick={handleLogout}
-              title="Выход"
-            >
-              🚪
-            </button>
+            <>
+              <button
+                className="topbar-btn"
+                onClick={() => setShowAdminPanel(true)}
+                title="Админ-панель"
+              >
+                ⚙️
+              </button>
+              <button
+                className="topbar-btn"
+                onClick={handleLogout}
+                title="Выход"
+              >
+                🚪
+              </button>
+            </>
           ) : (
             <button
               className="topbar-btn"
@@ -1631,6 +1642,17 @@ export function App() {
             setShowLoginModal(false)
           }}
           onClose={() => setShowLoginModal(false)}
+        />
+      )}
+
+      {/* Admin Panel */}
+      {showAdminPanel && (
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          onLogout={() => {
+            setShowAdminPanel(false)
+            handleLogout()
+          }}
         />
       )}
     </div>
