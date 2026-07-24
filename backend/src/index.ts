@@ -19,7 +19,7 @@ const prisma = new PrismaClient()
 // Cookie configuration for auth_token
 const AUTH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: false, // Не требовать HTTPS на localhost
+  secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
   sameSite: 'lax' as const,
   maxAge: 7 * 24 * 60 * 60, // 7 days
   path: '/',

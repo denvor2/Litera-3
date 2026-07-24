@@ -39,7 +39,6 @@ export function Login({ onLoginSuccess, onClose }: LoginProps) {
       const data = await response.json()
       if (data.success) {
         // Cookie установлен автоматически browser'ом
-        console.log('✓ Login успешен, cookie установлен')
         onLoginSuccess()
       } else {
         setError(data.error || 'Ошибка входа')

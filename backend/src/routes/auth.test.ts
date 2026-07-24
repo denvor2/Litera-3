@@ -3,12 +3,28 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import cookiePlugin from '@fastify/cookie'
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 import { login, register, createInvitation, verifyToken, getCurrentUser } from '../services/authService.js'
 
 const fastify = Fastify({ logger: false })
 const prisma = new PrismaClient()
 
+let testEmail = 'auth-test@example.com'
+let testPassword = 'TestPassword123'
+
 beforeAll(async () => {
+  // Create test user with known credentials
+  const hashedPassword = await bcrypt.hash(testPassword, 10)
+  await prisma.user.upsert({
+    where: { email: testEmail },
+    update: {},
+    create: {
+      email: testEmail,
+      name: 'Auth Test User',
+      password: hashedPassword,
+    },
+  })
+
   // Register plugins
   fastify.register(cors, { origin: true, credentials: true })
   fastify.register(cookiePlugin)
@@ -58,6 +74,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  // Clean up test user
+  await prisma.user.delete({ where: { email: testEmail } })
   await fastify.close()
   await prisma.$disconnect()
 })
@@ -68,15 +86,15 @@ describe('Auth API', () => {
       method: 'POST',
       url: '/auth/login',
       payload: {
-        email: 'denvor2@gmail.com',
-        password: 'Denvor127',
+        email: testEmail,
+        password: testPassword,
       },
     })
 
     expect(response.statusCode).toBe(200)
     const body = JSON.parse(response.body)
     expect(body.success).toBe(true)
-    expect(body.user.email).toBe('denvor2@gmail.com')
+    expect(body.user.email).toBe(testEmail)
   })
 
   it('should reject invalid credentials', async () => {
@@ -84,7 +102,7 @@ describe('Auth API', () => {
       method: 'POST',
       url: '/auth/login',
       payload: {
-        email: 'denvor2@gmail.com',
+        email: testEmail,
         password: 'wrongpassword',
       },
     })
