@@ -100,7 +100,7 @@ fastify.get('/auth/me', async (request, reply) => {
       return
     }
 
-    const payload = verifyToken(token)
+    const payload = await verifyToken(token)
     const user = await getCurrentUser(payload.userId)
 
     return {
