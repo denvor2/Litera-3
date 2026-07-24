@@ -505,7 +505,7 @@ export function Sidebar({
         {openSection === 'notes' && (
         <div className="acc-body">
           <div style={{ marginBottom: '16px' }}>
-            <h4 style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--ink-2)' }}>Заметки проекта</h4>
+            <h4 style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--ink-2)' }}>Заметки</h4>
             {project?.notes && project.notes.length > 0 && (
               <div className="notes-list">
                 {project.notes.map(note => (
@@ -527,17 +527,6 @@ export function Sidebar({
               >+ добавить заметку</button>
             </div>
           </div>
-          {selectedScene && (
-            <div>
-              <h4 style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--ink-2)' }}>Заметки сцены</h4>
-              <textarea
-                className="notes-box"
-                placeholder="Заметки на полях..."
-                value={selectedScene?.notes || ''}
-                onChange={(e) => onNotesChange?.(e.target.value)}
-              ></textarea>
-            </div>
-          )}
         </div>
         )}
       </div>
