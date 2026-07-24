@@ -1184,19 +1184,14 @@ export function App() {
                     />
                   </div>
                   <div className="field">
-                    <label>Серия</label>
-                    <select
-                      value={editingItem.data.seriesId || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, seriesId: e.target.value || null } })}
-                      className="bc-select"
-                    >
-                      <option value="">Без серии (отдельная книга)</option>
-                      {allSeries.map((series) => (
-                        <option key={series.id} value={series.id}>
-                          {series.title}
-                        </option>
-                      ))}
-                    </select>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={editingItem.data.isInSeries !== false}
+                        onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, isInSeries: e.target.checked } })}
+                      />
+                      Это книга в серии
+                    </label>
                   </div>
                   <div className="field">
                     <label>Жанр</label>
