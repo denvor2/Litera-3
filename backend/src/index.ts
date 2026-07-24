@@ -19,11 +19,21 @@ const prisma = new PrismaClient()
 // Auth middleware for API routes
 const requireAuth = async (request: any, reply: any) => {
   try {
-    const token = request.cookies.auth_token
+    let token = request.cookies.auth_token
+
+    // Если нет cookie, попробовать Authorization header
+    if (!token) {
+      const authHeader = request.headers.authorization
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
+
     if (!token) {
       reply.code(401).send({ error: 'Not authenticated' })
       return
     }
+
     const payload = await verifyToken(token)
     request.userId = payload.userId
   } catch (error: any) {
@@ -126,7 +136,15 @@ fastify.post('/auth/register', async (request, reply) => {
 
 fastify.get('/auth/me', async (request, reply) => {
   try {
-    const token = request.cookies.auth_token
+    let token = request.cookies.auth_token
+
+    // Если нет cookie, попробовать Authorization header
+    if (!token) {
+      const authHeader = request.headers.authorization
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
 
     if (!token) {
       reply.code(401).send({ error: 'Not authenticated' })
