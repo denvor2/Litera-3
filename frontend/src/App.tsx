@@ -941,11 +941,11 @@ export function App() {
             <Sidebar
               project={project}
               books={showBooksWithoutSeries
-                ? allSeries.flatMap(s => s.books).filter(b => !b.isInSeries)
-                : project?.books.filter(b => b.isInSeries) || []
+                ? allSeries.flatMap(s => s.books).filter(b => b.isInSeries === false)
+                : project?.books.filter(b => b.isInSeries !== false) || []
               }
               allSeries={allSeries}
-              trashProjectId={project?.id || allSeries[0]?.id}
+              trashProjectId={project?.id || (showBooksWithoutSeries && allSeries.length > 0 ? allSeries[0].id : allSeries[0]?.id)}
               trashRefreshVersion={trashRefreshVersion}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
@@ -979,8 +979,13 @@ export function App() {
                     const updated = allSeries.filter(p => p.id !== projectId)
                     setAllSeries(updated)
                     // Switch to another project if we deleted the current one
-                    if (project?.id === projectId && updated.length > 0) {
-                      setProject(updated[0])
+                    if (project?.id === projectId) {
+                      if (updated.length > 0) {
+                        setProject(updated[0])
+                      } else {
+                        setProject(null)
+                        setShowBooksWithoutSeries(false)
+                      }
                       setSelectedScene(null)
                       setSelectedBookId(null)
                     }
