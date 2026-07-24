@@ -505,13 +505,25 @@ fastify.put('/api/scenes/:sceneId', async (request, reply) => {
   }
 
   try {
-    // Сохранить версию при изменении статуса
+    // Получить текущую сцену и последнюю версию
     const currentScene = await prisma.scene.findUnique({
       where: { id: sceneId },
     })
 
-    if (currentScene && status && currentScene.status !== status) {
-      // Сохранить версию при переходе статуса
+    const lastVersion = await prisma.version.findFirst({
+      where: { entityId: sceneId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    })
+
+    const now = new Date()
+    const shouldCreateVersion =
+      // Версия при смене статуса
+      (currentScene && status && currentScene.status !== status) ||
+      // Версия каждые 10+ минут при наличии изменений body
+      (body && lastVersion && (now.getTime() - lastVersion.createdAt.getTime()) > 10 * 60 * 1000)
+
+    if (shouldCreateVersion && currentScene) {
       await prisma.version.create({
         data: {
           entityType: 'scene',

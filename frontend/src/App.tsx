@@ -65,7 +65,8 @@ export function App() {
   // const [aiTokensUsed, setAITokensUsed] = useState(0)
   // const [aiTokenLimit, setAITokenLimit] = useState(200000)
 
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'version-saved'>('saved')
+  const [lastVersionTime, setLastVersionTime] = useState<number>(Date.now())
   const [centerView, setCenterView] = useState<'manuscript' | 'codex-card' | 'book-card' | 'project-card' | 'guide' | 'ai-role-edit' | 'ai-role-new'>('manuscript')
   const [selectedCodexEntry, setSelectedCodexEntry] = useState<CodexEntry | null>(null)
   const [selectedBookForCard, setSelectedBookForCard] = useState<Book | null>(null)
@@ -302,7 +303,17 @@ export function App() {
           })),
         })),
       })
-      setSaveStatus('saved')
+
+      // Check if version was likely created (10+ minutes since last version)
+      const timeSinceLastVersion = Date.now() - lastVersionTime
+      if (timeSinceLastVersion > 10 * 60 * 1000) {
+        setSaveStatus('version-saved')
+        setLastVersionTime(Date.now())
+        // Show "version saved" indicator for 2 seconds
+        setTimeout(() => setSaveStatus('saved'), 2000)
+      } else {
+        setSaveStatus('saved')
+      }
     } catch (error) {
       console.error('Failed to save scene:', error)
       setSaveStatus('error')
@@ -1520,14 +1531,16 @@ export function App() {
             className="save-dot"
             style={{
               backgroundColor:
+                saveStatus === 'version-saved' ? 'var(--accent)' :
                 saveStatus === 'saved' ? 'var(--done)' :
-                saveStatus === 'saving' ? 'var(--accent)' :
+                saveStatus === 'saving' ? 'var(--editing)' :
                 'var(--error)'
             }}
             title={saveStatus}
           />
           <span>
-            {saveStatus === 'saved' ? 'Сохранено' :
+            {saveStatus === 'version-saved' ? 'Версия сохранена' :
+             saveStatus === 'saved' ? 'Сохранено' :
              saveStatus === 'saving' ? 'Сохраняется...' :
              'Ошибка сохранения'}
           </span>
