@@ -226,19 +226,25 @@ fastify.get('/api/projects', async (request, reply) => {
 })
 
 fastify.post('/api/projects', async (request, reply) => {
-  const { title, ownerId, synopsis } = request.body as { title: string; ownerId: string; synopsis?: string }
+  const { title, ownerId, synopsis } = request.body as { title?: string; ownerId?: string; synopsis?: string }
+  const actualOwnerId = ownerId || (request as any).userId
 
   try {
+    if (!actualOwnerId) {
+      reply.code(400).send({ error: 'ownerId required' })
+      return
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: ownerId },
+      where: { id: actualOwnerId },
     })
 
     if (!user) {
       // Create default user if not exists
       await prisma.user.create({
         data: {
-          id: ownerId,
-          email: `${ownerId}@litstudio.local`,
+          id: actualOwnerId,
+          email: `${actualOwnerId}@litstudio.local`,
           name: 'Default User',
         },
       })
@@ -246,9 +252,9 @@ fastify.post('/api/projects', async (request, reply) => {
 
     const project = await prisma.project.create({
       data: {
-        title,
+        title: title || 'Untitled Project',
         synopsis,
-        ownerId,
+        ownerId: actualOwnerId,
       },
       include: {
         books: {

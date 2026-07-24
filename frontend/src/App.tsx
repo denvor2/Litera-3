@@ -46,6 +46,7 @@ export function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
@@ -86,12 +87,16 @@ export function App() {
           credentials: 'include',
         })
         if (response.ok) {
+          const data = await response.json()
           setIsAuthenticated(true)
+          setCurrentUserId(data.user.id)
         } else {
           setIsAuthenticated(false)
+          setCurrentUserId(null)
         }
       } catch (err) {
         setIsAuthenticated(false)
+        setCurrentUserId(null)
       } finally {
         setAuthLoading(false)
       }
@@ -748,9 +753,11 @@ export function App() {
   }
 
   const handleCreateProject = () => {
-    // Use a fixed default owner ID (same as in backend)
-    const defaultOwnerId = 'default-user-id'
-    setEditingItem({ type: 'project', id: 'new', data: { title: '', synopsis: '', ownerId: defaultOwnerId } })
+    if (!currentUserId) {
+      console.error('User not authenticated')
+      return
+    }
+    setEditingItem({ type: 'project', id: 'new', data: { title: '', synopsis: '', ownerId: currentUserId } })
   }
 
   const handleSaveCodexEntry = async (entry: CodexEntry) => {
