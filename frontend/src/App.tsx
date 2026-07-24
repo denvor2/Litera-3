@@ -61,9 +61,6 @@ export function App() {
   const [aiLoading, setAILoading] = useState(false)
   const [aiError, setAIError] = useState<string | null>(null)
   const [selectedAIText, setSelectedAIText] = useState<string>('')
-  // Token stats will be shown in bottom bar when implemented
-  // const [aiTokensUsed, setAITokensUsed] = useState(0)
-  // const [aiTokenLimit, setAITokenLimit] = useState(200000)
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'version-saved'>('saved')
   const [lastVersionTime, setLastVersionTime] = useState<number>(Date.now())
@@ -111,7 +108,6 @@ export function App() {
 
       // If no roles exist, try loading again (backend will initialize them)
       if (roles.length === 0) {
-        console.log('No AI roles found, retrying...')
         const retryResponse = await fetch(`${API_BASE}/api/ai-roles/${projectId}`)
         if (retryResponse.ok) {
           roles = await retryResponse.json()
@@ -200,9 +196,6 @@ export function App() {
       }
       setAIMessages(prev => [...prev, assistantMessage])
 
-      // TODO: Show token stats in bottom bar
-      // if (result.tokensUsed) setAITokensUsed(result.tokensUsed)
-      // if (result.tokenLimit) setAITokenLimit(result.tokenLimit)
       if (result.warnings && result.warnings.length > 0) {
         setAIError(result.warnings[0])
       }

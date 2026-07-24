@@ -9,6 +9,9 @@ PROJECT
   id            uuid PK
   title         string
   owner_id      uuid FK -> USER   -- решено: без логина в MVP, owner_id указывает на один фиксированный сид-USER, полноценный auth — Фаза 3 (см. COLLABORATOR)
+  synopsis      string (nullable) -- синопсис серии для AI-контекста (добавлено в спринте 10)
+  is_default    boolean (default false) -- флаг системной серии "Книги без серии" (добавлено в спринте 10)
+  deleted_at    timestamp (nullable) -- мягкое удаление; null = активная серия, значение = в корзине (добавлено в спринте 10)
 
 USER
   id            uuid PK
@@ -16,17 +19,17 @@ USER
   name          string
 
 BOOK
-  id                uuid PK
-  project_id        uuid FK -> PROJECT
-  title             string
-  series            string (nullable)  -- название серии / подсерии (добавлено в спринте 8ф)
-  genre             string (nullable)  -- жанр (добавлено в спринте 8ф)
-  description       string (nullable)  -- описание / аннотация (добавлено в спринте 8ф)
-  synopsis          string (nullable)  -- синопсис (добавлено в спринте 8ф)
-  order             int
-  deleted_at        timestamp (nullable) -- мягкое удаление; null = активная книга, значение = в корзине
-  -- Не реализовано в Фазе 0, отложено на Фазу 2+:
-  -- planned_volume, attributes
+  id                    uuid PK
+  project_id            uuid FK -> PROJECT
+  title                 string
+  genre                 string (nullable)  -- жанр (добавлено в спринте 8ф)
+  description           string (nullable)  -- описание / аннотация (добавлено в спринте 8ф)
+  synopsis              string (nullable)  -- синопсис (добавлено в спринте 8ф)
+  is_in_series          boolean (default true) -- флаг: входит ли книга в серию (false = "Книги без серии"); заменил поле series (добавлено в спринте 10)
+  planned_char_count    int (nullable)     -- плановое количество знаков (добавлено в спринте 9)
+  planned_author_sheets int (nullable)     -- плановое количество авторских листов (добавлено в спринте 9)
+  order                 int
+  deleted_at            timestamp (nullable) -- мягкое удаление; null = активная книга, значение = в корзине
 
 CHAPTER
   id            uuid PK
@@ -108,7 +111,7 @@ USERPREFERENCES
   updated_at      timestamp
 ```
 
-**Мягкое удаление (Корзина).** Реализовано в Фазе 0. BOOK, CHAPTER, SCENE, CODEXENTRY имеют `deleted_at DateTime?` для мягкого удаления. Удаление элементов (кнопка 🗑) выполняется UPDATE с установкой `deleted_at`, не DELETE. Восстановление из корзины — UPDATE с обнулением `deleted_at`. Все запросы READ фильтруют `deleted_at IS NULL` для исключения удалённых элементов.
+**Мягкое удаление (Корзина).** Реализовано в Фазе 0. BOOK, CHAPTER, SCENE, CODEXENTRY, NOTE, PROJECT имеют `deleted_at DateTime?` для мягкого удаления. Удаление элементов (кнопка 🗑) выполняется UPDATE с установкой `deleted_at`, не DELETE. Восстановление из корзины — UPDATE с обнулением `deleted_at`. Все запросы READ фильтруют `deleted_at IS NULL` для исключения удалённых элементов.
 
 **Точки расширения, которые нужно оставить, но не реализовывать в Фазе 0:**
 - `CODEXENTRY.type` — уже строка, а не enum в БД, чтобы Фаза 2 добавила новые типы без миграции схемы

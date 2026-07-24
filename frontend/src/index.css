@@ -15,6 +15,7 @@
   --draft: #9C9891;
   --editing: #B9812E;
   --done: #4A7A54;
+  --error: #A32D2D;
   --radius: 8px;
 
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
@@ -46,6 +47,7 @@
   --draft: #7A7570;
   --editing: #D4A567;
   --done: #7CB87A;
+  --error: #E85A5A;
 }
 
 * {
