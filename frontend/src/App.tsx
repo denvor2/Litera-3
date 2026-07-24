@@ -274,18 +274,23 @@ export function App() {
 
     const initProject = async () => {
       try {
+        console.log('[App] Loading projects for authenticated user...')
         const apiUrl = `${API_BASE}/api/projects`
         const response = await fetch(apiUrl, {
           credentials: 'include',
         })
+        console.log('[App] Projects response status:', response.status)
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`)
         const text = await response.text()
+        console.log('[App] Response text length:', text.length)
         if (!text) throw new Error('Empty response')
         const projects = JSON.parse(text)
+        console.log('[App] Parsed projects:', projects.length)
         // Загрузить все серии для выпадающего списка
         setAllSeries(projects)
         if (projects.length > 0) {
           const proj = projects[0]
+          console.log('[App] Setting first project:', proj.id, proj.title)
           setProject(proj)
           // Auto-select first scene
           if (proj.books?.[0]?.chapters?.[0]?.scenes?.[0]) {
@@ -296,6 +301,7 @@ export function App() {
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
+        console.error('[App] Failed to load projects:', msg)
         setError(msg)
       } finally {
         setLoading(false)
