@@ -14,11 +14,23 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
+  password  String   // bcrypt hash
   projects  Project[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model Invitation {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime? // null = не использовано, иначе когда был зарегистрирован
+  createdAt DateTime @default(now())
+
+  @@map("invitations")
 }
 
 model Project {

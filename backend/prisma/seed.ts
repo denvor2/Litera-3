@@ -1,77 +1,34 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  // Создать или обновить дефолтного пользователя
-  const defaultUser = await prisma.user.upsert({
-    where: { email: 'default@litstudio.local' },
-    update: {},
-    create: {
-      email: 'default@litstudio.local',
-      name: 'Default User',
-    },
+  // Create admin user if not exists
+  const adminEmail = 'den@litstudio.local'
+  const adminPassword = 'Denvor127'
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
   })
 
-  // Создать дефолтный проект
-  const project = await prisma.project.upsert({
-    where: { id: 'default-project' },
-    update: {},
-    create: {
-      id: 'default-project',
-      title: 'Без серии',
-      ownerId: defaultUser.id,
-      isDefault: true,
-      books: {
-        create: [
-          {
-            title: 'Первая книга',
-            order: 1,
-            chapters: {
-              create: [
-                {
-                  title: 'Первая глава',
-                  order: 1,
-                  scenes: {
-                    create: [
-                      {
-                        title: 'Сцена 1',
-                        status: 'DRAFT',
-                        order: 1,
-                        body: {
-                          type: 'doc',
-                          content: [
-                            {
-                              type: 'paragraph',
-                              content: [
-                                {
-                                  type: 'text',
-                                  text: 'Начните писать свою историю...',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 10)
+    const admin = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'Den',
+        password: hashedPassword,
       },
-    },
-  })
-
-  console.log('Seed completed:', {
-    user: defaultUser.id,
-    project: project.id,
-  })
+    })
+    console.log('✓ Admin user created:', admin.email)
+  } else {
+    console.log('✓ Admin user already exists:', existingAdmin.email)
+  }
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e)
     process.exit(1)
   })

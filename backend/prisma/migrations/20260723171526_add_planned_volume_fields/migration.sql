@@ -7,4 +7,5 @@
 -- AlterTable
 ALTER TABLE "books" DROP COLUMN "series",
 ADD COLUMN     "plannedAuthorSheets" INTEGER,
-ADD COLUMN     "plannedCharCount" INTEGER;
+ADD COLUMN     "plannedCharCount" INTEGER,
+ADD COLUMN     "isInSeries" BOOLEAN NOT NULL DEFAULT true;
