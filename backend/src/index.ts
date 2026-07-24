@@ -245,7 +245,7 @@ fastify.get('/api/books/:projectId', async (request, reply) => {
 })
 
 fastify.post('/api/books', async (request, reply) => {
-  const { projectId, title, genre, description, synopsis, plannedCharCount, plannedAuthorSheets } = request.body as {
+  const { projectId, title, genre, description, synopsis, plannedCharCount, plannedAuthorSheets, isInSeries } = request.body as {
     projectId: string
     title: string
     genre?: string
@@ -253,6 +253,7 @@ fastify.post('/api/books', async (request, reply) => {
     synopsis?: string
     plannedCharCount?: number
     plannedAuthorSheets?: number
+    isInSeries?: boolean
   }
   const maxOrder = await prisma.book.findFirst({
     where: { projectId, deletedAt: null },
@@ -268,6 +269,7 @@ fastify.post('/api/books', async (request, reply) => {
       synopsis: synopsis || null,
       plannedCharCount: plannedCharCount || null,
       plannedAuthorSheets: plannedAuthorSheets || null,
+      isInSeries: isInSeries !== false, // Default to true (is in series)
       order: (maxOrder?.order ?? 0) + 1,
     },
     include: {
@@ -286,13 +288,14 @@ fastify.post('/api/books', async (request, reply) => {
 
 fastify.put('/api/books/:bookId', async (request, reply) => {
   const { bookId } = request.params as { bookId: string }
-  const { title, genre, description, synopsis, plannedCharCount, plannedAuthorSheets } = request.body as {
+  const { title, genre, description, synopsis, plannedCharCount, plannedAuthorSheets, isInSeries } = request.body as {
     title?: string
     genre?: string
     description?: string
     synopsis?: string
     plannedCharCount?: number | null
     plannedAuthorSheets?: number | null
+    isInSeries?: boolean
   }
 
   try {
@@ -303,6 +306,7 @@ fastify.put('/api/books/:bookId', async (request, reply) => {
     if (synopsis !== undefined) updateData.synopsis = synopsis || null
     if (plannedCharCount !== undefined) updateData.plannedCharCount = plannedCharCount || null
     if (plannedAuthorSheets !== undefined) updateData.plannedAuthorSheets = plannedAuthorSheets || null
+    if (isInSeries !== undefined) updateData.isInSeries = isInSeries
 
     const book = await prisma.book.update({
       where: { id: bookId },

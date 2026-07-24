@@ -215,3 +215,27 @@
 **Файлы:** 
 - `frontend/src/components/AIPanel.tsx` (.ai-input-row структура)
 - `frontend/src/components/AIPanel.css` (.ai-input-row display:flex gap:6px)
+
+## 2026-07-24 Спринт 10 — Сохранение полей форм
+
+### Требование: тестер должен проверять сохранение ВСЕХ полей
+
+**Проблема:** поле `book.isInSeries` не сохранялось при создании и редактировании книг. Тестер пропустил это отклонение.
+
+**Решение:** добавлены обязательные проверки в `.claude/agents/tester.md`:
+1. Для каждой формы (BookCard, ProjectCard, etc.) проверить что ВСЕ поля, которые видны в интерфейсе, сохраняются в БД
+2. Создать книгу/проект/главу → отредактировать любое поле → перезагрузить страницу → убедиться что значение вернулось
+3. Особое внимание к новым полям: `project.synopsis`, `project.deletedAt`, `book.isInSeries`
+
+**Почему:** регрессия с `isInSeries` показывает что текущие тесты проверяют только основной путь (создание + отправка формы), но не проверяют что поле действительно попало в БД и вернулось при перезагрузке.
+
+**Последствия:** 
+- Обновлен `.claude/agents/tester.md` с явным пунктом про сохранение ВСЕХ полей
+- Фиксированы backend endpoints (`POST /api/books`, `PUT /api/books/:id`) для сохранения `isInSeries`
+- Обновлен frontend (App.tsx:handleCreateBook) для передачи `isInSeries` при создании
+
+**Файлы:**
+- `.claude/agents/tester.md` (добавлен пункт про сохранение всех полей)
+- `backend/src/index.ts` (добавлено `isInSeries` в POST и PUT endpoints)
+- `frontend/src/App.tsx` (добавлено `isInSeries` в createBook и editBook)
+- `frontend/src/components/BookCard.tsx` (добавлено поле управления `isInSeries`)

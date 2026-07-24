@@ -43,6 +43,7 @@ export function App() {
   const [project, setProject] = useState<Project | null>(null)
   const [allSeries, setAllSeries] = useState<Project[]>([]) // Список всех серий для выпадающего списка
   const [showBooksWithoutSeries, setShowBooksWithoutSeries] = useState(false) // Показать "Книги без серии"
+  const [trashRefreshVersion, setTrashRefreshVersion] = useState(0) // Trigger trash reload
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null)
@@ -382,6 +383,7 @@ export function App() {
         genre: '',
         description: '',
         synopsis: '',
+        isInSeries: !showBooksWithoutSeries, // true если серия, false если "Книги без серии"
       },
     })
   }
@@ -588,9 +590,7 @@ export function App() {
           })),
         })),
       })
-      // Force trash refresh in Sidebar by setting a trigger
-      const trashRefreshKey = Date.now()
-      localStorage.setItem('trashRefreshTrigger', trashRefreshKey.toString())
+      setTrashRefreshVersion(v => v + 1)
     } catch (error) {
       console.error('Failed to delete scene:', error)
     }
@@ -612,7 +612,7 @@ export function App() {
           chapters: book.chapters.filter(chapter => chapter.id !== chapterId),
         })),
       })
-      localStorage.setItem('trashRefreshTrigger', Date.now().toString())
+      setTrashRefreshVersion(v => v + 1)
     } catch (error) {
       console.error('Failed to delete chapter:', error)
     }
@@ -631,6 +631,7 @@ export function App() {
         ...project,
         books: project.books.filter(book => book.id !== bookId),
       })
+      setTrashRefreshVersion(v => v + 1)
     } catch (error) {
       console.error('Failed to delete book:', error)
     }
@@ -649,6 +650,7 @@ export function App() {
         ...project,
         notes: (project.notes || []).filter(note => note.id !== noteId),
       })
+      setTrashRefreshVersion(v => v + 1)
     } catch (error) {
       console.error('Failed to delete note:', error)
     }
@@ -944,6 +946,7 @@ export function App() {
               }
               allSeries={allSeries}
               trashProjectId={project?.id || allSeries[0]?.id}
+              trashRefreshVersion={trashRefreshVersion}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
               selectedScene={selectedScene || undefined}
@@ -981,6 +984,7 @@ export function App() {
                       setSelectedScene(null)
                       setSelectedBookId(null)
                     }
+                    setTrashRefreshVersion(v => v + 1)
                   } catch (error) {
                     console.error('Failed to delete project:', error)
                   }
@@ -1004,7 +1008,7 @@ export function App() {
               onEditCodexEntry={(entryId, data) => handleEdit('codexEntry', entryId, undefined, data)}
               onEditBook={(bookId) => {
                 const book = project.books.find(b => b.id === bookId)
-                if (book) handleEdit('book', bookId, project.id, { title: book.title, genre: book.genre, synopsis: book.synopsis, description: book.description, plannedCharCount: book.plannedCharCount, plannedAuthorSheets: book.plannedAuthorSheets })
+                if (book) handleEdit('book', bookId, project.id, { title: book.title, genre: book.genre, synopsis: book.synopsis, description: book.description, plannedCharCount: book.plannedCharCount, plannedAuthorSheets: book.plannedAuthorSheets, isInSeries: book.isInSeries })
               }}
               onCreateNote={() => setEditingItem({ type: 'note', id: 'new', data: { title: '', content: '' } })}
               onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}

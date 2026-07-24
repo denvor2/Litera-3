@@ -35,6 +35,7 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
     synopsis: bookData.synopsis || '',
     plannedCharCount: bookData.plannedCharCount || '',
     plannedAuthorSheets: bookData.plannedAuthorSheets || '',
+    isInSeries: bookData.isInSeries !== false,
   })
   const [saving, setSaving] = useState(false)
 
@@ -79,6 +80,17 @@ export function BookCard({ book, onSave, onBack }: BookCardProps) {
             placeholder="Название серии или отдельная книга"
             className="bc-input"
           />
+        </div>
+
+        <div className="form-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="checkbox"
+              checked={formData.isInSeries}
+              onChange={(e) => setFormData({ ...formData, isInSeries: e.target.checked })}
+            />
+            Это книга в серии
+          </label>
         </div>
 
         <div className="form-group">

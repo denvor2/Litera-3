@@ -15,6 +15,7 @@ interface SidebarProps {
   project?: Project
   allSeries?: Project[]
   trashProjectId?: string  // ProjectId for loading trash (can be different from project)
+  trashRefreshVersion?: number  // Incremented when trash should be refreshed
   selectedSceneId?: string
   selectedBookId?: string
   onSceneSelect?: (scene: Scene) => void
@@ -47,6 +48,7 @@ export function Sidebar({
   project,
   allSeries = [],
   trashProjectId,
+  trashRefreshVersion = 0,
   selectedSceneId,
   selectedBookId,
   selectedScene,
@@ -80,34 +82,7 @@ export function Sidebar({
   const [trashLoading, setTrashLoading] = useState(false)
   const currentBookId = selectedBookId || books[0]?.id
 
-  // Auto-expand all chapters by default
-  useEffect(() => {
-    if (books.length > 0) {
-      const allChapterIds = new Set(
-        books.flatMap(book => book.chapters.map(ch => ch.id))
-      )
-      setExpandedChapters(allChapterIds)
-    }
-  }, [books])
-
-  useEffect(() => {
-    // Load trash using trashProjectId (can be different from displayed project)
-    if (trashProjectId && trashItems.length === 0) {
-      loadTrash()
-    }
-  }, [trashProjectId])
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      if (project) {
-        loadTrash()
-      }
-    }
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [project])
-
-  const loadTrash = async () => {
+  const loadTrash = useCallback(async () => {
     if (!trashProjectId) return
     setTrashLoading(true)
     try {
@@ -128,7 +103,34 @@ export function Sidebar({
     } finally {
       setTrashLoading(false)
     }
-  }
+  }, [trashProjectId])
+
+  // Auto-expand all chapters by default
+  useEffect(() => {
+    if (books.length > 0) {
+      const allChapterIds = new Set(
+        books.flatMap(book => book.chapters.map(ch => ch.id))
+      )
+      setExpandedChapters(allChapterIds)
+    }
+  }, [books])
+
+  useEffect(() => {
+    // Load trash using trashProjectId (can be different from displayed project)
+    if (trashProjectId) {
+      loadTrash()
+    }
+  }, [trashProjectId, trashRefreshVersion, loadTrash])
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (project) {
+        loadTrash()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [project])
 
   const handleRestore = async (item: TrashItem) => {
     try {
