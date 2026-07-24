@@ -494,8 +494,6 @@ export function App() {
       } else if (type === 'note' && id === 'new') {
         endpoint = '/api/notes'
         method = 'POST'
-        // Add projectId for new notes
-        dataToSend.projectId = project.id
       } else if (type === 'note') {
         endpoint = `/api/notes/${id}`
       } else if (type === 'codexEntry') {
@@ -506,6 +504,11 @@ export function App() {
 
       // Remove type from data before sending (it's UI-only)
       const { type: _, ...dataToSend } = data
+
+      // Add projectId for new notes
+      if (type === 'note' && id === 'new') {
+        dataToSend.projectId = project.id
+      }
 
       // Convert status to uppercase for enum validation (DB expects DRAFT/EDITING/DONE)
       if (dataToSend.status) {
@@ -755,6 +758,9 @@ export function App() {
         ...project,
         codexEntries: [...(project.codexEntries || []), newEntry],
       })
+      // Open the card for editing
+      setSelectedCodexEntry(newEntry)
+      setCenterView('codex-card')
     } catch (error) {
       console.error(`Failed to create ${type}:`, error)
     }
