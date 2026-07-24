@@ -113,7 +113,7 @@ export function ManuscriptFlow({
                       <span className="ms-scene-toggle">
                         {expandedScenes.has(scene.id) ? '▾' : '▸'}
                       </span>
-                      <span className={`dot ${getStatusDot(scene.status || 'draft')}`} />
+                      <span className={`dot ${getStatusDot((scene.status || 'draft').toLowerCase())}`} />
                       <span className="ms-scene-title">{scene.title}</span>
                       <span className="ms-scene-wc">{scene.wordCount} слов</span>
                     </div>
