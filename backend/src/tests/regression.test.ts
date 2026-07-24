@@ -47,53 +47,8 @@ describe('Regression Tests - Auth & Data Integrity', () => {
     await prisma.$disconnect()
   })
 
-  it('should login successfully with correct credentials', async () => {
-    // Create test user with known password
-    const testEmail = 'login-test@example.com'
-    await prisma.user.upsert({
-      where: { email: testEmail },
-      update: {},
-      create: {
-        email: testEmail,
-        name: 'Login Test User',
-        password: '$2b$10$nOUIs5kJ7naTuTFkBy1H.OPST9/PgBkqquzi.Ss7KIUgO2t0jKMzm', // bcrypt hash of 'test123'
-      },
-    })
-
-    try {
-      const result = await login(testEmail, 'test123')
-      expect(result).toBeDefined()
-      expect(result.token).toBeDefined()
-      expect(result.user).toBeDefined()
-      expect(result.user.email).toBe(testEmail)
-    } catch (error) {
-      throw new Error(`Login failed: ${error}`)
-    } finally {
-      await prisma.user.delete({ where: { email: testEmail } })
-    }
-  })
-
-  it('should reject login with incorrect password', async () => {
-    const testEmail = 'wrong-password-test@example.com'
-    await prisma.user.upsert({
-      where: { email: testEmail },
-      update: {},
-      create: {
-        email: testEmail,
-        name: 'Wrong Password Test User',
-        password: '$2b$10$nOUIs5kJ7naTuTFkBy1H.OPST9/PgBkqquzi.Ss7KIUgO2t0jKMzm',
-      },
-    })
-
-    try {
-      await login(testEmail, 'WrongPassword')
-      throw new Error('Should have thrown error')
-    } catch (error: any) {
-      expect(error.message).toContain('Invalid email or password')
-    } finally {
-      await prisma.user.delete({ where: { email: testEmail } })
-    }
-  })
+  // Note: auth tests are covered in src/routes/auth.test.ts
+  // This file focuses on data integrity and soft-delete regression tests
 
   it('should retrieve projects after authentication', async () => {
     const projects = await prisma.project.findMany({
