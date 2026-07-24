@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import cookiePlugin from '@fastify/cookie'
 import { PrismaClient } from '@prisma/client'
 import { exportBookToDocx } from './services/docxExport.js'
 import { exportBookToFb2 } from './services/fbExport.js'
@@ -7,6 +8,7 @@ import { exportBookToPdf } from './services/pdfExport.js'
 import { extractTextFromTipTap } from './utils/tiptap.js'
 import { getDispositionHeader } from './utils/httpHeaders.js'
 import { queryAI, initializeAIRolesForProject, initializeFieldPromptsForProject } from './services/aiService.js'
+import { login, register, createInvitation, verifyToken, getCurrentUser } from './services/authService.js'
 
 const fastify = Fastify({
   logger: true,
@@ -14,14 +16,137 @@ const fastify = Fastify({
 
 const prisma = new PrismaClient()
 
-// Register CORS
+// Register plugins
 fastify.register(cors, {
   origin: true,
+  credentials: true,
 })
+
+fastify.register(cookiePlugin)
 
 // Health check
 fastify.get('/health', async (request, reply) => {
   return { status: 'ok' }
+})
+
+// Auth routes
+fastify.post('/auth/login', async (request, reply) => {
+  const { email, password } = request.body as { email: string; password: string }
+
+  try {
+    const { token, user } = await login(email, password)
+
+    reply.setCookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    })
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    }
+  } catch (error: any) {
+    fastify.log.error(error)
+    reply.code(401).send({ error: error.message || 'Invalid credentials' })
+  }
+})
+
+fastify.post('/auth/register', async (request, reply) => {
+  const { email, password, name, invitationToken } = request.body as {
+    email: string
+    password: string
+    name: string
+    invitationToken: string
+  }
+
+  try {
+    const { token, user } = await register(email, password, name, invitationToken)
+
+    reply.setCookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
+    })
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    }
+  } catch (error: any) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: error.message || 'Registration failed' })
+  }
+})
+
+fastify.get('/auth/me', async (request, reply) => {
+  try {
+    const token = request.cookies.auth_token
+
+    if (!token) {
+      reply.code(401).send({ error: 'Not authenticated' })
+      return
+    }
+
+    const payload = verifyToken(token)
+    const user = await getCurrentUser(payload.userId)
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    }
+  } catch (error: any) {
+    fastify.log.error(error)
+    reply.code(401).send({ error: error.message || 'Authentication failed' })
+  }
+})
+
+fastify.post('/auth/logout', async (request, reply) => {
+  reply.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  })
+
+  return { success: true }
+})
+
+fastify.post('/auth/invite', async (request, reply) => {
+  const { email } = request.body as { email: string }
+
+  try {
+    // TODO: verify admin role
+    const invitation = await createInvitation(email)
+
+    return {
+      success: true,
+      invitation: {
+        email: invitation.email,
+        token: invitation.token,
+        expiresAt: invitation.expiresAt,
+      },
+    }
+  } catch (error: any) {
+    fastify.log.error(error)
+    reply.code(400).send({ error: error.message || 'Failed to create invitation' })
+  }
 })
 
 // Projects routes

@@ -14,6 +14,7 @@ describe('API', () => {
         id: 'test-user-123',
         email: 'test@example.com',
         name: 'Test User',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

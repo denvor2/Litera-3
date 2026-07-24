@@ -111,7 +111,7 @@ describe('AI roles & field prompts (модель данных)', () => {
     const user = await prisma.user.upsert({
       where: { email: 'test-ai@example.com' },
       update: {},
-      create: { id: 'test-user-ai', email: 'test-ai@example.com', name: 'AI Test' },
+      create: { id: 'test-user-ai', email: 'test-ai@example.com', name: 'AI Test', password: 'test-password-hash' },
     })
     const project = await prisma.project.create({
       data: { title: 'AI Test Project', ownerId: user.id },

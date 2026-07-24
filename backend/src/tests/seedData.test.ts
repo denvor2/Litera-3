@@ -19,6 +19,7 @@ describe('Seed / тестовые данные (JSONB body)', () => {
         id: 'test-user-seed',
         email: 'test-seed@example.com',
         name: 'Test User Seed',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

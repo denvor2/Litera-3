@@ -14,6 +14,7 @@ describe('Search API', () => {
         id: 'test-user-search',
         email: 'test-search@example.com',
         name: 'Test User Search',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

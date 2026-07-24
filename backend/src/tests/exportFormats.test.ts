@@ -26,6 +26,7 @@ describe('FB2 и PDF экспорт', () => {
         id: 'test-user-formats',
         email: 'test-formats@example.com',
         name: 'Test User Formats',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

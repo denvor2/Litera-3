@@ -15,6 +15,7 @@ describe('Export Service', () => {
         id: 'test-user-export',
         email: 'test-export@example.com',
         name: 'Test User Export',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

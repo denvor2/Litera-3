@@ -14,6 +14,7 @@ describe('Codex API', () => {
         id: 'test-user-codex',
         email: 'test-codex@example.com',
         name: 'Test User Codex',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id

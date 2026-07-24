@@ -14,6 +14,7 @@ describe('Soft-delete и Корзина', () => {
         id: 'test-user-trash',
         email: 'test-trash@example.com',
         name: 'Test User Trash',
+        password: 'test-password-hash',
       },
     })
     testUserId = user.id
