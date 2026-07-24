@@ -38,11 +38,8 @@ export function Login({ onLoginSuccess, onClose }: LoginProps) {
 
       const data = await response.json()
       if (data.success) {
-        // Сохранить token в localStorage для последующих запросов
-        if (data.token) {
-          localStorage.setItem('auth_token', data.token)
-          console.log('✓ Token сохранен в localStorage')
-        }
+        // Cookie установлен автоматически browser'ом
+        console.log('✓ Login успешен, cookie установлен')
         onLoginSuccess()
       } else {
         setError(data.error || 'Ошибка входа')

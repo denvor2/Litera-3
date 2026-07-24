@@ -19,21 +19,11 @@ const prisma = new PrismaClient()
 // Auth middleware for API routes
 const requireAuth = async (request: any, reply: any) => {
   try {
-    let token = request.cookies.auth_token
-
-    // Если нет cookie, попробовать Authorization header
-    if (!token) {
-      const authHeader = request.headers.authorization
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7)
-      }
-    }
-
+    const token = request.cookies.auth_token
     if (!token) {
       reply.code(401).send({ error: 'Not authenticated' })
       return
     }
-
     const payload = await verifyToken(token)
     request.userId = payload.userId
   } catch (error: any) {
@@ -77,9 +67,9 @@ fastify.post('/auth/login', async (request, reply) => {
 
     // Set cookie для persistence
     reply.setCookie('auth_token', token, {
-      httpOnly: false,  // Разрешить JavaScript доступ для debug
+      httpOnly: true,
       secure: false,    // Не требовать HTTPS на localhost
-      sameSite: 'none',  // Разрешить cross-site
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
     })
@@ -136,15 +126,7 @@ fastify.post('/auth/register', async (request, reply) => {
 
 fastify.get('/auth/me', async (request, reply) => {
   try {
-    let token = request.cookies.auth_token
-
-    // Если нет cookie, попробовать Authorization header
-    if (!token) {
-      const authHeader = request.headers.authorization
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7)
-      }
-    }
+    const token = request.cookies.auth_token
 
     if (!token) {
       reply.code(401).send({ error: 'Not authenticated' })

@@ -82,23 +82,13 @@ export function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('auth_token')
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        }
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
-
         const response = await fetch(`${API_BASE}/auth/me`, {
           credentials: 'include',
-          headers,
         })
         if (response.ok) {
           setIsAuthenticated(true)
         } else {
           setIsAuthenticated(false)
-          localStorage.removeItem('auth_token')
         }
       } catch (err) {
         setIsAuthenticated(false)
@@ -871,30 +861,12 @@ export function App() {
     setCenterView('project-card')
   }
 
-  // Helper для fetch с auth token
-  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-    const token = localStorage.getItem('auth_token')
-    const headers = new Headers(options.headers || {})
-
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
-    }
-    headers.set('Content-Type', 'application/json')
-
-    return fetch(url, {
-      ...options,
-      credentials: 'include',
-      headers,
-    })
-  }
-
   const handleLogout = async () => {
     try {
       await fetch(`${API_BASE}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       })
-      localStorage.removeItem('auth_token')
       setIsAuthenticated(false)
     } catch (err) {
       console.error('Logout failed:', err)
