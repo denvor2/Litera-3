@@ -77,7 +77,6 @@ export function App() {
   const [guideContent, setGuideContent] = useState<string>('')
   const [selectedAIRole, setSelectedAIRole] = useState<AIRole | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const noteSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Check authentication on app load
   useEffect(() => {
@@ -610,27 +609,6 @@ export function App() {
     }
   }
 
-  const handleNotesChange = async (notes: string) => {
-    if (!selectedScene) return
-    // Дебаунс 2 сек
-    if (noteSaveTimeoutRef.current) clearTimeout(noteSaveTimeoutRef.current)
-    noteSaveTimeoutRef.current = setTimeout(async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/scenes/${selectedScene.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ notes }),
-        })
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const updated = await response.json()
-        setSelectedScene(updated)
-      } catch (error) {
-        console.error('Failed to save notes:', error)
-      }
-    }, 2000)
-  }
-
   const handleDeleteScene = async (sceneId: string) => {
     if (!project) return
     try {
@@ -1135,7 +1113,6 @@ export function App() {
               trashRefreshVersion={trashRefreshVersion}
               selectedSceneId={selectedScene?.id}
               selectedBookId={selectedBookId || undefined}
-              selectedScene={selectedScene || undefined}
               onSceneSelect={handleSceneSelect}
               onBookSelect={handleBookSelect}
               onSelectProject={(projectId) => {
@@ -1208,7 +1185,6 @@ export function App() {
               onCreateNote={() => setEditingItem({ type: 'note', id: 'new', data: { title: '', content: '' } })}
               onEditNote={(noteId, data) => setEditingItem({ type: 'note', id: noteId, data })}
               onDeleteNote={(noteId) => handleDeleteNote(noteId)}
-              onNotesChange={handleNotesChange}
             />
           </ErrorBoundary>
         )}

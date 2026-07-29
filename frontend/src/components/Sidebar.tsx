@@ -40,8 +40,6 @@ interface SidebarProps {
   onCreateNote?: () => void
   onEditNote?: (noteId: string, data: Record<string, any>) => void
   onDeleteNote?: (noteId: string) => void
-  onNotesChange?: (notes: string) => void
-  selectedScene?: Scene
 }
 
 export function Sidebar({
@@ -52,7 +50,6 @@ export function Sidebar({
   trashRefreshVersion = 0,
   selectedSceneId,
   selectedBookId,
-  selectedScene,
   onSceneSelect,
   onBookSelect,
   onSelectProject,
@@ -75,7 +72,6 @@ export function Sidebar({
   onCreateNote,
   onEditNote,
   onDeleteNote,
-  onNotesChange,
 }: SidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [openSection, setOpenSection] = useState<'manuscript' | 'codex' | 'notes' | 'trash'>('manuscript')
